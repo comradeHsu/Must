@@ -2,6 +2,7 @@ pub struct Cmd {
     pub help_flag: bool,
     pub version_flag: bool,
     pub cp_option: String,
+    x_jre_option:String,
     pub class: String,
     pub args: Vec<String>
 }
@@ -12,6 +13,7 @@ impl Cmd {
             help_flag: false,
             version_flag: false,
             cp_option: String::new(),
+            x_jre_option: String::new(),
             class: String::new(),
             args: Vec::new()
         };
@@ -28,6 +30,7 @@ impl Cmd {
                 "class" => cmd.class = arg,
                 "cp" => cmd.cp_option = arg,
                 "classPath" => cmd.cp_option = arg,
+                "Xjre" => cmd.x_jre_option = arg,
                 _ => cmd.args.push(arg)
             }
         }
