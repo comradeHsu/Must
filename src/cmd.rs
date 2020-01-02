@@ -2,7 +2,7 @@ pub struct Cmd {
     pub help_flag: bool,
     pub version_flag: bool,
     pub cp_option: String,
-    x_jre_option:String,
+    pub x_jre_option:String,
     pub class: String,
     pub args: Vec<String>
 }
@@ -23,6 +23,10 @@ impl Cmd {
         let mut args = std::env::args();
         let mut cmd:Cmd = Cmd::new();
         for arg in args {
+            if arg.starts_with("-Xjre") {
+                let mut array:Vec<&str> = arg.split(':').collect();
+                cmd.x_jre_option = array.remove(1).to_string();
+            }
             match arg.as_str() {
                 "help" => cmd.help_flag = true,
                 "?" => cmd.help_flag = true,
@@ -30,10 +34,11 @@ impl Cmd {
                 "class" => cmd.class = arg,
                 "cp" => cmd.cp_option = arg,
                 "classPath" => cmd.cp_option = arg,
-                "Xjre" => cmd.x_jre_option = arg,
+//                "Xjre" => cmd.x_jre_option = arg,
                 _ => cmd.args.push(arg)
             }
         }
+        cmd.class = cmd.args.remove(1);
         return cmd;
     }
 

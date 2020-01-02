@@ -1,13 +1,11 @@
 use std::path::Path;
-use crate::class_path::class_path::Entry;
+use crate::class_path::class_path::{Entry, FindClassError};
 use std::fs::File;
-use std::fmt::{Display, Formatter, Error};
-use core::fmt;
 use zip::read::ZipFile;
 use podio::ReadPodExt;
 
 #[derive(Debug)]
-struct ZipEntry {
+pub struct ZipEntry {
 
     abs_path:String
 
@@ -25,8 +23,8 @@ impl ZipEntry {
     }
 }
 
-impl super::class_path::Entry for ZipEntry {
-    fn read_class(self, class_name: String) -> (Vec<u8>, Box<dyn Entry>) {
+impl Entry for ZipEntry {
+    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>,Box<dyn Entry>),FindClassError> {
         let path = Path::new(&self.abs_path);
         let zip_file = File::open(path).unwrap();
         let mut reader = std::io::Cursor::new(super::class_path::read_to_vec(zip_file));
@@ -34,15 +32,18 @@ impl super::class_path::Entry for ZipEntry {
         let mut bytes = Vec::new();
         for i in 0..zip.len() {
             let mut file:ZipFile = zip.by_index(i).unwrap();
-            if file.name() == class_name.as_str() {
+            println!("zip_file_name:{}\n",file.name());
+            if file.name() == class_name {
+                println!("file_name:{}\n",class_name);
                 bytes = file.read_exact(file.size() as usize).unwrap();
+                return Ok((bytes,Box::new(ZipEntry{
+                    abs_path: self.abs_path.to_string()
+                })));
             }
         }
-        return (bytes,Box::new(self));
+        return Err(FindClassError("don't find class".to_string()));
     }
-}
 
-impl ToString for ZipEntry {
     fn to_string(&self) -> String {
         return String::from(&self.abs_path);
     }
