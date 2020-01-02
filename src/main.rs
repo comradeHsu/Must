@@ -3,6 +3,7 @@ use crate::class_path::class_path::{ClassPath, Entry};
 
 mod cmd;
 mod class_path;
+mod class_file;
 fn main() {
     let cmd = Cmd::parse_cmd();
     if cmd.version_flag {
