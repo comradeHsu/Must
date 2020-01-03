@@ -1,4 +1,3 @@
-use podio::BigEndian;
 
 pub struct ClassReader {
     data:Vec<u8>

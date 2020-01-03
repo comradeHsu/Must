@@ -1,5 +1,5 @@
 use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::attribute_info::AttributeInfo;
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
 use crate::class_file::class_reader::ClassReader;
 
 pub struct CodeAttribute<'a> {
@@ -8,17 +8,17 @@ pub struct CodeAttribute<'a> {
     max_locals:u16,
     code:Vec<u8>,
     exception_table:Vec<ExceptionTableEntry>,
-    attributes:Vec<dyn AttributeInfo>,
+    attributes:Vec<Box<dyn AttributeInfo>>,
 }
 
-impl AttributeInfo for CodeAttribute {
+impl AttributeInfo for CodeAttribute<'_> {
     fn read_info(&mut self, reader: &mut ClassReader) {
         self.max_stack = reader.read_u16();
         self.max_locals = reader.read_u16();
         let code_len = reader.read_u32();
         self.code = reader.read_bytes(code_len as usize);
         self.exception_table = ExceptionTableEntry::read_exception_table(reader);
-        self.attributes = AttributeInfo::read_attributes(reader,self.cp);
+        self.attributes = read_attributes(reader,self.cp);
     }
 }
 
@@ -31,7 +31,7 @@ struct ExceptionTableEntry {
 
 impl ExceptionTableEntry {
     pub fn read_exception_table(reader: &mut ClassReader) -> Vec<ExceptionTableEntry>{
-        let exception_table_len = reader.readUint16();
+        let exception_table_len = reader.read_u16();
         let mut exception_table = Vec::new();
         for _ in 0..exception_table_len {
             exception_table.push(ExceptionTableEntry{

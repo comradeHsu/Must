@@ -1,8 +1,10 @@
-use crate::class_file::constant_pool::ConstantPool;
+use crate::class_file::constant_pool::{ConstantPool, get_class_name, read_constant_pool};
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::class_reader::ClassReader;
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
+use std::vec::Vec;
 
-struct ClassFile {
+struct ClassFile<'a> {
     minor_version:u16,
     major_version:u16,
     constant_pool:ConstantPool,
@@ -10,12 +12,12 @@ struct ClassFile {
     this_class:u16,
     super_class:u16,
     interfaces:Vec<u16>,
-    fields:Vec<MemberInfo>,
-    methods:Vec<MemberInfo>,
-    attributes:()
+    fields:Vec<MemberInfo<'a>>,
+    methods:Vec<MemberInfo<'a>>,
+    attributes:Vec<Box<dyn AttributeInfo>>
 }
 
-impl ClassFile {
+impl<'a> ClassFile<'a> {
     pub fn parse(class_data:Vec<u8>) {
         let mut class_reader = ClassReader{ data: class_data };
         let class_file = ClassFile{
@@ -28,21 +30,21 @@ impl ClassFile {
             interfaces: vec![],
             fields: vec![],
             methods: vec![],
-            attributes: ()
+            attributes: vec![],
         };
     }
 
-    fn read(&mut self, reader:&mut ClassReader) {
+    fn read(&'a mut self, reader:&mut ClassReader) {
         self.read_and_check_magic(reader);
         self.read_and_check_version(reader);
-        self.constant_pool = ();
-        self.accessFlags = reader.readUint16();
-        self.thisClass = reader.readUint16();
-        self.superClass = reader.readUint16();
-        self.interfaces = reader.readUint16s();
-        self.fields = readMembers(reader, self.constantPool);
-        self.methods = readMembers(reader, self.constantPool);
-        self.attributes = readAttributes(reader, self.constantPool)
+        self.constant_pool = read_constant_pool(reader);
+        self.access_flags = reader.read_u16();
+        self.this_class = reader.read_u16();
+        self.super_class = reader.read_u16();
+        self.interfaces = reader.read_u16_table();
+        self.fields = MemberInfo::read_members(reader, &self.constant_pool);
+        self.methods = MemberInfo::read_members(reader, &self.constant_pool);
+        self.attributes = read_attributes(reader, &self.constant_pool)
     }
 
     fn read_and_check_magic(&mut self, reader:&mut ClassReader) {
@@ -53,8 +55,8 @@ impl ClassFile {
     }
 
     fn read_and_check_version(&mut self, reader:&mut ClassReader) {
-        self.minorVersion = reader.read_u16();
-        self.majorVersion = reader.read_u16();
+        self.minor_version = reader.read_u16();
+        self.major_version = reader.read_u16();
         match self.major_version {
             45 => return,
             46..=52 => {
@@ -92,14 +94,21 @@ impl ClassFile {
     }
 
     pub fn class_name(&self) -> &str {
-        return "";
+        return get_class_name(&self.constant_pool,self.this_class as usize);
     }
 
     pub fn super_class_name(&self) -> &str {
-        return "";
+        if self.super_class > 0 {
+            return get_class_name(&self.constant_pool,self.super_class as usize);
+        }
+        return "" // 只有 java.lang.Object没有超类
     }
 
     pub fn interface_names(&self) -> Vec<&str> {
-        return Vec::new();
+        let mut interface_names = Vec::new();
+        for index in self.interfaces {
+            interface_names.push(get_class_name(&self.constant_pool,index as usize));
+        }
+        return interface_names;
     }
 }
