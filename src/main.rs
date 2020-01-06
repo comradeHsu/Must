@@ -6,6 +6,7 @@ use crate::class_file::member_info::display_16;
 mod cmd;
 mod class_path;
 mod class_file;
+mod runtime_data_area;
 fn main() {
     let cmd = Cmd::parse_cmd();
     if cmd.version_flag {
