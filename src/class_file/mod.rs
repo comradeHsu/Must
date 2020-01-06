@@ -1,6 +1,6 @@
 mod class_reader;
-mod class_file;
-mod member_info;
+pub mod class_file;
+pub mod member_info;
 mod constant_pool;
 mod attribute_info;
 mod code_attribute;
@@ -16,3 +16,4 @@ mod enclosing_method_attribute;
 mod inner_classes_attribute;
 mod local_variable_type_table_attribute;
 mod signature_attribute;
+mod stack_map_table_attribute;

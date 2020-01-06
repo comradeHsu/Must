@@ -132,7 +132,6 @@ impl Entry for ClassPath{
 
 #[cfg(test)]
 mod tests{
-    use crate::class_path::class_path::newEntry;
     use std::env;
 
     #[test]

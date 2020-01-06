@@ -1,7 +1,7 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 
-struct LocalVariableTableAttribute {
+pub struct LocalVariableTableAttribute {
     local_variable_table: Vec<LocalVariableTableEntry>
 }
 
@@ -14,7 +14,9 @@ struct LocalVariableTableEntry  {
 }
 
 impl LocalVariableTableAttribute {
-
+    pub fn new() -> LocalVariableTableAttribute {
+        return LocalVariableTableAttribute{ local_variable_table: vec![] };
+    }
 }
 
 impl AttributeInfo for LocalVariableTableAttribute {

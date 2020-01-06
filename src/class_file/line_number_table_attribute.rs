@@ -1,7 +1,8 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
+use crate::class_file::member_info::display_16;
 
-struct LineNumberTableAttribute {
+pub struct LineNumberTableAttribute {
     line_number_table:Vec<LineNumberTableEntry>
 }
 
@@ -11,6 +12,11 @@ struct LineNumberTableEntry {
 }
 
 impl LineNumberTableAttribute {
+
+    pub fn new() -> LineNumberTableAttribute {
+        return LineNumberTableAttribute{ line_number_table: vec![] };
+    }
+
     pub fn get_line_number(&self,pc:u16) -> i32 {
         for i in self.line_number_table.len()..0 {
             let entry = self.line_number_table.get(i).unwrap();
@@ -24,7 +30,7 @@ impl LineNumberTableAttribute {
 
 impl AttributeInfo for LineNumberTableAttribute {
     fn read_info(&mut self, reader: &mut ClassReader) {
-        let line_number_table_len = reader.read_u32();
+        let line_number_table_len = reader.read_u16();
         let mut line_number_table = Vec::new();
         for _ in 0..line_number_table_len {
             line_number_table.push(LineNumberTableEntry{

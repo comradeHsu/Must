@@ -24,8 +24,10 @@ impl DirEntry {
 
 impl Entry for DirEntry {
     fn read_class(&self,class_name: &str) -> Result<(Vec<u8>,Box<dyn Entry>),FindClassError>{
-        let path = Path::new(&self.abs_dir);
-        path.join(class_name);
+        let mut file_path = self.abs_dir.clone();
+        file_path.push_str("/");
+        file_path.push_str(class_name);
+        let path = Path::new(&file_path);
         let result = File::open(path);
         let file = match result {
             Err(e) => return Err(FindClassError(e.to_string())),
@@ -40,5 +42,23 @@ impl Entry for DirEntry {
 
     fn to_string(&self) -> String {
         return String::from(&self.abs_dir);
+    }
+}
+
+#[cfg(test)]
+mod tests{
+    use std::path::Path;
+    use std::fs::File;
+    use crate::class_path::class_path::FindClassError;
+    use std::fs;
+
+    #[test]
+    fn open_file() {
+        let path = Path::new("D:\\test");
+        let result = fs::read_dir(path);
+        let file = match result {
+            Err(e) => panic!("打不开"),
+            Ok(f) => f
+        };
     }
 }

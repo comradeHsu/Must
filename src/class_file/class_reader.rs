@@ -1,32 +1,41 @@
 
 pub struct ClassReader {
-    data:Vec<u8>
+    pub data:Vec<u8>
 }
 
 impl ClassReader {
+
+    pub fn new(data:Vec<u8>) -> ClassReader {
+        return ClassReader{data };
+    }
+
     pub fn read_u8(&mut self) -> u8 {
         let val = self.data.remove(0usize);
         return val;
     }
 
     pub fn read_u16(&mut self) -> u16 {
-        let head = self.data.remove(0usize) as u16;
+        let mut head = self.data.remove(0usize) as u16;
         let tail = self.data.remove(0usize) as u16;
+        head = head << 8;
         return head | tail;
     }
 
     pub fn read_u32(&mut self) -> u32 {
-        let head = self.data.remove(0usize) as u32;
-        let mid = self.data.remove(0usize) as u32;
-        let tail = self.data.remove(0usize) as u32;
-        let temp = head | mid;
-        return temp | tail;
+        let mut result = 0u32;
+        for i in 0..4usize {
+            let mut head = self.data.remove(0usize) as u32;
+            head = head << (24 - (i as u32 * 8));
+            result = result | head;
+        }
+        return result;
     }
 
     pub fn read_u64(&mut self) -> u64 {
         let mut result = 0u64;
-        for i in 0..4usize {
-            let head = self.data.remove(0usize) as u64;
+        for i in 0..8usize {
+            let mut head = self.data.remove(0usize) as u64;
+            head = head << (56 - (i as u64 * 8));
             result = result | head;
         }
         return result;

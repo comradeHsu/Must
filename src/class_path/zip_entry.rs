@@ -32,7 +32,6 @@ impl Entry for ZipEntry {
         let mut bytes = Vec::new();
         for i in 0..zip.len() {
             let mut file:ZipFile = zip.by_index(i).unwrap();
-            println!("zip_file_name:{}\n",file.name());
             if file.name() == class_name {
                 println!("file_name:{}\n",class_name);
                 bytes = file.read_exact(file.size() as usize).unwrap();

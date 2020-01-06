@@ -27,13 +27,17 @@ impl Cmd {
                 let mut array:Vec<&str> = arg.split(':').collect();
                 cmd.x_jre_option = array.remove(1).to_string();
             }
+            if arg.starts_with("classPath") {
+                let mut array:Vec<&str> = arg.split('_').collect();
+                cmd.cp_option = array.remove(1).to_string();
+            }
             match arg.as_str() {
                 "help" => cmd.help_flag = true,
                 "?" => cmd.help_flag = true,
                 "version" => cmd.version_flag = true,
                 "class" => cmd.class = arg,
                 "cp" => cmd.cp_option = arg,
-                "classPath" => cmd.cp_option = arg,
+//                "classPath" => cmd.cp_option = arg,
 //                "Xjre" => cmd.x_jre_option = arg,
                 _ => cmd.args.push(arg)
             }

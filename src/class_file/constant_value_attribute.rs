@@ -1,11 +1,15 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 
-struct ConstantValueAttribute {
+pub struct ConstantValueAttribute {
     value_index:u16
 }
 
 impl ConstantValueAttribute {
+    pub fn new() -> ConstantValueAttribute {
+        return ConstantValueAttribute{ value_index: 0 };
+    }
+
     pub fn value_index(&self) -> u16 {
         return self.value_index;
     }

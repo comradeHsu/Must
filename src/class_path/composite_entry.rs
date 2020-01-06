@@ -63,13 +63,13 @@ impl Entry for CompositeEntry{
 
 #[cfg(test)]
 mod tests{
-    use crate::class_path::class_path::newEntry;
+    use crate::class_path::class_path::new_entry;
 
     #[test]
     fn new() {
-        let composites = newEntry(&"C:\\Users\\xuhui\\Desktop\\force.jar".to_string());
+        let composites = new_entry(&"C:\\Users\\xuhui\\Desktop\\force.jar".to_string());
         println!("entry:{}",composites.to_string());
-        let composite = newEntry(&"C:\\Users\\xuhui\\Desktop\\*".to_string());
+        let composite = new_entry(&"C:\\Users\\xuhui\\Desktop\\*".to_string());
         println!("entry:{}",composite.to_string());
     }
 }
