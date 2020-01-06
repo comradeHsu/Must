@@ -20,20 +20,14 @@ impl MemberInfo {
             descriptor_index: reader.read_u16(),
             attributes: vec![]
         };
-        println!("==access_flags:{}",mem.access_flags);
-        println!("==name_index:{}",mem.name_index);
-        println!("==descriptor_index:{}",mem.descriptor_index);
-        println!("member_name:{}",mem.name());
         mem.attributes = read_attributes(reader,cp);
         return mem;
     }
 
     pub fn read_members(reader:&mut ClassReader, cp: Rc<ConstantPool>) -> Vec<MemberInfo> {
         let member_count = reader.read_u16();
-        println!("member_count:{}",member_count);
         let mut members:Vec<MemberInfo> = Vec::new();
         for _i in 0..member_count {
-            println!("member_count-{}",_i);
             members.push(MemberInfo::read_member(reader,cp.clone()));
         }
         return members;

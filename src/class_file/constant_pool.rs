@@ -22,20 +22,15 @@ pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
         if any.downcast_ref::<ConstantDoubleInfo>().is_some() {
             i = i + 1;
         }
-//        cp.push(constant_info);
         vec.push(constant_info);
-//        (*cp).as_mut().push(constant_info);
     }
     let mut c = Rc::new(vec);
     mem::swap(&mut c,&mut cp);
-//    Rc::get_mut(&mut cp).unwrap().append(&mut vec);
-    println!("step:1-2");
     return cp;
 }
 
 pub fn get_constant_info<'a>(this:&'a Rc<ConstantPool>,index:usize) -> &'a dyn ConstantInfo {
     let info = this.get(index-1);
-    println!("ConstantPool len:{},index:{}",this.len(),index);
     if info.is_none() {
         panic!("Invalid constant pool index!");
     }

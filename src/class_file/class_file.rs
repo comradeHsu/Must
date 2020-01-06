@@ -38,20 +38,15 @@ impl ClassFile {
     }
 
     fn read(& mut self, reader:&mut ClassReader) {
-        println!("step:0");
         self.read_and_check_magic(reader);
         self.read_and_check_version(reader);
-        println!("step:1");
         self.constant_pool = read_constant_pool(reader);
         self.access_flags = reader.read_u16();
         self.this_class = reader.read_u16();
         self.super_class = reader.read_u16();
         self.interfaces = reader.read_u16_table();
-        println!("step:2");
         self.fields = MemberInfo::read_members(reader, self.constant_pool.clone());
-        println!("step:3");
         self.methods = MemberInfo::read_members(reader, self.constant_pool.clone());
-        println!("step:4");
         self.attributes = read_attributes(reader, self.constant_pool.clone())
     }
 
@@ -136,12 +131,12 @@ impl ClassFile {
         println!("  ]");
         println!("  fields:[");
         for field in self.fields() {
-            println!("{},",field.name());
+            println!("    {},",field.name());
         }
         println!("  ]");
         println!("  methods:[");
         for field in self.methods() {
-            println!("{},",field.name());
+            println!("    {},",field.name());
         }
         println!("  ]");
     }
