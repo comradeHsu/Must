@@ -1,6 +1,6 @@
 mod thread;
 mod stack;
-mod frame;
+pub mod frame;
 mod slot;
 mod object;
 mod local_vars;
