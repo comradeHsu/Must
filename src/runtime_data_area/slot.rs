@@ -8,14 +8,20 @@ pub struct Slot {
 }
 
 impl Slot {
+
+    #[inline]
+    pub fn new() -> Slot {
+        return Slot{ num: None, reference: None };
+    }
+
     #[inline]
     pub fn with_num(num:i32) -> Slot {
         return Slot{ num: Some(num), reference: None };
     }
 
     #[inline]
-    pub fn with_ref(reference:Rc<RefCell<Object>>) -> Slot {
-        return Slot{ num: None, reference: Some(reference) };
+    pub fn with_ref(reference:Option<Rc<RefCell<Object>>>) -> Slot {
+        return Slot{ num: None, reference };
     }
 
     #[inline]
@@ -29,12 +35,12 @@ impl Slot {
     }
 
     #[inline]
-    pub fn set_ref(&mut self, reference:Rc<RefCell<Object>>) {
-        self.reference = Some(reference);
+    pub fn set_ref(&mut self, reference:Option<Rc<RefCell<Object>>>) {
+        self.reference = reference;
     }
 
     #[inline]
-    pub fn get_ref(&self) -> Rc<RefCell<Object>> {
-        return self.reference.clone().unwrap();
+    pub fn get_ref(&self) -> Option<Rc<RefCell<Object>>> {
+        return self.reference.clone();
     }
 }

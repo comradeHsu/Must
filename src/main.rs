@@ -7,6 +7,7 @@ mod cmd;
 mod class_path;
 mod class_file;
 mod runtime_data_area;
+mod utils;
 fn main() {
     let cmd = Cmd::parse_cmd();
     if cmd.version_flag {
