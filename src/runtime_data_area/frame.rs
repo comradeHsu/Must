@@ -22,6 +22,11 @@ impl Frame {
             operand_stack: OperandStack::new(max_stack)
         };
     }
+
+    #[inline]
+    pub fn operand_stack(&mut self) -> Option<&mut OperandStack>{
+        return self.operand_stack.as_mut();
+    }
 }
 
 #[cfg(test)]

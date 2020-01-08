@@ -1,2 +1,2 @@
-mod instruction;
-mod bytecode_reader;
+pub mod instruction;
+pub mod bytecode_reader;
