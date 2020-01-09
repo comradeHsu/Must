@@ -81,4 +81,15 @@ impl OperandStack {
         self.size -= 1;
         return slot.get_ref();
     }
+
+    pub fn push_slot(&mut self,val:Slot) {
+        self.slots.push(val);
+        self.size += 1;
+    }
+
+    pub fn pop_slot(&mut self) -> Slot{
+        let slot = self.slots.pop().unwrap();
+        self.size -= 1;
+        return slot;
+    }
 }

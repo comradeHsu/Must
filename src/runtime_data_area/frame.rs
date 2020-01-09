@@ -27,6 +27,11 @@ impl Frame {
     pub fn operand_stack(&mut self) -> Option<&mut OperandStack>{
         return self.operand_stack.as_mut();
     }
+
+    #[inline]
+    pub fn local_vars(&mut self) -> Option<&mut LocalVars>{
+        return self.local_vars.as_mut();
+    }
 }
 
 #[cfg(test)]

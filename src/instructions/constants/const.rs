@@ -183,3 +183,31 @@ impl Instruction for Iconst5 {
             .push_int(5i32);
     }
 }
+
+///lconst_0
+pub struct Lconst0(NoOperandsInstruction);
+
+impl Instruction for Lconst0 {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        frame.operand_stack().expect("operand_stack is empty")
+            .push_long(0i64);
+    }
+}
+
+///lconst_1
+pub struct Lconst1(NoOperandsInstruction);
+
+impl Instruction for Lconst1 {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        frame.operand_stack().expect("operand_stack is empty")
+            .push_long(1i64);
+    }
+}

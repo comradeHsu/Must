@@ -2,6 +2,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::object::Object;
 
+#[derive(Clone)]
 pub struct Slot {
     pub num:Option<i32>,
     pub reference:Option<Rc<RefCell<Object>>>

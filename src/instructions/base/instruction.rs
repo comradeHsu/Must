@@ -44,6 +44,13 @@ pub struct LocalVarsInstruction {
     index:usize
 }
 
+impl LocalVarsInstruction {
+    #[inline]
+    pub fn get_index(&self) -> usize {
+        return self.index;
+    }
+}
+
 impl Instruction for LocalVarsInstruction {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.index = reader.read_u8() as usize;
