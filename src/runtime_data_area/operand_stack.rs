@@ -21,30 +21,35 @@ impl OperandStack {
         return None;
     }
 
+    #[inline]
     pub fn push_int(&mut self,val:i32) {
         let slot = Slot::with_num(val);
         self.slots.push(slot);
         self.size += 1;
     }
 
+    #[inline]
     pub fn pop_int(&mut self) -> i32{
         let slot = self.slots.pop().unwrap();
         self.size -= 1;
         return slot.get_num();
     }
 
+    #[inline]
     pub fn push_float(&mut self,val:f32) {
         let slot = Slot::with_num(f32_to_i32(val));
         self.slots.push(slot);
         self.size += 1;
     }
 
+    #[inline]
     pub fn pop_float(&mut self) -> f32{
         let slot = self.slots.pop().unwrap();
         self.size -= 1;
         return i32_to_f32(slot.get_num());
     }
 
+    #[inline]
     pub fn push_long(&mut self,val:i64) {
         let low = i64_back_bytes_to_i32(val);
         let high = (val >> 32) as i32;
@@ -55,6 +60,7 @@ impl OperandStack {
         self.size += 2;
     }
 
+    #[inline]
     pub fn pop_long(&mut self) -> i64{
         let high = self.slots.pop().unwrap().get_num() as i64;
         let low = i64_from_i32_bytes(self.slots.pop().unwrap().get_num());
@@ -62,31 +68,37 @@ impl OperandStack {
         return high << 32 | low;
     }
 
+    #[inline]
     pub fn push_double(&mut self,val:f64) {
         self.push_long(f64_to_i64(val));
     }
 
+    #[inline]
     pub fn pop_double(&mut self) -> f64{
         return i64_to_f64(self.pop_long());
     }
 
+    #[inline]
     pub fn push_ref(&mut self,val:Option<Rc<RefCell<Object>>>) {
         let slot = Slot::with_ref(val);
         self.slots.push(slot);
         self.size += 1;
     }
 
+    #[inline]
     pub fn pop_ref(&mut self) -> Option<Rc<RefCell<Object>>>{
         let slot = self.slots.pop().unwrap();
         self.size -= 1;
         return slot.get_ref();
     }
 
+    #[inline]
     pub fn push_slot(&mut self,val:Slot) {
         self.slots.push(val);
         self.size += 1;
     }
 
+    #[inline]
     pub fn pop_slot(&mut self) -> Slot{
         let slot = self.slots.pop().unwrap();
         self.size -= 1;

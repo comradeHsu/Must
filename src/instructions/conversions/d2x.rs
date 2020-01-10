@@ -1,0 +1,45 @@
+use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
+use crate::runtime_data_area::frame::Frame;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
+
+pub struct D2f(NoOperandsInstruction);
+
+impl Instruction for D2f {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_double();
+        stack.push_float(v1 as f32);
+    }
+}
+
+pub struct D2i(NoOperandsInstruction);
+
+impl Instruction for D2i {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_double();
+        stack.push_int(v1 as i32);
+    }
+}
+
+pub struct D2l(NoOperandsInstruction);
+
+impl Instruction for D2l {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_double();
+        stack.push_long(v1 as i64);
+    }
+}
