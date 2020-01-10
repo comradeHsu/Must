@@ -173,9 +173,6 @@ mod tests{
     }
 
     fn read_to_vec(file:File) -> Vec<u8> {
-//        let mut zip_bytes = Vec::with_capacity(62050 * 1024);
-//        file.bytes().for_each(|x| zip_bytes.push(x.unwrap()));
-//        return zip_bytes;
         let bytes:Result<Vec<u8>, Error> = file.bytes().collect();
         return bytes.unwrap();
     }
