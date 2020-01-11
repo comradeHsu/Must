@@ -3,98 +3,97 @@ use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::branch_logic::branch;
 
-fn int_pop(frame: &mut Frame) -> (i32,i32) {
-    let stack = frame.operand_stack().expect("operand_stack is none");
-    let v2 = stack.pop_int();
-    let v1 = stack.pop_int();
-    return (v1,v2);
-}
+pub struct IfEq(BranchInstruction);
 
-pub struct IfICmpEq(BranchInstruction);
-
-impl Instruction for IfICmpEq {
+impl Instruction for IfEq {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 == v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val == 0 {
             branch(frame,self.0.get_offset());
         }
     }
 }
 
-pub struct IfICmpNe(BranchInstruction);
+pub struct IfNe(BranchInstruction);
 
-impl Instruction for IfICmpNe {
+impl Instruction for IfNe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 != v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val != 0 {
             branch(frame,self.0.get_offset());
         }
     }
 }
 
-pub struct IfICmpLt(BranchInstruction);
+pub struct IfLt(BranchInstruction);
 
-impl Instruction for IfICmpLt {
+impl Instruction for IfLt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 < v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val < 0 {
             branch(frame,self.0.get_offset());
         }
     }
 }
 
-pub struct IfICmpLe(BranchInstruction);
+pub struct IfLe(BranchInstruction);
 
-impl Instruction for IfICmpLe {
+impl Instruction for IfLe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 <= v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val <= 0 {
             branch(frame,self.0.get_offset());
         }
     }
 }
 
-pub struct IfICmpGt(BranchInstruction);
+pub struct IfGt(BranchInstruction);
 
-impl Instruction for IfICmpGt {
+impl Instruction for IfGt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 > v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val > 0 {
             branch(frame,self.0.get_offset());
         }
     }
 }
 
-pub struct IfICmpGe(BranchInstruction);
+pub struct IfGe(BranchInstruction);
 
-impl Instruction for IfICmpGe {
+impl Instruction for IfGe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let (v1,v2) = int_pop(frame);
-        if v1 >= v2 {
+        let val = frame.operand_stack().expect("operand_stack is none")
+            .pop_int();
+        if val >= 0 {
             branch(frame,self.0.get_offset());
         }
     }

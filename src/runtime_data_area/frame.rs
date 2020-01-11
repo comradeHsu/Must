@@ -3,7 +3,7 @@ use crate::runtime_data_area::operand_stack::OperandStack;
 
 pub struct Frame {
     local_vars:Option<LocalVars>,
-    operand_stack:Option<OperandStack>
+    operand_stack:Option<OperandStack>,
 }
 
 impl Frame {

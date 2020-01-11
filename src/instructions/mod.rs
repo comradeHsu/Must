@@ -6,3 +6,5 @@ mod stack;
 mod math;
 mod conversions;
 mod comparisons;
+mod control;
+mod extended;

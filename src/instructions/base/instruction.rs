@@ -29,6 +29,18 @@ pub struct BranchInstruction {
     offset:i32
 }
 
+impl BranchInstruction {
+    #[inline]
+    pub const fn new() -> BranchInstruction {
+        return BranchInstruction{ offset: 0 };
+    }
+
+    #[inline]
+    pub fn get_offset(&self) -> i32 {
+        return self.offset;
+    }
+}
+
 impl Instruction for BranchInstruction {
     fn fetch_operands(&mut self,reader: &mut BytecodeReader) {
         self.offset = reader.read_i16() as i32;

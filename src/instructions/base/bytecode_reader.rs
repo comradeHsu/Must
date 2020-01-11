@@ -44,11 +44,17 @@ impl BytecodeReader {
         return i32::from_be_bytes(bytes);
     }
 
-    pub fn read_i32_table(&mut self) {
-
+    pub fn read_i32_table(&mut self,count:usize) -> Vec<i32>{
+        let mut vec = Vec::with_capacity(count);
+        for _i in 0..count {
+            vec.push(self.read_i32());
+        }
+        return vec;
     }
 
     pub fn skip_padding(&mut self) {
-
+        while self.pc % 4 != 0 {
+            self.read_u8();
+        }
     }
 }
