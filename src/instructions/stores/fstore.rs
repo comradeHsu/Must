@@ -10,6 +10,14 @@ fn f_store(frame: &mut Frame,index:usize) {
 ///fstore
 pub struct FStore(LocalVarsInstruction);
 
+impl FStore {
+
+    #[inline]
+    pub fn with_index(index:usize) -> FStore {
+        return FStore(LocalVarsInstruction::with_index(index));
+    }
+}
+
 impl Instruction for FStore {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

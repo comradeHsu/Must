@@ -1,4 +1,4 @@
-mod thread;
+pub mod thread;
 mod stack;
 pub mod frame;
 mod slot;

@@ -14,6 +14,13 @@ pub struct NoOperandsInstruction {
 
 }
 
+impl NoOperandsInstruction {
+    #[inline]
+    pub const fn new() -> NoOperandsInstruction {
+        return NoOperandsInstruction{};
+    }
+}
+
 impl Instruction for NoOperandsInstruction {
     fn fetch_operands(&mut self,reader: &mut BytecodeReader) {
         unimplemented!()
@@ -57,6 +64,16 @@ pub struct LocalVarsInstruction {
 }
 
 impl LocalVarsInstruction {
+    #[inline]
+    pub const fn new() -> LocalVarsInstruction {
+        return LocalVarsInstruction{ index: 0 };
+    }
+
+    #[inline]
+    pub fn with_index(index:usize) -> LocalVarsInstruction {
+        return LocalVarsInstruction{ index };
+    }
+
     #[inline]
     pub fn get_index(&self) -> usize {
         return self.index;

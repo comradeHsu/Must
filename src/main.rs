@@ -1,14 +1,16 @@
-use crate::cmd::Cmd;
-use crate::class_path::class_path::{ClassPath, Entry};
-use crate::class_file::class_file::ClassFile;
-use crate::class_file::member_info::display_16;
-
 mod cmd;
 mod class_path;
 mod class_file;
 mod runtime_data_area;
 mod utils;
 mod instructions;
+mod interpreter;
+
+use crate::cmd::Cmd;
+use crate::class_path::class_path::{ClassPath, Entry};
+use crate::class_file::class_file::ClassFile;
+use crate::class_file::member_info::display_16;
+
 fn main() {
     let cmd = Cmd::parse_cmd();
     if cmd.version_flag {

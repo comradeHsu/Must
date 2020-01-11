@@ -35,6 +35,26 @@ impl CodeAttribute {
         };
     }
 
+    #[inline]
+    pub fn max_stack(&self) -> u32 {
+        return self.max_stack as u32;
+    }
+
+    #[inline]
+    pub fn max_locals(&self) -> u32 {
+        return self.max_locals as u32;
+    }
+
+    #[inline]
+    pub fn code(&self) -> &Vec<u8> {
+        return &self.code;
+    }
+
+    #[inline]
+    pub fn exception_table(&self) -> &Vec<ExceptionTableEntry> {
+        return &self.exception_table;
+    }
+
     pub fn display(&self) {
         println!("CodeAttribute:");
         println!("  max_stack:{}",self.max_stack);
@@ -58,7 +78,7 @@ impl AttributeInfo for CodeAttribute {
     }
 }
 
-struct ExceptionTableEntry {
+pub struct ExceptionTableEntry {
     start_pc:u16,
     end_pc:u16,
     handler_pc:u16,
@@ -78,5 +98,25 @@ impl ExceptionTableEntry {
             })
         }
         return exception_table;
+    }
+
+    #[inline]
+    pub fn start_pc(&self) -> u16 {
+        return self.start_pc;
+    }
+
+    #[inline]
+    pub fn end_pc(&self) -> u16 {
+        return self.end_pc;
+    }
+
+    #[inline]
+    pub fn handler_pc(&self) -> u16 {
+        return self.handler_pc;
+    }
+
+    #[inline]
+    pub fn catch_type(&self) -> u16 {
+        return self.catch_type;
     }
 }

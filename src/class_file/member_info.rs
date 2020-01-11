@@ -2,6 +2,8 @@ use crate::class_file::constant_pool::{ConstantPool, get_utf8};
 use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
 use std::rc::Rc;
+use std::any::Any;
+use crate::class_file::code_attribute::CodeAttribute;
 
 pub struct MemberInfo {
     cp:Rc<ConstantPool>,
@@ -39,6 +41,18 @@ impl MemberInfo {
 
     pub fn descriptor(&self) -> &str {
         return get_utf8(self.cp.clone(),self.descriptor_index as usize);
+    }
+
+    pub fn code_attributes(&mut self) -> Option<&CodeAttribute>{
+        for i in 0..self.attributes.len() {
+            let attribute = self.attributes.get(i).unwrap();
+            let any:&dyn Any = attribute as &dyn Any;
+            let code = any.downcast_ref::<CodeAttribute>();
+            if code.is_some() {
+                return Some(code.unwrap());
+            }
+        }
+        return None;
     }
 
 }

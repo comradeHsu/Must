@@ -1,32 +1,82 @@
 use crate::instructions::base::instruction::Instruction;
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::loads::iload::ILoad;
+use crate::instructions::loads::lload::LLoad;
+use crate::instructions::loads::fload::FLoad;
+use crate::instructions::loads::dload::DLoad;
+use crate::instructions::loads::aload::ALoad;
+use crate::instructions::stores::istore::IStore;
+use crate::instructions::stores::lstore::LStore;
+use crate::instructions::stores::fstore::FStore;
+use crate::instructions::stores::dstore::DStore;
+use crate::instructions::stores::astore::AStore;
+use crate::instructions::math::iinc::IInc;
 
 pub struct Wide {
-    modified_instruction: dyn Instruction
+    modified_instruction: Box<dyn Instruction>
 }
 
 impl Instruction for Wide {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         let code = reader.read_u8();
         match code {
-            0x15 => {},
-            0x16 => {},
-            0x17 => {},
-            0x18 => {},
-            0x19 => {},
-            0x36 => {},
-            0x37 => {},
-            0x38 => {},
-            0x39 => {},
-            0x3a => {},
-            0x84 => {},
-            0xa9 => {},
-            _ => {}
+            0x15 => {
+                let inst = ILoad::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x16 => {
+                let inst = LLoad::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x17 => {
+                let inst = FLoad::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x18 => {
+                let inst = DLoad::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x19 => {
+                let inst = ALoad::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x36 => {
+                let inst = IStore::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x37 => {
+                let inst = LStore::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x38 => {
+                let inst = FStore::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x39 => {
+                let inst = DStore::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x3a => {
+                let inst = AStore::with_index(reader.read_u16() as usize);
+                self.modified_instruction = Box::new(inst);
+            },
+            0x84 => {
+                let index = reader.read_u16() as usize;
+                let constant = reader.read_i16() as i32;
+                let inst = IInc::init(index,constant);
+                self.modified_instruction = Box::new(inst);
+            },
+            0xa9 => {
+                panic!("Unsupported opcode: 0xa9!")
+            },
+            _ => {
+                panic!("Unsupported opcode: {}!",code)
+            }
         }
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        unimplemented!()
+        self.modified_instruction.execute(frame);
     }
 }

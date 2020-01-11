@@ -30,4 +30,8 @@ impl Thread {
     pub fn current_frame(&mut self) -> &Frame {
         return self.stack.top();
     }
+
+    pub fn new_frame(&self,max_locals:usize,max_stack:usize) -> Frame {
+        return Frame::with_capacity(self,max_stack,max_stack);
+    }
 }

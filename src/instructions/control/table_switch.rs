@@ -21,7 +21,7 @@ impl Instruction for TableSwitch {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let index = frame.operand_stack().expect("operand_stack is none")
             .pop_int();
         let mut offset = 0;
         if index >= self.low && index <= self.high {

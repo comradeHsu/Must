@@ -7,6 +7,13 @@ pub struct BiPush {
     val:i8
 }
 
+impl BiPush {
+    #[inline]
+    pub const fn new() -> BiPush {
+        return BiPush{ val: 0 };
+    }
+}
+
 impl Instruction for BiPush {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.val = reader.read_i8();
@@ -21,6 +28,13 @@ impl Instruction for BiPush {
 ///sipush
 pub struct SiPush {
     val:i16
+}
+
+impl SiPush {
+    #[inline]
+    pub const fn new() -> SiPush {
+        return SiPush{ val: 0 };
+    }
 }
 
 impl Instruction for SiPush {

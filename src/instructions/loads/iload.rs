@@ -11,6 +11,19 @@ fn i_load(frame: &mut Frame,index:usize) {
 ///iload
 pub struct ILoad(LocalVarsInstruction);
 
+impl ILoad {
+
+    #[inline]
+    pub const fn new() -> ILoad {
+        return ILoad(LocalVarsInstruction::new());
+    }
+
+    #[inline]
+    pub fn with_index(index:usize) -> ILoad {
+        return ILoad(LocalVarsInstruction::with_index(index));
+    }
+}
+
 impl Instruction for ILoad {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -23,6 +36,13 @@ impl Instruction for ILoad {
 
 ///iload_0
 pub struct ILoad0(NoOperandsInstruction);
+
+impl ILoad0 {
+    #[inline]
+    pub const fn new() -> ILoad0 {
+        return ILoad0(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for ILoad0 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -37,6 +57,13 @@ impl Instruction for ILoad0 {
 ///iload_1
 pub struct ILoad1(NoOperandsInstruction);
 
+impl ILoad1 {
+    #[inline]
+    pub const fn new() -> ILoad1 {
+        return ILoad1(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for ILoad1 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -50,6 +77,13 @@ impl Instruction for ILoad1 {
 ///iload_2
 pub struct ILoad2(NoOperandsInstruction);
 
+impl ILoad2 {
+    #[inline]
+    pub const fn new() -> ILoad2 {
+        return ILoad2(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for ILoad2 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -62,6 +96,13 @@ impl Instruction for ILoad2 {
 
 ///iload_3
 pub struct ILoad3(NoOperandsInstruction);
+
+impl ILoad3 {
+    #[inline]
+    pub const fn new() -> ILoad3 {
+        return ILoad3(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for ILoad3 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

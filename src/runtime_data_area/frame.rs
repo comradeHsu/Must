@@ -1,9 +1,12 @@
 use crate::runtime_data_area::local_vars::LocalVars;
 use crate::runtime_data_area::operand_stack::OperandStack;
+use crate::runtime_data_area::thread::Thread;
 
-pub struct Frame {
+pub struct Frame<'a> {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
+    thread:&'a thread,
+    next_pc:i32
 }
 
 impl Frame {
@@ -11,15 +14,19 @@ impl Frame {
     pub fn new() -> Frame {
         return Frame{
             local_vars: None,
-            operand_stack: None
+            operand_stack: None,
+            thread: &(),
+            next_pc: 0
         };
     }
 
     #[inline]
-    pub fn with_capacity(max_locals:usize,max_stack:usize) -> Frame {
+    pub fn with_capacity(thread:&Thread,max_locals:usize,max_stack:usize) -> Frame {
         return Frame{
             local_vars: LocalVars::with_capacity(max_locals),
-            operand_stack: OperandStack::new(max_stack)
+            operand_stack: OperandStack::new(max_stack),
+            thread: thread,
+            next_pc: 0
         };
     }
 
@@ -31,6 +38,11 @@ impl Frame {
     #[inline]
     pub fn local_vars(&mut self) -> Option<&mut LocalVars>{
         return self.local_vars.as_mut();
+    }
+
+    #[inline]
+    pub fn next_pc(&self) -> i32{
+        return self.next_pc;
     }
 }
 

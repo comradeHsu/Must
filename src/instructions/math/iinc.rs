@@ -7,6 +7,13 @@ pub struct IInc {
     constant:i32
 }
 
+impl IInc {
+    #[inline]
+    pub fn init(index:usize, constant:i32) -> IInc {
+        return IInc{index,constant};
+    }
+}
+
 impl Instruction for IInc {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.index = reader.read_u8() as usize;
