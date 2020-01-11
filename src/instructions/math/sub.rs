@@ -5,6 +5,13 @@ use crate::runtime_data_area::frame::Frame;
 ///d_div
 pub struct DSub(NoOperandsInstruction);
 
+impl DSub {
+    #[inline]
+    pub const fn new() -> DSub {
+        return DSub(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DSub {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -21,6 +28,13 @@ impl Instruction for DSub {
 
 ///f_div
 pub struct FSub(NoOperandsInstruction);
+
+impl FSub {
+    #[inline]
+    pub const fn new() -> FSub {
+        return FSub(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for FSub {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -39,6 +53,13 @@ impl Instruction for FSub {
 ///i_div
 pub struct ISub(NoOperandsInstruction);
 
+impl ISub {
+    #[inline]
+    pub const fn new() -> ISub {
+        return ISub(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for ISub {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -55,6 +76,13 @@ impl Instruction for ISub {
 
 ///l_div
 pub struct LSub(NoOperandsInstruction);
+
+impl LSub {
+    #[inline]
+    pub const fn new() -> LSub {
+        return LSub(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for LSub {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

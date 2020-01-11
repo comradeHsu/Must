@@ -10,6 +10,18 @@ pub struct TableSwitch {
     jump_offsets:Vec<i32>
 }
 
+impl TableSwitch {
+    #[inline]
+    pub const fn new() -> TableSwitch {
+        return TableSwitch{
+            default_offset: 0,
+            low: 0,
+            high: 0,
+            jump_offsets: vec![]
+        };
+    }
+}
+
 impl Instruction for TableSwitch {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         reader.skip_padding();

@@ -5,6 +5,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 ///d_div
 pub struct DDiv(NoOperandsInstruction);
 
+impl DDiv {
+    #[inline]
+    pub const fn new() -> DDiv {
+        return DDiv(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DDiv {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -21,6 +28,13 @@ impl Instruction for DDiv {
 
 ///f_div
 pub struct FDiv(NoOperandsInstruction);
+
+impl FDiv {
+    #[inline]
+    pub const fn new() -> FDiv {
+        return FDiv(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for FDiv {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -39,6 +53,13 @@ impl Instruction for FDiv {
 ///i_div
 pub struct IDiv(NoOperandsInstruction);
 
+impl IDiv {
+    #[inline]
+    pub const fn new() -> IDiv {
+        return IDiv(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for IDiv {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -55,6 +76,13 @@ impl Instruction for IDiv {
 
 ///l_div
 pub struct LDiv(NoOperandsInstruction);
+
+impl LDiv {
+    #[inline]
+    pub const fn new() -> LDiv {
+        return LDiv(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for LDiv {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

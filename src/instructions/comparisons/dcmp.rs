@@ -4,6 +4,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 
 pub struct Dcmpg(NoOperandsInstruction);
 
+impl Dcmpg {
+    #[inline]
+    pub const fn new() -> Dcmpg {
+        return Dcmpg(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Dcmpg {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -15,6 +22,13 @@ impl Instruction for Dcmpg {
 }
 
 pub struct Dcmpl(NoOperandsInstruction);
+
+impl Dcmpl {
+    #[inline]
+    pub const fn new() -> Dcmpl {
+        return Dcmpl(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for Dcmpl {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

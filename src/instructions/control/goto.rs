@@ -5,6 +5,13 @@ use crate::instructions::base::branch_logic::branch;
 
 pub struct Goto(BranchInstruction);
 
+impl Goto {
+    #[inline]
+    pub const fn new() -> Goto {
+        return Goto(BranchInstruction::new());
+    }
+}
+
 impl Instruction for Goto {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

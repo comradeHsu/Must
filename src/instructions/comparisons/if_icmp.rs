@@ -12,6 +12,13 @@ fn int_pop(frame: &mut Frame) -> (i32,i32) {
 
 pub struct IfICmpEq(BranchInstruction);
 
+impl IfICmpEq {
+    #[inline]
+    pub const fn new() -> IfICmpEq {
+        return IfICmpEq(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfICmpEq {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -26,6 +33,13 @@ impl Instruction for IfICmpEq {
 }
 
 pub struct IfICmpNe(BranchInstruction);
+
+impl IfICmpNe {
+    #[inline]
+    pub const fn new() -> IfICmpNe {
+        return IfICmpNe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfICmpNe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -42,6 +56,13 @@ impl Instruction for IfICmpNe {
 
 pub struct IfICmpLt(BranchInstruction);
 
+impl IfICmpLt {
+    #[inline]
+    pub const fn new() -> IfICmpLt {
+        return IfICmpLt(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfICmpLt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -56,6 +77,13 @@ impl Instruction for IfICmpLt {
 }
 
 pub struct IfICmpLe(BranchInstruction);
+
+impl IfICmpLe {
+    #[inline]
+    pub const fn new() -> IfICmpLe {
+        return IfICmpLe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfICmpLe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -72,6 +100,13 @@ impl Instruction for IfICmpLe {
 
 pub struct IfICmpGt(BranchInstruction);
 
+impl IfICmpGt {
+    #[inline]
+    pub const fn new() -> IfICmpGt {
+        return IfICmpGt(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfICmpGt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -86,6 +121,13 @@ impl Instruction for IfICmpGt {
 }
 
 pub struct IfICmpGe(BranchInstruction);
+
+impl IfICmpGe {
+    #[inline]
+    pub const fn new() -> IfICmpGe {
+        return IfICmpGe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfICmpGe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

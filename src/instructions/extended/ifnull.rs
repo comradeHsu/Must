@@ -5,6 +5,13 @@ use crate::instructions::base::branch_logic::branch;
 
 pub struct IfNull(BranchInstruction);
 
+impl IfNull {
+    #[inline]
+    pub const fn new() -> IfNull {
+        return IfNull(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfNull {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -21,6 +28,13 @@ impl Instruction for IfNull {
 }
 
 pub struct IfNonNull(BranchInstruction);
+
+impl IfNonNull {
+    #[inline]
+    pub const fn new() -> IfNonNull {
+        return IfNonNull(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfNonNull {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

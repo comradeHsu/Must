@@ -4,6 +4,13 @@ use crate::runtime_data_area::frame::Frame;
 
 pub struct Fcmpg(NoOperandsInstruction);
 
+impl Fcmpg {
+    #[inline]
+    pub const fn new() -> Fcmpg {
+        return Fcmpg(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Fcmpg {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -15,6 +22,13 @@ impl Instruction for Fcmpg {
 }
 
 pub struct Fcmpl(NoOperandsInstruction);
+
+impl Fcmpl {
+    #[inline]
+    pub const fn new() -> Fcmpl {
+        return Fcmpl(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for Fcmpl {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

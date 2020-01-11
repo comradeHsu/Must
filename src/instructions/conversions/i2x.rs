@@ -4,6 +4,13 @@ use crate::runtime_data_area::frame::Frame;
 
 pub struct I2d(NoOperandsInstruction);
 
+impl I2d {
+    #[inline]
+    pub const fn new() -> I2d {
+        return I2d(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for I2d {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -18,6 +25,13 @@ impl Instruction for I2d {
 
 pub struct I2f(NoOperandsInstruction);
 
+impl I2f {
+    #[inline]
+    pub const fn new() -> I2f {
+        return I2f(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for I2f {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -31,6 +45,13 @@ impl Instruction for I2f {
 }
 
 pub struct I2l(NoOperandsInstruction);
+
+impl I2l {
+    #[inline]
+    pub const fn new() -> I2l {
+        return I2l(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for I2l {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

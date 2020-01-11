@@ -5,6 +5,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 ///dup
 pub struct Dup(NoOperandsInstruction);
 
+impl Dup {
+    #[inline]
+    pub const fn new() -> Dup {
+        return Dup(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Dup {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -20,6 +27,13 @@ impl Instruction for Dup {
 
 ///dup_x1
 pub struct DupX1(NoOperandsInstruction);
+
+impl DupX1 {
+    #[inline]
+    pub const fn new() -> DupX1 {
+        return DupX1(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for DupX1 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -38,6 +52,13 @@ impl Instruction for DupX1 {
 
 ///dup_x2
 pub struct DupX2(NoOperandsInstruction);
+
+impl DupX2 {
+    #[inline]
+    pub const fn new() -> DupX2 {
+        return DupX2(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for DupX2 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -59,6 +80,13 @@ impl Instruction for DupX2 {
 ///dup2
 pub struct Dup2(NoOperandsInstruction);
 
+impl Dup2 {
+    #[inline]
+    pub const fn new() -> Dup2 {
+        return Dup2(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Dup2 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -77,6 +105,13 @@ impl Instruction for Dup2 {
 
 ///dup2_x1
 pub struct Dup2X1(NoOperandsInstruction);
+
+impl Dup2X1 {
+    #[inline]
+    pub const fn new() -> Dup2X1 {
+        return Dup2X1(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for Dup2X1 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -98,6 +133,13 @@ impl Instruction for Dup2X1 {
 
 ///dup2_x2
 pub struct Dup2X2(NoOperandsInstruction);
+
+impl Dup2X2 {
+    #[inline]
+    pub const fn new() -> Dup2X2 {
+        return Dup2X2(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for Dup2X2 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

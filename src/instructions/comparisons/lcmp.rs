@@ -5,6 +5,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 ///lcmp
 pub struct Lcmp(NoOperandsInstruction);
 
+impl Lcmp {
+    #[inline]
+    pub const fn new() -> Lcmp {
+        return Lcmp(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Lcmp {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

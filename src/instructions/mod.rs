@@ -19,7 +19,7 @@ mod comparisons;
 mod control;
 mod extended;
 
-pub fn new_instruction(opcode:i32) -> Box<dyn Instruction> {
+pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
     let inst:dyn Instruction = match opcode {
         0x00 => Nop::new(),
         0x01 => AconstNull::new(),

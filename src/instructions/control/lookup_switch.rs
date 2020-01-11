@@ -9,6 +9,17 @@ pub struct LoopUpSwitch {
     match_offsets:Vec<i32>
 }
 
+impl LoopUpSwitch {
+    #[inline]
+    pub const fn new() -> LoopUpSwitch {
+        return LoopUpSwitch{
+            default_offset: 0,
+            npairs: 0,
+            match_offsets: vec![]
+        };
+    }
+}
+
 impl Instruction for LoopUpSwitch {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         reader.skip_padding();

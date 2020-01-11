@@ -4,6 +4,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 
 pub struct DAdd(NoOperandsInstruction);
 
+impl DAdd {
+    #[inline]
+    pub const fn new() -> DAdd {
+        return DAdd(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DAdd {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -19,6 +26,13 @@ impl Instruction for DAdd {
 }
 
 pub struct FAdd(NoOperandsInstruction);
+
+impl FAdd {
+    #[inline]
+    pub const fn new() -> FAdd {
+        return FAdd(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for FAdd {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -36,6 +50,13 @@ impl Instruction for FAdd {
 
 pub struct IAdd(NoOperandsInstruction);
 
+impl IAdd {
+    #[inline]
+    pub const fn new() -> IAdd {
+        return IAdd(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for IAdd {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -51,6 +72,13 @@ impl Instruction for IAdd {
 }
 
 pub struct LAdd(NoOperandsInstruction);
+
+impl LAdd {
+    #[inline]
+    pub const fn new() -> LAdd {
+        return LAdd(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for LAdd {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

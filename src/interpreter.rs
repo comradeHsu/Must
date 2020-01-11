@@ -1,6 +1,7 @@
 use crate::class_file::member_info::MemberInfo;
 use crate::runtime_data_area::thread::Thread;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::new_instruction;
 
 pub fn interpret(method_info:&mut MemberInfo) {
     let code_attr = method_info.code_attributes().expect("code_attr is none");
@@ -21,7 +22,7 @@ pub fn circulate(thread:&mut Thread,bytecode:&Vec<u8>) {
         thread.set_pc(pc);
         reader.reset(Vec::from(bytecode),pc);
         let opcode = reader.read_u8();
-        let inst = instructions.NewInstruction(opcode);
+        let inst = new_instruction(opcode);
         inst.FetchOperands(reader)
         frame.SetNextPC(reader.PC())
     }

@@ -31,6 +31,13 @@ impl Instruction for DStore {
 ///dstore_0
 pub struct DStore0(NoOperandsInstruction);
 
+impl DStore0 {
+    #[inline]
+    pub const fn new() -> DStore0 {
+        return DStore0(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DStore0 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -43,6 +50,13 @@ impl Instruction for DStore0 {
 
 ///dstore_1
 pub struct DStore1(NoOperandsInstruction);
+
+impl DStore1 {
+    #[inline]
+    pub const fn new() -> DStore1 {
+        return DStore1(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for DStore1 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -57,6 +71,13 @@ impl Instruction for DStore1 {
 ///dstore_2
 pub struct DStore2(NoOperandsInstruction);
 
+impl DStore2 {
+    #[inline]
+    pub const fn new() -> DStore2 {
+        return DStore2(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DStore2 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -69,6 +90,13 @@ impl Instruction for DStore2 {
 
 ///dstore_3
 pub struct DStore3(NoOperandsInstruction);
+
+impl DStore3 {
+    #[inline]
+    pub const fn new() -> DStore3 {
+        return DStore3(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for DStore3 {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

@@ -5,6 +5,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 ///drem
 pub struct DRem(NoOperandsInstruction);
 
+impl DRem {
+    #[inline]
+    pub const fn new() -> DRem {
+        return DRem(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for DRem {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -21,6 +28,13 @@ impl Instruction for DRem {
 
 ///frem
 pub struct FRem(NoOperandsInstruction);
+
+impl FRem {
+    #[inline]
+    pub const fn new() -> FRem {
+        return FRem(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for FRem {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -39,6 +53,13 @@ impl Instruction for FRem {
 ///irem
 pub struct IRem(NoOperandsInstruction);
 
+impl IRem {
+    #[inline]
+    pub const fn new() -> IRem {
+        return IRem(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for IRem {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -55,6 +76,13 @@ impl Instruction for IRem {
 
 ///lrem
 pub struct LRem(NoOperandsInstruction);
+
+impl LRem {
+    #[inline]
+    pub const fn new() -> LRem {
+        return LRem(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for LRem {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

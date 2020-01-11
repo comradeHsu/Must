@@ -7,6 +7,13 @@ pub struct GotoW {
     offset:i32
 }
 
+impl GotoW {
+    #[inline]
+    pub const fn new() -> GotoW {
+        return GotoW{ offset: 0 };
+    }
+}
+
 impl Instruction for GotoW {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.offset = reader.read_i32();

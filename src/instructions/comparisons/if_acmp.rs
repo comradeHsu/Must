@@ -12,6 +12,13 @@ fn acmp(frame: &mut Frame) -> bool {
 
 pub struct IfACmpEq(BranchInstruction);
 
+impl IfACmpEq {
+    #[inline]
+    pub const fn new() -> IfACmpEq {
+        return IfACmpEq(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfACmpEq {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -25,6 +32,13 @@ impl Instruction for IfACmpEq {
 }
 
 pub struct IfACmpNe(BranchInstruction);
+
+impl IfACmpNe {
+    #[inline]
+    pub const fn new() -> IfACmpNe {
+        return IfACmpNe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfACmpNe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

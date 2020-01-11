@@ -5,6 +5,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 ///i_or
 pub struct IOr(NoOperandsInstruction);
 
+impl IOr {
+    #[inline]
+    pub const fn new() -> IOr {
+        return IOr(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for IOr {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -21,6 +28,13 @@ impl Instruction for IOr {
 
 ///l_or
 pub struct LOr(NoOperandsInstruction);
+
+impl LOr {
+    #[inline]
+    pub const fn new() -> LOr {
+        return LOr(NoOperandsInstruction::new());
+    }
+}
 
 impl Instruction for LOr {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {

@@ -4,6 +4,13 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 
 pub struct Swap(NoOperandsInstruction);
 
+impl Swap {
+    #[inline]
+    pub const fn new() -> Swap {
+        return Swap(NoOperandsInstruction::new());
+    }
+}
+
 impl Instruction for Swap {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

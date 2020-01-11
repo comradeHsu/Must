@@ -5,6 +5,13 @@ use crate::instructions::base::branch_logic::branch;
 
 pub struct IfEq(BranchInstruction);
 
+impl IfEq {
+    #[inline]
+    pub const fn new() -> IfEq {
+        return IfEq(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfEq {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -20,6 +27,13 @@ impl Instruction for IfEq {
 }
 
 pub struct IfNe(BranchInstruction);
+
+impl IfNe {
+    #[inline]
+    pub const fn new() -> IfNe {
+        return IfNe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfNe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -37,6 +51,13 @@ impl Instruction for IfNe {
 
 pub struct IfLt(BranchInstruction);
 
+impl IfLt {
+    #[inline]
+    pub const fn new() -> IfLt {
+        return IfLt(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfLt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -52,6 +73,13 @@ impl Instruction for IfLt {
 }
 
 pub struct IfLe(BranchInstruction);
+
+impl IfLe {
+    #[inline]
+    pub const fn new() -> IfLe {
+        return IfLe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfLe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
@@ -69,6 +97,13 @@ impl Instruction for IfLe {
 
 pub struct IfGt(BranchInstruction);
 
+impl IfGt {
+    #[inline]
+    pub const fn new() -> IfGt {
+        return IfGt(BranchInstruction::new());
+    }
+}
+
 impl Instruction for IfGt {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
@@ -84,6 +119,13 @@ impl Instruction for IfGt {
 }
 
 pub struct IfGe(BranchInstruction);
+
+impl IfGe {
+    #[inline]
+    pub const fn new() -> IfGe {
+        return IfGe(BranchInstruction::new());
+    }
+}
 
 impl Instruction for IfGe {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
