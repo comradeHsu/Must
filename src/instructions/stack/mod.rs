@@ -1,3 +1,3 @@
-mod pop;
-mod dup;
-mod swap;
+pub mod pop;
+pub mod dup;
+pub mod swap;

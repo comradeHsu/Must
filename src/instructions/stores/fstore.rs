@@ -13,6 +13,11 @@ pub struct FStore(LocalVarsInstruction);
 impl FStore {
 
     #[inline]
+    pub const fn new() -> FStore {
+        return FStore(LocalVarsInstruction::new());
+    }
+
+    #[inline]
     pub fn with_index(index:usize) -> FStore {
         return FStore(LocalVarsInstruction::with_index(index));
     }

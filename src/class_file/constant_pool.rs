@@ -2,8 +2,6 @@ use crate::class_file::class_reader::ClassReader;
 use std::any::Any;
 use std::mem;
 use std::rc::Rc;
-use std::ops::{DerefMut, Deref};
-use std::borrow::BorrowMut;
 use crate::class_file::makers_attribute::DeprecatedAttribute;
 use crate::class_file::member_info::display_16;
 
@@ -13,13 +11,17 @@ pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
     let cp_count = reader.read_u16();
     let mut cp = Rc::new(Vec::new());
     let mut vec: Vec<Box<dyn ConstantInfo>> = Vec::new();
+    println!("cp_count:{}",cp_count);
     for mut i in 1..cp_count {
+        println!("seq:{}",i);
         let constant_info = read_constant_info(reader, cp.clone());
         let any = &constant_info as &dyn Any;
         if any.downcast_ref::<ConstantLongInfo>().is_some() {
+            println!("66666");
             i = i + 1;
         }
         if any.downcast_ref::<ConstantDoubleInfo>().is_some() {
+            println!("66666");
             i = i + 1;
         }
         vec.push(constant_info);
@@ -116,7 +118,7 @@ pub trait ConstantInfo {
 }
 
 pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn ConstantInfo> {
-   let dat = display_16(reader.data.clone());
+    let dat = display_16(reader.data.clone());
     let tag = reader.read_u8();
     let mut constant_info = new(tag,cp);
     constant_info.read_info(reader);

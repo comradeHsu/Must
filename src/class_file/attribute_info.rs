@@ -19,7 +19,9 @@ pub trait AttributeInfo {
 }
 
 pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<dyn AttributeInfo>> {
+
     let attr_count = reader.read_u16();
+
     let mut attributes = Vec::new();
     for _ in 0..attr_count {
         attributes.push(read_attribute(reader,cp.clone()));
@@ -30,8 +32,12 @@ pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<d
 pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn AttributeInfo> {
     let attr_name_index = reader.read_u16();
     let attr_name = get_utf8(cp.clone(),attr_name_index as usize);
+    if attr_name == "Code" {
+        println!("code")
+    }
     let attr_len = reader.read_u32();
     let mut info = new(attr_name,attr_len,cp);
+
     info.read_info(reader);
     return info;
 }

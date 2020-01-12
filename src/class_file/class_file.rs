@@ -1,5 +1,5 @@
 use crate::class_file::constant_pool::{ConstantPool, get_class_name, read_constant_pool};
-use crate::class_file::member_info::MemberInfo;
+use crate::class_file::member_info::{MemberInfo, display_16};
 use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
 use std::vec::Vec;
@@ -45,8 +45,11 @@ impl ClassFile {
         self.this_class = reader.read_u16();
         self.super_class = reader.read_u16();
         self.interfaces = reader.read_u16_table();
+
         self.fields = MemberInfo::read_members(reader, self.constant_pool.clone());
+
         self.methods = MemberInfo::read_members(reader, self.constant_pool.clone());
+
         self.attributes = read_attributes(reader, self.constant_pool.clone())
     }
 

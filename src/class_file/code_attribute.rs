@@ -71,7 +71,6 @@ impl AttributeInfo for CodeAttribute {
         self.max_locals = reader.read_u16();
         let code_len = reader.read_u32();
         self.code = reader.read_bytes(code_len as usize);
-        self.display();
         self.exception_table = ExceptionTableEntry::read_exception_table(reader);
         self.attributes = read_attributes(reader,self.cp.clone());
         self.display();

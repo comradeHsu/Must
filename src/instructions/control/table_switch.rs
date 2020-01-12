@@ -12,7 +12,7 @@ pub struct TableSwitch {
 
 impl TableSwitch {
     #[inline]
-    pub const fn new() -> TableSwitch {
+    pub fn new() -> TableSwitch {
         return TableSwitch{
             default_offset: 0,
             low: 0,

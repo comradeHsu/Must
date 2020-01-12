@@ -15,6 +15,11 @@ impl BytecodeReader {
         self.pc = pc;
     }
 
+    #[inline]
+    pub fn pc(&self) -> i32{
+        return self.pc;
+    }
+
     pub fn read_u8(&mut self) -> u8 {
         let num = self.code.get(self.pc as usize);
         self.pc += 1;

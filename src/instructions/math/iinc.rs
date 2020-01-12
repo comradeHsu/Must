@@ -8,6 +8,12 @@ pub struct IInc {
 }
 
 impl IInc {
+
+    #[inline]
+    pub fn new() -> IInc {
+        return IInc{index:0,constant:0};
+    }
+
     #[inline]
     pub fn init(index:usize, constant:i32) -> IInc {
         return IInc{index,constant};

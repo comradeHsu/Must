@@ -9,7 +9,8 @@ mod interpreter;
 use crate::cmd::Cmd;
 use crate::class_path::class_path::{ClassPath, Entry};
 use crate::class_file::class_file::ClassFile;
-use crate::class_file::member_info::display_16;
+use crate::class_file::member_info::{display_16, MemberInfo};
+use crate::interpreter::interpret;
 
 fn main() {
     let cmd = Cmd::parse_cmd();
@@ -29,6 +30,10 @@ fn start_jvm(cmd: &Cmd) {
     let class_name = cmd.class.clone().replace('.',"/");
     let class_file = load_class(&class_name,&cp);
     class_file.display();
+    let main = get_main_method(&class_file);
+    if main.is_some() {
+        interpret(main.unwrap());
+    }
 //    let read_rs = cp.read_class(class_name.as_str());
 //    if read_rs.is_err() {
 //        println!("Could not find or load main class {}\n", cmd.class);
@@ -44,18 +49,41 @@ fn load_class(class_name:&String,cp:&ClassPath) -> ClassFile {
     return class_file;
 }
 
+fn get_main_method(class_file:&ClassFile) -> Option<&MemberInfo> {
+    for method in class_file.methods() {
+        if  method.name() == "main" && method.descriptor() ==  "([Ljava/lang/String;)V" {
+            return Some(method);
+        }
+    }
+    return None;
+}
+
 #[cfg(test)]
 mod tests{
     use std::env;
     use std::time::SystemTime;
+    use crate::class_path::class_path::ClassPath;
+    use crate::{load_class, get_main_method};
+    use crate::interpreter::interpret;
+    use crate::cmd::Cmd;
 
     #[test]
     fn start_jvm() {
-        for (key, value) in env::vars_os() {
-            println!("{:?}: {:?}", key, value);
-        }
-        for i in 0..2 {
-            println!("i:{:?}", i);
+        let cmd = Cmd{
+            help_flag: false,
+            version_flag: false,
+            cp_option: "D:/workspace/rust-jvm".to_string(),
+            x_jre_option: "".to_string(),
+            class: "java.GuassTest".to_string(),
+            args: vec![]
+        };
+        let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
+        let class_name = cmd.class.clone().replace('.',"/");
+        let class_file = load_class(&class_name,&cp);
+        class_file.display();
+        let main = get_main_method(&class_file);
+        if main.is_some() {
+            interpret(main.unwrap());
         }
     }
 

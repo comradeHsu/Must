@@ -3,16 +3,16 @@ use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::branch_logic::branch;
 
-pub struct LoopUpSwitch {
+pub struct LookUpSwitch {
     default_offset:i32,
     npairs:i32,
     match_offsets:Vec<i32>
 }
 
-impl LoopUpSwitch {
+impl LookUpSwitch {
     #[inline]
-    pub const fn new() -> LoopUpSwitch {
-        return LoopUpSwitch{
+    pub fn new() -> LookUpSwitch {
+        return LookUpSwitch{
             default_offset: 0,
             npairs: 0,
             match_offsets: vec![]
@@ -20,7 +20,7 @@ impl LoopUpSwitch {
     }
 }
 
-impl Instruction for LoopUpSwitch {
+impl Instruction for LookUpSwitch {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         reader.skip_padding();
         self.default_offset = reader.read_i32();

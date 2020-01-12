@@ -64,3 +64,66 @@ impl Instruction for I2l {
         stack.push_long(v1 as i64);
     }
 }
+
+pub struct I2b(NoOperandsInstruction);
+
+impl I2b {
+    #[inline]
+    pub const fn new() -> I2b {
+        return I2b(NoOperandsInstruction::new());
+    }
+}
+
+impl Instruction for I2b {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_int() as i8;
+        stack.push_int(v1 as i32);
+    }
+}
+
+pub struct I2c(NoOperandsInstruction);
+
+impl I2c {
+    #[inline]
+    pub const fn new() -> I2c {
+        return I2c(NoOperandsInstruction::new());
+    }
+}
+
+impl Instruction for I2c {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_int() as u16;
+        stack.push_int(v1 as i32);
+    }
+}
+
+pub struct I2s(NoOperandsInstruction);
+
+impl I2s {
+    #[inline]
+    pub const fn new() -> I2s {
+        return I2s(NoOperandsInstruction::new());
+    }
+}
+
+impl Instruction for I2s {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("operand_stack is none");
+        let v1 = stack.pop_int() as i16;
+        stack.push_int(v1 as i32);
+    }
+}

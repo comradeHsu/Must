@@ -1,27 +1,29 @@
 use crate::runtime_data_area::local_vars::LocalVars;
 use crate::runtime_data_area::operand_stack::OperandStack;
 use crate::runtime_data_area::thread::Thread;
+use std::rc::Rc;
+use std::cell::RefCell;
 
-pub struct Frame<'a> {
+pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
-    thread:&'a thread,
+    thread:Rc<Thread>,
     next_pc:i32
 }
 
 impl Frame {
-    #[inline]
-    pub fn new() -> Frame {
-        return Frame{
-            local_vars: None,
-            operand_stack: None,
-            thread: &(),
-            next_pc: 0
-        };
-    }
+//    #[inline]
+//    pub fn new() -> Frame {
+//        return Frame{
+//            local_vars: None,
+//            operand_stack: None,
+//            thread: &(),
+//            next_pc: 0
+//        };
+//    }
 
     #[inline]
-    pub fn with_capacity(thread:&Thread,max_locals:usize,max_stack:usize) -> Frame {
+    pub fn with_capacity(thread:Rc<Thread>,max_locals:usize,max_stack:usize) -> Frame {
         return Frame{
             local_vars: LocalVars::with_capacity(max_locals),
             operand_stack: OperandStack::new(max_stack),
@@ -44,6 +46,11 @@ impl Frame {
     pub fn next_pc(&self) -> i32{
         return self.next_pc;
     }
+
+    #[inline]
+    pub fn set_next_pc(&mut self,next_pc:i32) {
+        self.next_pc = next_pc;
+    }
 }
 
 #[cfg(test)]
@@ -51,10 +58,14 @@ mod test {
     use crate::runtime_data_area::local_vars::LocalVars;
     use crate::runtime_data_area::operand_stack::OperandStack;
     use crate::runtime_data_area::frame::Frame;
+    use crate::runtime_data_area::thread::Thread;
+    use std::rc::Rc;
+    use std::cell::RefCell;
 
     #[test]
     fn test_frame() {
-        let mut frame = Frame::with_capacity(100,100);
+        let thread = Rc::new((Thread::new_thread()));
+        let mut frame = Frame::with_capacity(thread,100,100);
         test_local_vars(&mut frame.local_vars.unwrap());
         test_operand_stack(&mut frame.operand_stack.unwrap());
     }

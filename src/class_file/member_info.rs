@@ -4,6 +4,7 @@ use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
 use std::rc::Rc;
 use std::any::Any;
 use crate::class_file::code_attribute::CodeAttribute;
+use std::mem;
 
 pub struct MemberInfo {
     cp:Rc<ConstantPool>,
@@ -43,13 +44,23 @@ impl MemberInfo {
         return get_utf8(self.cp.clone(),self.descriptor_index as usize);
     }
 
-    pub fn code_attributes(&mut self) -> Option<&CodeAttribute>{
+    pub fn code_attributes(&self) -> Option<&CodeAttribute>{
+        println!("attr len :{}",self.attributes.len());
         for i in 0..self.attributes.len() {
-            let attribute = self.attributes.get(i).unwrap();
+            let attribute = &self.attributes[i];
             let any:&dyn Any = attribute as &dyn Any;
+//            unsafe {
+//                let (data, _v_table) : (usize, usize) =  mem::transmute(any);
+//                let p = data as * const () as * const CodeAttribute;
+//                println!("p :{:?}",p);
+//                return Some(&(*p));
+//            }
             let code = any.downcast_ref::<CodeAttribute>();
             if code.is_some() {
+                println!("downcast_ref CodeAttribute");
                 return Some(code.unwrap());
+            } else {
+                println!("not downcast_ref CodeAttribute");
             }
         }
         return None;

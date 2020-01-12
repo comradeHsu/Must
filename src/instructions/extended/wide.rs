@@ -1,4 +1,4 @@
-use crate::instructions::base::instruction::Instruction;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::loads::iload::ILoad;
@@ -15,6 +15,13 @@ use crate::instructions::math::iinc::IInc;
 
 pub struct Wide {
     modified_instruction: Box<dyn Instruction>
+}
+
+impl Wide {
+    #[inline]
+    pub fn new() -> Wide {
+        return Wide{ modified_instruction: Box::new(NoOperandsInstruction::new()) };
+    }
 }
 
 impl Instruction for Wide {

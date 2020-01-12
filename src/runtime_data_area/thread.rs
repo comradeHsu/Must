@@ -1,5 +1,7 @@
 use crate::runtime_data_area::stack::Stack;
 use crate::runtime_data_area::frame::Frame;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct Thread {
     pc:i32,
@@ -31,7 +33,7 @@ impl Thread {
         return self.stack.top();
     }
 
-    pub fn new_frame(&self,max_locals:usize,max_stack:usize) -> Frame {
-        return Frame::with_capacity(self,max_stack,max_stack);
+    pub fn new_frame(thread:Rc<Thread>,max_locals:usize,max_stack:usize) -> Frame {
+        return Frame::with_capacity(thread,max_stack,max_stack);
     }
 }
