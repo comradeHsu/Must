@@ -4,13 +4,14 @@ use std::mem;
 use std::rc::Rc;
 use crate::class_file::makers_attribute::DeprecatedAttribute;
 use crate::class_file::member_info::display_16;
+use crate::class_file::constant_pool::ConstantInfoEnum::*;
 
-pub type ConstantPool = Vec<Box<dyn ConstantInfo>>;
+pub type ConstantPool = Vec<ConstantInfoEnum>;
 
 pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
     let cp_count = reader.read_u16();
     let mut cp = Rc::new(Vec::new());
-    let mut vec: Vec<Box<dyn ConstantInfo>> = Vec::new();
+    let mut vec: Vec<ConstantInfoEnum> = Vec::new();
     println!("cp_count:{}",cp_count);
     for mut i in 1..cp_count {
         println!("seq:{}",i);
@@ -31,43 +32,57 @@ pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
     return cp;
 }
 
-pub fn get_constant_info<'a>(this:&'a Rc<ConstantPool>,index:usize) -> &'a dyn ConstantInfo {
+pub fn get_constant_info(this: &ConstantPool, index:usize) -> &ConstantInfoEnum {
     let info = this.get(index-1);
     if info.is_none() {
         panic!("Invalid constant pool index!");
     }
-    return info.unwrap().as_ref();
+    return info.unwrap();
 }
 
 pub fn get_name_and_type<'a>(this:Rc<ConstantPool>,index:usize) -> (&'a str,&'a str) {
-    let info = get_constant_info(&this,index);
+    let info = get_constant_info(this.as_ref(),index);
     let mut inf = &ConstantNameAndTypeInfo{ name_index: 0, desc_index: 0 };
-    unsafe {
-        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-        let p = data as * const () as * const ConstantNameAndTypeInfo;
-        inf = &(*p);
-    }
+//    unsafe {
+//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
+//        let p = data as * const () as * const ConstantNameAndTypeInfo;
+//        inf = &(*p);
+//    }
+    let mut inf = match info {
+        NameAndType(name_and_type) => name_and_type,
+        _ => panic!("info is not NameAndType")
+    };
     let name = get_utf8(this.clone(),inf.name_index as usize);
     let desc = get_utf8(this,inf.desc_index as usize);
     return (name,desc);
 }
 
 pub fn get_class_name<'a>(this:Rc<ConstantPool>,index:usize) -> &'a str {
-    let info = get_constant_info(&this,index);
-    unsafe {
-        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-        let p = data as * const () as * const ConstantClassInfo;
-        return get_utf8(this,*&(*p).name_index as usize);
-    }
+    let info = get_constant_info(this.as_ref(),index);
+//    unsafe {
+//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
+//        let p = data as * const () as * const ConstantClassInfo;
+//        return get_utf8(this,*&(*p).name_index as usize);
+//    }
+    let mut class = match info {
+        Class(class) => class,
+        _ => panic!("info is not NameAndType")
+    };
+    return get_utf8(this,class.name_index as usize)
 }
 
 pub fn get_utf8<'a>(this:Rc<ConstantPool>,index:usize) -> &'a str {
-    let info = get_constant_info(&this,index);
-    unsafe {
-        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-        let p = data as * const () as * const ConstantUtf8Info;
-        return &(*p).val.as_str();
-    }
+    let info = get_constant_info(this.as_ref(),index);
+//    unsafe {
+//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
+//        let p = data as * const () as * const ConstantUtf8Info;
+//        return &(*p).val.as_str();
+//    }
+    let utf8 = match info {
+        Utf8(utf) => utf,
+        _ => panic!("info is not NameAndType")
+    };
+    return utf8.val.as_str();
 }
 
 enum ConstantInfoTag {
@@ -113,11 +128,49 @@ impl ConstantInfoTag {
     }
 }
 
+pub enum ConstantInfoEnum {
+    Utf8(ConstantUtf8Info),
+    Integer(ConstantIntegerInfo),
+    Float(ConstantFloatInfo),
+    Long(ConstantLongInfo),
+    Double(ConstantDoubleInfo),
+    Class(ConstantClassInfo),
+    Str(ConstantStringInfo),
+    FieldRef(ConstantFieldRefInfo),
+    MethodRef(ConstantMethodRefInfo),
+    InterfaceMethodRef(ConstantInterfaceMethodRefInfo),
+    NameAndType(ConstantNameAndTypeInfo),
+    MethodHandle(ConstantMethodHandleInfo),
+    MethodType(ConstantMethodTypeInfo),
+    InvokeDynamic(ConstantInvokeDynamicInfo)
+}
+
+impl ConstantInfoEnum {
+    pub fn read_info(&mut self,reader: &mut ClassReader) {
+        match self {
+            Utf8(utf8) => utf8.read_info(reader),
+            Integer(integer) => integer.read_info(reader),
+            Float(float) => float.read_info(reader),
+            Long(long) => long.read_info(reader),
+            Double(double) => double.read_info(reader),
+            Class(class) => class.read_info(reader),
+            Str(string) => string.read_info(reader),
+            FieldRef(field) => field.read_info(reader),
+            MethodRef(method_ref) => method_ref.read_info(reader),
+            InterfaceMethodRef(interface) => interface.read_info(reader),
+            NameAndType(name_and_type) => name_and_type.read_info(reader),
+            MethodHandle(methodHandle) => methodHandle.read_info(reader),
+            MethodType(methodType) => methodType.read_info(reader),
+            InvokeDynamic(invoke) => invoke.read_info(reader)
+        }
+    }
+}
+
 pub trait ConstantInfo {
     fn read_info(&mut self,reader: &mut ClassReader);
 }
 
-pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn ConstantInfo> {
+pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> ConstantInfoEnum {
     let dat = display_16(reader.data.clone());
     let tag = reader.read_u8();
     let mut constant_info = new(tag,cp);
@@ -125,37 +178,38 @@ pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dy
     return constant_info;
 }
 
-pub fn new(tag:u8, cp: Rc<ConstantPool>) -> Box<dyn ConstantInfo> {
-    let constant_info:Box<dyn ConstantInfo> = match ConstantInfoTag::from(tag) {
-        ConstantInfoTag::ConstantUtf8 => Box::new(ConstantUtf8Info{ val: String::new() }),
-        ConstantInfoTag::ConstantInteger => Box::new(ConstantIntegerInfo{ val: 0 }),
-        ConstantInfoTag::ConstantFloat => Box::new(ConstantFloatInfo{ val: 0.0 }),
-        ConstantInfoTag::ConstantLong => Box::new(ConstantLongInfo{ val: 0 }),
-        ConstantInfoTag::ConstantDouble => Box::new(ConstantDoubleInfo{ val: 0.0 }),
-        ConstantInfoTag::ConstantClass => Box::new(ConstantClassInfo{ cp:cp.clone(), name_index: 0 }),
-        ConstantInfoTag::ConstantString => Box::new(ConstantStringInfo{ cp:cp.clone(), string_index: 0 }),
-        ConstantInfoTag::ConstantFieldref => Box::new(ConstantFieldRefInfo(ConstantMemberRefInfo{
+pub fn new(tag:u8, cp: Rc<ConstantPool>) -> ConstantInfoEnum {
+    let constant_info:ConstantInfoEnum = match ConstantInfoTag::from(tag) {
+        ConstantInfoTag::ConstantUtf8 => Utf8(ConstantUtf8Info{ val: String::new() }),
+        ConstantInfoTag::ConstantInteger => Integer(ConstantIntegerInfo{ val: 0 }),
+        ConstantInfoTag::ConstantFloat => Float(ConstantFloatInfo{ val: 0.0 }),
+        ConstantInfoTag::ConstantLong => Long(ConstantLongInfo{ val: 0 }),
+        ConstantInfoTag::ConstantDouble => Double(ConstantDoubleInfo{ val: 0.0 }),
+        ConstantInfoTag::ConstantClass => Class(ConstantClassInfo{ cp:cp.clone(), name_index: 0 }),
+        ConstantInfoTag::ConstantString => Str(ConstantStringInfo{ cp:cp.clone(), string_index: 0 }),
+        ConstantInfoTag::ConstantFieldref => FieldRef(ConstantFieldRefInfo(ConstantMemberRefInfo{
             cp:cp.clone(),
             class_index: 0,
             name_and_type_index: 0
         })),
-        ConstantInfoTag::ConstantMethodref => Box::new(ConstantMethodRefInfo(ConstantMemberRefInfo{
+        ConstantInfoTag::ConstantMethodref => MethodRef(ConstantMethodRefInfo(ConstantMemberRefInfo{
             cp:cp.clone(),
             class_index: 0,
             name_and_type_index: 0
         })),
-        ConstantInfoTag::ConstantInterfaceMethodref => Box::new(ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo{
+        ConstantInfoTag::ConstantInterfaceMethodref => InterfaceMethodRef(
+            ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo{
             cp,
             class_index: 0,
             name_and_type_index: 0
         })),
-        ConstantInfoTag::ConstantNameAndType => Box::new(ConstantNameAndTypeInfo{ name_index: 0,desc_index: 0 }),
+        ConstantInfoTag::ConstantNameAndType => NameAndType(ConstantNameAndTypeInfo{ name_index: 0,desc_index: 0 }),
         //待完善
-        ConstantInfoTag::ConstantMethodHandle => Box::new(ConstantMethodHandleInfo{
+        ConstantInfoTag::ConstantMethodHandle => MethodHandle(ConstantMethodHandleInfo{
             reference_kind: 0, reference_index: 0
         }),
-        ConstantInfoTag::ConstantMethodType => Box::new(ConstantMethodTypeInfo{ descriptor_index: 0 }),
-        ConstantInfoTag::ConstantInvokeDynamic => Box::new(ConstantInvokeDynamicInfo{
+        ConstantInfoTag::ConstantMethodType => MethodType(ConstantMethodTypeInfo{ descriptor_index: 0 }),
+        ConstantInfoTag::ConstantInvokeDynamic => InvokeDynamic(ConstantInvokeDynamicInfo{
             bootstrap_method_attr_index: 0,
             name_and_type_index: 0
         }),
