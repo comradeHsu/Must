@@ -27,8 +27,7 @@ impl Entry for ZipEntry {
     fn read_class(&self, class_name: &str) -> Result<(Vec<u8>,Box<dyn Entry>),FindClassError> {
         let path = Path::new(&self.abs_path);
         let zip_file = File::open(path).unwrap();
-        let mut reader = std::io::Cursor::new(super::class_path::read_to_vec(zip_file));
-        let mut zip = zip::ZipArchive::new(reader).unwrap();
+        let mut zip = zip::ZipArchive::new(zip_file).unwrap();
         let mut bytes = Vec::new();
         for i in 0..zip.len() {
             let mut file:ZipFile = zip.by_index(i).unwrap();

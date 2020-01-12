@@ -132,12 +132,48 @@ impl Entry for ClassPath{
 
 #[cfg(test)]
 mod tests{
-    use std::env;
+    use std::{env, time};
+    use std::path::Path;
+    use std::fs::File;
+    use zip::read::ZipFile;
+    use std::ffi::OsString;
+    use std::time::SystemTime;
+    use std::io::{Read, Error};
+
 
     #[test]
     fn get_env() {
         for (key, value) in env::vars_os() {
             println!("{:?}: {:?}", key, value);
         }
+    }
+
+    #[test]
+    fn load_jar() {
+        let java_home = env::vars_os()
+            .find(|(key,_value)| return key == &OsString::from("JAVA_HOME"));
+        let path = java_home.expect("no java home").1;
+        let jar = path.to_str().unwrap().to_string() + "/jre/lib/rt.jar";
+        let path = Path::new(jar.as_str());
+        let time = std::time::SystemTime::now();
+        println!("start:{:?}",time);
+        let zip_file = File::open(path).unwrap();
+        let time = SystemTime::now();
+        println!("file-open:{:?}",time);
+//        let mut reader = std::io::Cursor::new(read_to_vec(zip_file));
+        let time = SystemTime::now();
+        println!("file-to-vec:{:?}",time);
+        let mut zip = zip::ZipArchive::new(zip_file).unwrap();
+        let time = SystemTime::now();
+        println!("zip:{:?}",time);
+        for i in 0..zip.len() {
+            let mut file:ZipFile = zip.by_index(i).unwrap();
+            println!("class_name:{}",file.name());
+        }
+    }
+
+    fn read_to_vec(file:File) -> Vec<u8> {
+        let bytes:Result<Vec<u8>, Error> = file.bytes().collect();
+        return bytes.unwrap();
     }
 }
