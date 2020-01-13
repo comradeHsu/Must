@@ -6,83 +6,90 @@ use crate::class_file::makers_attribute::DeprecatedAttribute;
 use crate::class_file::member_info::display_16;
 use crate::class_file::constant_pool::ConstantInfoEnum::*;
 
-pub type ConstantPool = Vec<ConstantInfoEnum>;
+//pub type ConstantPool = Vec<ConstantInfoEnum>;
 
-pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
-    let cp_count = reader.read_u16();
-    let mut cp = Rc::new(Vec::new());
-    let mut vec: Vec<ConstantInfoEnum> = Vec::new();
-    println!("cp_count:{}",cp_count);
-    for mut i in 1..cp_count {
-        println!("seq:{}",i);
-        let constant_info = read_constant_info(reader, cp.clone());
-        let any = &constant_info as &dyn Any;
-        if any.downcast_ref::<ConstantLongInfo>().is_some() {
-            println!("66666");
-            i = i + 1;
-        }
-        if any.downcast_ref::<ConstantDoubleInfo>().is_some() {
-            println!("66666");
-            i = i + 1;
-        }
-        vec.push(constant_info);
+pub struct ConstantPool {
+    vec:Vec<ConstantInfoEnum>
+}
+
+impl ConstantPool {
+
+    pub fn new() -> ConstantPool {
+        return ConstantPool{ vec: vec![] };
     }
-    let mut c = Rc::new(vec);
-    mem::swap(&mut c,&mut cp);
-    return cp;
-}
 
-pub fn get_constant_info(this: &ConstantPool, index:usize) -> &ConstantInfoEnum {
-    let info = this.get(index-1);
-    if info.is_none() {
-        panic!("Invalid constant pool index!");
+    pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
+        let cp_count = reader.read_u16();
+        let mut cp = Rc::new(ConstantPool::new());
+        let mut vec: Vec<ConstantInfoEnum> = Vec::new();
+        println!("cp_count:{}", cp_count);
+        let mut i = 1;
+        while i < cp_count {
+            println!("seq:{}", i);
+            let constant_info = read_constant_info(reader, cp.clone());
+            match &constant_info {
+                Long(info) => {
+                    i = i + 1;
+                    vec.push(None);
+                    println!("Long")
+                },
+                Double(info) => {
+                    i = i + 1;
+                    vec.push(None);
+                    println!("Double")
+                },
+                _ => {}
+            }
+            vec.push(constant_info);
+            i += 1;
+        }
+        let mut c = Rc::new(ConstantPool{vec});
+        mem::swap(&mut c, &mut cp);
+        return cp;
     }
-    return info.unwrap();
-}
 
-pub fn get_name_and_type<'a>(this:Rc<ConstantPool>,index:usize) -> (&'a str,&'a str) {
-    let info = get_constant_info(this.as_ref(),index);
-    let mut inf = &ConstantNameAndTypeInfo{ name_index: 0, desc_index: 0 };
-//    unsafe {
-//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-//        let p = data as * const () as * const ConstantNameAndTypeInfo;
-//        inf = &(*p);
-//    }
-    let mut inf = match info {
-        NameAndType(name_and_type) => name_and_type,
-        _ => panic!("info is not NameAndType")
-    };
-    let name = get_utf8(this.clone(),inf.name_index as usize);
-    let desc = get_utf8(this,inf.desc_index as usize);
-    return (name,desc);
-}
+    pub fn get_constant_info(&self, index: usize) -> &ConstantInfoEnum {
+        let info = self.vec.get(index - 1);
+        if info.is_none() {
+            println!("index is {}, vec len : {}",index,self.vec.len());
+            panic!("Invalid constant pool index!");
+        }
+        return info.unwrap();
+    }
 
-pub fn get_class_name<'a>(this:Rc<ConstantPool>,index:usize) -> &'a str {
-    let info = get_constant_info(this.as_ref(),index);
-//    unsafe {
-//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-//        let p = data as * const () as * const ConstantClassInfo;
-//        return get_utf8(this,*&(*p).name_index as usize);
-//    }
-    let mut class = match info {
-        Class(class) => class,
-        _ => panic!("info is not NameAndType")
-    };
-    return get_utf8(this,class.name_index as usize)
-}
+    pub fn get_name_and_type(&self, index: usize) -> (&str, &str) {
+        let info = self.get_constant_info(index);
+        let mut inf = match info {
+            NameAndType(name_and_type) => name_and_type,
+            _ => panic!("info is not NameAndType")
+        };
+        let name = self.get_utf8(inf.name_index as usize);
+        let desc = self.get_utf8(inf.desc_index as usize);
+        return (name, desc);
+    }
 
-pub fn get_utf8<'a>(this:Rc<ConstantPool>,index:usize) -> &'a str {
-    let info = get_constant_info(this.as_ref(),index);
-//    unsafe {
-//        let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-//        let p = data as * const () as * const ConstantUtf8Info;
-//        return &(*p).val.as_str();
-//    }
-    let utf8 = match info {
-        Utf8(utf) => utf,
-        _ => panic!("info is not NameAndType")
-    };
-    return utf8.val.as_str();
+    pub fn get_class_name(&self, index: usize) -> &str {
+        let info = self.get_constant_info(index);
+        let mut class = match info {
+            Class(class) => class,
+            _ => panic!("info is not NameAndType")
+        };
+        return self.get_utf8(class.name_index as usize);
+    }
+
+    pub fn get_utf8(&self, index: usize) -> &str {
+        let info = self.get_constant_info(index);
+        let utf8 = match info {
+            Utf8(utf) => utf,
+            _ => panic!("info is not NameAndType")
+        };
+        return utf8.val.as_str();
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        return self.vec.len();
+    }
 }
 
 enum ConstantInfoTag {
@@ -129,6 +136,7 @@ impl ConstantInfoTag {
 }
 
 pub enum ConstantInfoEnum {
+    None,
     Utf8(ConstantUtf8Info),
     Integer(ConstantIntegerInfo),
     Float(ConstantFloatInfo),
@@ -161,7 +169,8 @@ impl ConstantInfoEnum {
             NameAndType(name_and_type) => name_and_type.read_info(reader),
             MethodHandle(methodHandle) => methodHandle.read_info(reader),
             MethodType(methodType) => methodType.read_info(reader),
-            InvokeDynamic(invoke) => invoke.read_info(reader)
+            InvokeDynamic(invoke) => invoke.read_info(reader),
+            _ => {}
         }
     }
 }
@@ -274,7 +283,9 @@ struct ConstantDoubleInfo {
 impl ConstantDoubleInfo{
     pub fn read_info(&mut self,reader:&mut ClassReader){
         let byte = reader.read_u64();
+
         self.val = f64::from_bits(byte);
+        println!("double:{}",self.val);
     }
 }
 

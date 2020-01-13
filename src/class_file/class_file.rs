@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::{ConstantPool, get_class_name, read_constant_pool};
+use crate::class_file::constant_pool::ConstantPool;
 use crate::class_file::member_info::{MemberInfo, display_16};
 use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
@@ -24,7 +24,7 @@ impl ClassFile {
         let mut class_file = ClassFile{
             minor_version: 0,
             major_version: 0,
-            constant_pool: Rc::new(vec![]),
+            constant_pool: Rc::new(ConstantPool::new()),
             access_flags: 0,
             this_class: 0,
             super_class: 0,
@@ -40,16 +40,16 @@ impl ClassFile {
     fn read(& mut self, reader:&mut ClassReader) {
         self.read_and_check_magic(reader);
         self.read_and_check_version(reader);
-        self.constant_pool = read_constant_pool(reader);
+        self.constant_pool = ConstantPool::read_constant_pool(reader);
         self.access_flags = reader.read_u16();
         self.this_class = reader.read_u16();
         self.super_class = reader.read_u16();
         self.interfaces = reader.read_u16_table();
-
+        println!("step:1");
         self.fields = MemberInfo::read_members(reader, self.constant_pool.clone());
-
+        println!("step:2");
         self.methods = MemberInfo::read_members(reader, self.constant_pool.clone());
-
+        println!("step:3");
         self.attributes = read_attributes(reader, self.constant_pool.clone())
     }
 
@@ -100,12 +100,12 @@ impl ClassFile {
     }
 
     pub fn class_name(&self) -> &str {
-        return get_class_name(self.constant_pool.clone(),self.this_class as usize);
+        return self.constant_pool.get_class_name(self.this_class as usize);
     }
 
     pub fn super_class_name(&self) -> &str {
         if self.super_class > 0 {
-            return get_class_name(self.constant_pool.clone(),self.super_class as usize);
+            return self.constant_pool.get_class_name(self.super_class as usize);
         }
         return "" // 只有 java.lang.Object没有超类
     }
@@ -113,7 +113,7 @@ impl ClassFile {
     pub fn interface_names(&self) -> Vec<&str> {
         let mut interface_names = Vec::new();
         for index in &self.interfaces {
-            interface_names.push(get_class_name(self.constant_pool.clone(),*index as usize));
+            interface_names.push(self.constant_pool.get_class_name(*index as usize));
         }
         return interface_names;
     }

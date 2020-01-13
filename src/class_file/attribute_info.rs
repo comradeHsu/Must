@@ -1,5 +1,5 @@
 use crate::class_file::class_reader::ClassReader;
-use crate::class_file::constant_pool::{ConstantPool, get_utf8};
+use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::code_attribute::CodeAttribute;
 use std::rc::Rc;
 use crate::class_file::constant_value_attribute::ConstantValueAttribute;
@@ -21,7 +21,7 @@ pub trait AttributeInfo {
 pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<dyn AttributeInfo>> {
 
     let attr_count = reader.read_u16();
-
+    println!("attr_count is {}",attr_count);
     let mut attributes = Vec::new();
     for _ in 0..attr_count {
         attributes.push(read_attribute(reader,cp.clone()));
@@ -31,7 +31,10 @@ pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<d
 
 pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn AttributeInfo> {
     let attr_name_index = reader.read_u16();
-    let attr_name = get_utf8(cp.clone(),attr_name_index as usize);
+    let clone = cp.clone();
+    println!("attr_name_index:{}",attr_name_index);
+    let attr_name = clone.get_utf8(attr_name_index as usize);
+    println!("attr_name:{}",attr_name);
     if attr_name == "Code" {
         println!("code")
     }
@@ -52,7 +55,7 @@ pub fn new(attr_name:&str,attr_len:u32,cp:Rc<ConstantPool>) -> Box<dyn Attribute
         "LocalVariableTable" => Box::new(LocalVariableTableAttribute::new()),
         "SourceFile" => Box::new(SourceFileAttribute::with_cp(cp)),
         "Synthetic" => Box::new(SyntheticAttribute::new()),
-        "StackMapTable" => Box::new(StackMapAttribute::new()),
+        "StackMapTable" => Box::new(StackMapAttribute::new(attr_len)),
         _ => Box::new(UnparsedAttribute::new(attr_len))
     };
     return info;

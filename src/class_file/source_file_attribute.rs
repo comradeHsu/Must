@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::{ConstantPool, get_utf8};
+use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
@@ -10,7 +10,7 @@ pub struct SourceFileAttribute {
 
 impl SourceFileAttribute {
     pub fn new() -> SourceFileAttribute {
-        return SourceFileAttribute{ cp: Rc::new(vec![]), source_file_index: 0 };
+        return SourceFileAttribute{ cp: Rc::new(ConstantPool::new()), source_file_index: 0 };
     }
 
     pub fn with_cp(cp:Rc<ConstantPool>) -> SourceFileAttribute {
@@ -21,7 +21,7 @@ impl SourceFileAttribute {
     }
 
     pub fn file_name(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.source_file_index as usize);
+        return self.cp.get_utf8(self.source_file_index as usize);
     }
 }
 

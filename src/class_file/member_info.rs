@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::{ConstantPool, get_utf8};
+use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
 use std::rc::Rc;
@@ -23,6 +23,7 @@ impl MemberInfo {
             descriptor_index: reader.read_u16(),
             attributes: vec![]
         };
+        println!("access_flags-{},,name_index-{},,descriptor_index-{}",mem.access_flags,mem.name_index,mem.descriptor_index);
         mem.attributes = read_attributes(reader,cp);
         return mem;
     }
@@ -30,18 +31,20 @@ impl MemberInfo {
     pub fn read_members(reader:&mut ClassReader, cp: Rc<ConstantPool>) -> Vec<MemberInfo> {
         let member_count = reader.read_u16();
         let mut members:Vec<MemberInfo> = Vec::new();
+        println!("member_count:{}",member_count);
         for _i in 0..member_count {
+            println!("member_count_seq:{}",_i);
             members.push(MemberInfo::read_member(reader,cp.clone()));
         }
         return members;
     }
 
     pub fn name(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.name_index as usize);
+        return self.cp.get_utf8(self.name_index as usize);
     }
 
     pub fn descriptor(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.descriptor_index as usize);
+        return self.cp.get_utf8(self.descriptor_index as usize);
     }
 
     pub fn code_attributes(&self) -> Option<&CodeAttribute>{

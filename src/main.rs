@@ -87,7 +87,25 @@ mod tests{
         }
     }
 
-
+    #[test]
+    fn start_jvm_main() {
+        let cmd = Cmd{
+            help_flag: false,
+            version_flag: false,
+            cp_option: "D:/test".to_string(),
+            x_jre_option: "".to_string(),
+            class: "com.compile.Main".to_string(),
+            args: vec![]
+        };
+        let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
+        let class_name = cmd.class.clone().replace('.',"/");
+        let class_file = load_class(&class_name,&cp);
+        class_file.display();
+        let main = get_main_method(&class_file);
+        if main.is_some() {
+            interpret(main.unwrap());
+        }
+    }
 
     #[test]
     fn test_time() {

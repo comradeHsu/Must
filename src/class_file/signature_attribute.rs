@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::{ConstantPool, get_utf8};
+use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
@@ -10,7 +10,7 @@ struct SignatureAttribute {
 
 impl SignatureAttribute {
     pub fn signature(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.signature_index as usize);
+        return self.cp.get_utf8(self.signature_index as usize);
     }
 }
 

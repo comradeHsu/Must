@@ -15,7 +15,7 @@ pub struct CodeAttribute {
 impl CodeAttribute {
     pub fn new() -> CodeAttribute {
         return CodeAttribute{
-            cp: Rc::new(vec![]),
+            cp: Rc::new(ConstantPool::new()),
             max_stack: 0,
             max_locals: 0,
             code: vec![],
