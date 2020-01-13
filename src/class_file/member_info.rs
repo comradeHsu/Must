@@ -1,17 +1,18 @@
 use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::class_reader::ClassReader;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::rc::Rc;
 use std::any::Any;
 use crate::class_file::code_attribute::CodeAttribute;
 use std::mem;
+use crate::class_file::attribute_info::Attribute::Code;
 
 pub struct MemberInfo {
     cp:Rc<ConstantPool>,
     access_flags:u16,
     name_index:u16,
     descriptor_index:u16,
-    attributes:Vec<Box<dyn AttributeInfo>>
+    attributes:Vec<Attribute>
 }
 
 impl MemberInfo {
@@ -23,7 +24,6 @@ impl MemberInfo {
             descriptor_index: reader.read_u16(),
             attributes: vec![]
         };
-        println!("access_flags-{},,name_index-{},,descriptor_index-{}",mem.access_flags,mem.name_index,mem.descriptor_index);
         mem.attributes = read_attributes(reader,cp);
         return mem;
     }
@@ -31,9 +31,7 @@ impl MemberInfo {
     pub fn read_members(reader:&mut ClassReader, cp: Rc<ConstantPool>) -> Vec<MemberInfo> {
         let member_count = reader.read_u16();
         let mut members:Vec<MemberInfo> = Vec::new();
-        println!("member_count:{}",member_count);
         for _i in 0..member_count {
-            println!("member_count_seq:{}",_i);
             members.push(MemberInfo::read_member(reader,cp.clone()));
         }
         return members;
@@ -48,22 +46,11 @@ impl MemberInfo {
     }
 
     pub fn code_attributes(&self) -> Option<&CodeAttribute>{
-        println!("attr len :{}",self.attributes.len());
         for i in 0..self.attributes.len() {
             let attribute = &self.attributes[i];
-            let any:&dyn Any = attribute as &dyn Any;
-//            unsafe {
-//                let (data, _v_table) : (usize, usize) =  mem::transmute(any);
-//                let p = data as * const () as * const CodeAttribute;
-//                println!("p :{:?}",p);
-//                return Some(&(*p));
-//            }
-            let code = any.downcast_ref::<CodeAttribute>();
-            if code.is_some() {
-                println!("downcast_ref CodeAttribute");
-                return Some(code.unwrap());
-            } else {
-                println!("not downcast_ref CodeAttribute");
+            match attribute {
+                Code(attr) => return Some(attr),
+                _ => {}
             }
         }
         return None;

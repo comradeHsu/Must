@@ -23,11 +23,9 @@ impl NoOperandsInstruction {
 
 impl Instruction for NoOperandsInstruction {
     fn fetch_operands(&mut self,reader: &mut BytecodeReader) {
-        unimplemented!()
     }
 
     fn execute(&mut self,frame: &mut Frame) {
-        unimplemented!()
     }
 }
 

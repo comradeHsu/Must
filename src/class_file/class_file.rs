@@ -1,7 +1,7 @@
 use crate::class_file::constant_pool::ConstantPool;
 use crate::class_file::member_info::{MemberInfo, display_16};
 use crate::class_file::class_reader::ClassReader;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::vec::Vec;
 use std::rc::Rc;
 
@@ -15,7 +15,7 @@ pub struct ClassFile {
     interfaces:Vec<u16>,
     fields:Vec<MemberInfo>,
     methods:Vec<MemberInfo>,
-    attributes:Vec<Box<dyn AttributeInfo>>
+    attributes:Vec<Attribute>
 }
 
 impl ClassFile {
@@ -45,11 +45,8 @@ impl ClassFile {
         self.this_class = reader.read_u16();
         self.super_class = reader.read_u16();
         self.interfaces = reader.read_u16_table();
-        println!("step:1");
         self.fields = MemberInfo::read_members(reader, self.constant_pool.clone());
-        println!("step:2");
         self.methods = MemberInfo::read_members(reader, self.constant_pool.clone());
-        println!("step:3");
         self.attributes = read_attributes(reader, self.constant_pool.clone())
     }
 

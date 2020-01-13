@@ -3,7 +3,7 @@ use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
 
-struct SignatureAttribute {
+pub struct SignatureAttribute {
     cp:Rc<ConstantPool>,
     signature_index:u16
 }

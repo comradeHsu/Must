@@ -29,11 +29,11 @@ impl Thread {
         return self.stack.pop();
     }
 
-    pub fn current_frame(&mut self) -> &Frame {
+    pub fn current_frame(& self) -> &Frame {
         return self.stack.top();
     }
 
-    pub fn new_frame(thread:Rc<Thread>,max_locals:usize,max_stack:usize) -> Frame {
-        return Frame::with_capacity(thread,max_stack,max_stack);
+    pub fn new_frame(thread:Rc<RefCell<Thread>>,max_locals:usize,max_stack:usize) -> Frame {
+        return Frame::with_capacity(thread,max_locals,max_stack);
     }
 }

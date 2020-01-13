@@ -260,7 +260,10 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xc6 => Box::new(IfNull::new()),
         0xc7 => Box::new(IfNonNull::new()),
         0xc8 => Box::new(GotoW::new()),
-        _ => panic!("instruction error")
+        _c => {
+            println!("opcode:{}",_c);
+            panic!("instruction error")
+        }
     };
     return inst;
 }

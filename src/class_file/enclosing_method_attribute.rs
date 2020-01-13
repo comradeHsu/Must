@@ -3,7 +3,7 @@ use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
 
-struct EnclosingMethodAttribute {
+pub struct EnclosingMethodAttribute {
     cp:Rc<ConstantPool>,
     class_index:u16,
     method_index:u16

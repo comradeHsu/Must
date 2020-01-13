@@ -22,10 +22,8 @@ impl ConstantPool {
         let cp_count = reader.read_u16();
         let mut cp = Rc::new(ConstantPool::new());
         let mut vec: Vec<ConstantInfoEnum> = Vec::new();
-        println!("cp_count:{}", cp_count);
         let mut i = 1;
         while i < cp_count {
-            println!("seq:{}", i);
             let constant_info = read_constant_info(reader, cp.clone());
             match &constant_info {
                 Long(info) => {

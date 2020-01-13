@@ -1,7 +1,7 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 
-struct LocalVariableTypeTableAttribute  {
+pub struct LocalVariableTypeTableAttribute  {
     local_variable_type_table:Vec<LocalVariableTypeTableEntry>
 }
 

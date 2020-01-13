@@ -1,5 +1,5 @@
 use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
 
@@ -9,7 +9,7 @@ pub struct CodeAttribute {
     max_locals:u16,
     code:Vec<u8>,
     exception_table:Vec<ExceptionTableEntry>,
-    attributes:Vec<Box<dyn AttributeInfo>>,
+    attributes:Vec<Attribute>,
 }
 
 impl CodeAttribute {
@@ -73,7 +73,6 @@ impl AttributeInfo for CodeAttribute {
         self.code = reader.read_bytes(code_len as usize);
         self.exception_table = ExceptionTableEntry::read_exception_table(reader);
         self.attributes = read_attributes(reader,self.cp.clone());
-        self.display();
     }
 }
 

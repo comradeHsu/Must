@@ -11,6 +11,11 @@ use crate::class_file::source_file_attribute::SourceFileAttribute;
 use crate::class_file::unparsed_attribute::UnparsedAttribute;
 use crate::class_file::member_info::display_16;
 use crate::class_file::stack_map_table_attribute::StackMapAttribute;
+use crate::class_file::signature_attribute::SignatureAttribute;
+use crate::class_file::local_variable_type_table_attribute::LocalVariableTypeTableAttribute;
+use crate::class_file::attribute_info::Attribute::*;
+use crate::class_file::inner_classes_attribute::InnerClassesAttribute;
+use crate::class_file::enclosing_method_attribute::EnclosingMethodAttribute;
 
 pub trait AttributeInfo {
 
@@ -18,10 +23,10 @@ pub trait AttributeInfo {
 
 }
 
-pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<dyn AttributeInfo>> {
+pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Attribute> {
 
     let attr_count = reader.read_u16();
-    println!("attr_count is {}",attr_count);
+
     let mut attributes = Vec::new();
     for _ in 0..attr_count {
         attributes.push(read_attribute(reader,cp.clone()));
@@ -29,15 +34,10 @@ pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Box<d
     return attributes;
 }
 
-pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn AttributeInfo> {
+pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Attribute {
     let attr_name_index = reader.read_u16();
     let clone = cp.clone();
-    println!("attr_name_index:{}",attr_name_index);
     let attr_name = clone.get_utf8(attr_name_index as usize);
-    println!("attr_name:{}",attr_name);
-    if attr_name == "Code" {
-        println!("code")
-    }
     let attr_len = reader.read_u32();
     let mut info = new(attr_name,attr_len,cp);
 
@@ -45,18 +45,57 @@ pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Box<dyn At
     return info;
 }
 
-pub fn new(attr_name:&str,attr_len:u32,cp:Rc<ConstantPool>) -> Box<dyn AttributeInfo> {
-    let info:Box<dyn AttributeInfo> = match attr_name {
-        "Code" => Box::new(CodeAttribute::with_cp(cp)),
-        "ConstantValue" => Box::new(ConstantValueAttribute::new()),
-        "Deprecated" => Box::new(DeprecatedAttribute::new()),
-        "Exceptions" => Box::new(ExceptionsAttribute::new()),
-        "LineNumberTable" => Box::new(LineNumberTableAttribute::new()),
-        "LocalVariableTable" => Box::new(LocalVariableTableAttribute::new()),
-        "SourceFile" => Box::new(SourceFileAttribute::with_cp(cp)),
-        "Synthetic" => Box::new(SyntheticAttribute::new()),
-        "StackMapTable" => Box::new(StackMapAttribute::new(attr_len)),
-        _ => Box::new(UnparsedAttribute::new(attr_len))
+pub fn new(attr_name:&str,attr_len:u32,cp:Rc<ConstantPool>) -> Attribute {
+    let info:Attribute = match attr_name {
+        "Code" => Code(CodeAttribute::with_cp(cp)),
+        "ConstantValue" => ConstantValue(ConstantValueAttribute::new()),
+        "Deprecated" => Deprecated(DeprecatedAttribute::new()),
+        "Exceptions" => Exceptions(ExceptionsAttribute::new()),
+        "LineNumberTable" => LineNumberTable(LineNumberTableAttribute::new()),
+        "LocalVariableTable" => LocalVariableTable(LocalVariableTableAttribute::new()),
+        "SourceFile" => SourceFile(SourceFileAttribute::with_cp(cp)),
+        "Synthetic" => Synthetic(SyntheticAttribute::new()),
+        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
+        _ => Unparsed(UnparsedAttribute::new(attr_len))
     };
     return info;
+}
+
+pub enum Attribute {
+    Unparsed(UnparsedAttribute),
+    SourceFile(SourceFileAttribute),
+    StackMap(StackMapAttribute),
+    Signature(SignatureAttribute),
+    Deprecated(DeprecatedAttribute),
+    Synthetic(SyntheticAttribute),
+    LocalVariableTypeTable(LocalVariableTypeTableAttribute),
+    LocalVariableTable(LocalVariableTableAttribute),
+    LineNumberTable(LineNumberTableAttribute),
+    InnerClasses(InnerClassesAttribute),
+    Exceptions(ExceptionsAttribute),
+    EnclosingMethod(EnclosingMethodAttribute),
+    ConstantValue(ConstantValueAttribute),
+    Code(CodeAttribute)
+}
+
+impl Attribute {
+    #[inline]
+    pub fn read_info(&mut self, reader:&mut ClassReader) {
+        match self {
+            Code(attr) => attr.read_info(reader),
+            ConstantValue(attr) => attr.read_info(reader),
+            EnclosingMethod(attr) => attr.read_info(reader),
+            Exceptions(attr) => attr.read_info(reader),
+            InnerClasses(attr) => attr.read_info(reader),
+            LineNumberTable(attr) => attr.read_info(reader),
+            LocalVariableTable(attr) => attr.read_info(reader),
+            LocalVariableTypeTable(attr) => attr.read_info(reader),
+            Synthetic(attr) => attr.read_info(reader),
+            Deprecated(attr) => attr.read_info(reader),
+            Signature(attr) => attr.read_info(reader),
+            StackMap(attr) => attr.read_info(reader),
+            SourceFile(attr) => attr.read_info(reader),
+            Unparsed(attr) => attr.read_info(reader)
+        }
+    }
 }
