@@ -392,3 +392,108 @@ impl ConstantInfo for ConstantMethodTypeInfo {
         self.descriptor_index = reader.read_u16();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
+    use crate::class_file::constant_pool::tests::Number::{Int, Lon};
+    use std::mem;
+
+    trait Num {
+        fn num(&self) -> i64;
+    }
+
+    struct Integer {
+        val:i32,
+        string:String
+    }
+
+    impl Integer {
+        pub fn to_string(&self) -> String {
+            return String::from_utf8(vec![self.val as u8]).unwrap();
+        }
+    }
+
+    impl Num for Integer {
+        fn num(&self) -> i64 {
+            return self.val as i64;
+        }
+    }
+
+    struct Long {
+        val:i64
+    }
+
+    impl Num for Long {
+        fn num(&self) -> i64 {
+            return self.val;
+        }
+    }
+
+    enum Number {
+        Int(Integer),
+        Lon(Long)
+    }
+
+    fn get_constant_info(this: &Vec<Number>, index:usize) -> &Number {
+        let info = this.get(index-1);
+        if info.is_none() {
+            panic!("Invalid constant pool index!");
+        }
+        return info.unwrap();
+    }
+
+    pub fn get_utf8<'a>(this:Rc<Vec<Number>>,index:usize) -> &'a str {
+        let info = get_constant_info(this.as_ref(),index);
+        let utf8 = match info {
+            Int(utf) => utf,
+            _ => panic!("info is not NameAndType")
+        };
+        return utf8.string.as_str();
+    }
+
+    fn get_constant_info_1(this: &Vec<Box<dyn Num>>, index:usize) -> &dyn Num {
+        let info = this.get(index);
+        if info.is_none() {
+            panic!("Invalid constant pool index!");
+        }
+        return info.unwrap().as_ref();
+    }
+
+    pub fn get_utf8_1<'a>(this:Rc<Vec<Box<dyn Num>>>,index:usize) -> &'a str {
+        let info = get_constant_info_1(this.as_ref(),index);
+        unsafe {
+            let (data, _v_table) : (usize, usize) =  mem::transmute(info);
+            let p = data as * const () as * const Integer;
+            return &(*p).string.as_str();
+        }
+    }
+
+//    #[test]
+//    fn test() {
+//        let mut vec = Vec::new();
+//        vec.push(Int(Integer{ val: 0, string: "0".to_string() }));
+//        vec.push(Lon(Long{ val: 1 }));
+//        vec.push(Int(Integer{ val: 2, string: "2".to_string() }));
+//        vec.push(Lon(Long{ val: 3 }));
+//        vec.push(Int(Integer{ val: 4,string: "4".to_string() }));
+//        vec.push(Lon(Long{ val: 5 }));
+//        let rc = Rc::new(vec);
+//        let ss = get_utf8(rc,4);
+//        println!("{}",ss);
+//    }
+
+    #[test]
+    fn test_1() {
+        let mut vec:Vec<Box<dyn Num>> = Vec::new();
+        vec.push(Box::new (Integer{ val: 0, string: "0".to_string() }));
+        vec.push(Box::new(Long{ val: 1 }));
+        vec.push(Box::new(Integer{ val: 2, string: "2".to_string() }));
+        vec.push(Box::new(Long{ val: 3 }));
+        vec.push(Box::new(Integer{ val: 4,string: "4".to_string() }));
+        vec.push(Box::new(Long{ val: 5 }));
+        let rc = Rc::new(vec);
+        let ss = get_utf8_1(rc,4);
+        println!("{}",ss);
+    }
+}
