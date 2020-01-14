@@ -88,6 +88,11 @@ impl ConstantPool {
     pub fn len(&self) -> usize {
         return self.vec.len();
     }
+
+    #[inline]
+    pub fn get_info(&self,index:usize) -> Option<&ConstantInfoEnum> {
+        return self.vec.get(index);
+    }
 }
 
 enum ConstantInfoTag {
@@ -229,6 +234,11 @@ struct ConstantIntegerInfo {
 }
 
 impl ConstantIntegerInfo {
+    #[inline]
+    pub fn val(&self) -> i32 {
+        return self.val;
+    }
+
     pub fn read_info(&mut self,reader:&mut ClassReader){
         self.val = reader.read_u32() as i32;
     }
@@ -245,6 +255,11 @@ struct ConstantFloatInfo {
 }
 
 impl ConstantFloatInfo{
+    #[inline]
+    pub fn val(&self) -> f32 {
+        return self.val;
+    }
+
     pub fn read_info(&mut self,reader:&mut ClassReader){
         let byte = reader.read_u32();
         self.val = f32::from_bits(byte);
@@ -262,6 +277,11 @@ struct ConstantLongInfo {
 }
 
 impl ConstantLongInfo{
+    #[inline]
+    pub fn val(&self) -> i64 {
+        return self.val;
+    }
+
     pub fn read_info(&mut self,reader:&mut ClassReader){
         let byte = reader.read_u64();
         self.val = byte as i64;
@@ -279,6 +299,12 @@ struct ConstantDoubleInfo {
 }
 
 impl ConstantDoubleInfo{
+
+    #[inline]
+    pub fn val(&self) -> f64 {
+        return self.val;
+    }
+
     pub fn read_info(&mut self,reader:&mut ClassReader){
         let byte = reader.read_u64();
 
@@ -322,7 +348,7 @@ impl ConstantStringInfo {
     }
 
     pub fn string(&self) -> &str {
-        return "";
+        return self.cp.get_utf8(self.string_index as usize);
     }
 }
 
@@ -332,7 +358,7 @@ impl ConstantInfo for ConstantStringInfo {
     }
 }
 
-struct ConstantClassInfo {
+pub struct ConstantClassInfo {
     cp:Rc<ConstantPool>,
     name_index:u16
 }
@@ -371,7 +397,7 @@ impl ConstantInfo for ConstantNameAndTypeInfo {
     }
 }
 
-struct ConstantMemberRefInfo {
+pub struct ConstantMemberRefInfo {
     cp:Rc<ConstantPool>,
     class_index:u16,
     name_and_type_index:u16
@@ -384,11 +410,11 @@ impl ConstantMemberRefInfo {
     }
 
     pub fn class_name(&self) -> &str {
-        return "";
+        return self.cp.get_class_name(self.class_index as usize);
     }
 
-    pub fn name_and_descriptor(&self) -> &str {
-        return "";
+    pub fn name_and_descriptor(&self) -> (&str,&str) {
+        return self.cp.get_name_and_type(self.name_and_type_index as usize);
     }
 }
 

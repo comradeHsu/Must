@@ -1,7 +1,7 @@
 mod class_reader;
 pub mod class_file;
 pub mod member_info;
-mod constant_pool;
+pub mod constant_pool;
 mod attribute_info;
 mod code_attribute;
 mod unparsed_attribute;

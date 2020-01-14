@@ -37,6 +37,11 @@ impl MemberInfo {
         return members;
     }
 
+    #[inline]
+    pub fn access_flags(&self) -> u16 {
+        return self.access_flags;
+    }
+
     pub fn name(&self) -> &str {
         return self.cp.get_utf8(self.name_index as usize);
     }
