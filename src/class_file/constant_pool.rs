@@ -424,7 +424,14 @@ impl ConstantInfo for ConstantMemberRefInfo {
     }
 }
 
-struct ConstantFieldRefInfo(ConstantMemberRefInfo);
+pub struct ConstantFieldRefInfo(ConstantMemberRefInfo);
+
+impl ConstantFieldRefInfo {
+    #[inline]
+    pub fn get_member_ref(&self) -> &ConstantMemberRefInfo {
+        return &self.0;
+    }
+}
 
 impl ConstantInfo for ConstantFieldRefInfo {
     fn read_info(&mut self, reader: &mut ClassReader) {
@@ -432,7 +439,14 @@ impl ConstantInfo for ConstantFieldRefInfo {
     }
 }
 
-struct ConstantMethodRefInfo(ConstantMemberRefInfo);
+pub struct ConstantMethodRefInfo(ConstantMemberRefInfo);
+
+impl ConstantMethodRefInfo {
+    #[inline]
+    pub fn get_member_ref(&self) -> &ConstantMemberRefInfo {
+        return &self.0;
+    }
+}
 
 impl ConstantInfo for ConstantMethodRefInfo {
     fn read_info(&mut self, reader: &mut ClassReader) {
@@ -440,7 +454,14 @@ impl ConstantInfo for ConstantMethodRefInfo {
     }
 }
 
-struct ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo);
+pub struct ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo);
+
+impl ConstantInterfaceMethodRefInfo {
+    #[inline]
+    pub fn get_member_ref(&self) -> &ConstantMemberRefInfo {
+        return &self.0;
+    }
+}
 
 impl ConstantInfo for ConstantInterfaceMethodRefInfo {
     fn read_info(&mut self, reader: &mut ClassReader) {

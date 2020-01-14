@@ -19,6 +19,15 @@ impl SymRef {
         };
     }
 
+    #[inline]
+    pub fn with_pool(pool:Rc<ConstantPool>) -> SymRef{
+        return SymRef{
+            constant_pool: pool,
+            class_name: "".to_string(),
+            class: Rc::new(Class::none())
+        };
+    }
+
     pub fn new_sym_ref(cp:Rc<ConstantPool>,info:&ConstantClassInfo) -> SymRef {
         return SymRef{
             constant_pool: cp,
@@ -30,5 +39,10 @@ impl SymRef {
     #[inline]
     pub fn set_class_name(&mut self,name:String) {
         self.class_name = name;
+    }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<ConstantPool>) {
+        self.constant_pool = pool;
     }
 }
