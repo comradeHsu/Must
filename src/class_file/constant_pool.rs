@@ -462,11 +462,11 @@ mod tests {
     use crate::class_file::constant_pool::tests::Number::{Int, Lon};
     use std::mem;
 
-    trait Num {
+    pub trait Num {
         fn num(&self) -> i64;
     }
 
-    struct Integer {
+    pub struct Integer {
         val:i32,
         string:String
     }
@@ -483,7 +483,7 @@ mod tests {
         }
     }
 
-    struct Long {
+    pub struct Long {
         val:i64
     }
 
@@ -493,20 +493,20 @@ mod tests {
         }
     }
 
-    enum Number {
+    pub enum Number {
         Int(Integer),
         Lon(Long)
     }
 
-    fn get_constant_info(this: &Vec<Number>, index:usize) -> &Number {
-        let info = this.get(index-1);
+    pub fn get_constant_info(this: &Vec<Number>, index:usize) -> &Number {
+        let info = this.get(index);
         if info.is_none() {
             panic!("Invalid constant pool index!");
         }
         return info.unwrap();
     }
 
-    pub fn get_utf8<'a>(this:Rc<Vec<Number>>,index:usize) -> &'a str {
+    pub fn get_utf8(this:&Rc<Vec<Number>>,index:usize) -> & str {
         let info = get_constant_info(this.as_ref(),index);
         let utf8 = match info {
             Int(utf) => utf,
@@ -515,7 +515,7 @@ mod tests {
         return utf8.string.as_str();
     }
 
-    fn get_constant_info_1(this: &Vec<Box<dyn Num>>, index:usize) -> &dyn Num {
+    pub fn get_constant_info_1(this: &Vec<Box<dyn Num>>, index:usize) -> &dyn Num {
         let info = this.get(index);
         if info.is_none() {
             panic!("Invalid constant pool index!");
@@ -532,19 +532,19 @@ mod tests {
         }
     }
 
-//    #[test]
-//    fn test() {
-//        let mut vec = Vec::new();
-//        vec.push(Int(Integer{ val: 0, string: "0".to_string() }));
-//        vec.push(Lon(Long{ val: 1 }));
-//        vec.push(Int(Integer{ val: 2, string: "2".to_string() }));
-//        vec.push(Lon(Long{ val: 3 }));
-//        vec.push(Int(Integer{ val: 4,string: "4".to_string() }));
-//        vec.push(Lon(Long{ val: 5 }));
-//        let rc = Rc::new(vec);
-//        let ss = get_utf8(rc,4);
-//        println!("{}",ss);
-//    }
+    #[test]
+    fn test() {
+        let mut vec = Vec::new();
+        vec.push(Int(Integer{ val: 0, string: "0".to_string() }));
+        vec.push(Lon(Long{ val: 1 }));
+        vec.push(Int(Integer{ val: 2, string: "2".to_string() }));
+        vec.push(Lon(Long{ val: 3 }));
+        vec.push(Int(Integer{ val: 4,string: "4".to_string() }));
+        vec.push(Lon(Long{ val: 5 }));
+        let rc = Rc::new(vec);
+        let ss = get_utf8(&rc,4);
+        println!("{}",ss);
+    }
 
     #[test]
     fn test_1() {

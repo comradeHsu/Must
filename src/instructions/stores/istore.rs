@@ -4,7 +4,6 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 
 fn i_store(frame: &mut Frame,index:usize) {
     let val = frame.operand_stack().expect("operand_stack is empty").pop_int();
-    println!("val:{}",val);
     frame.local_vars().expect("local_vars is empty").set_int(index,val);
 }
 
