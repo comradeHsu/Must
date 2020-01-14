@@ -1,7 +1,7 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 
-struct InnerClassesAttribute {
+pub struct InnerClassesAttribute {
     classes:Vec<InnerClassInfo>
 }
 

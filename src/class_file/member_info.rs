@@ -1,17 +1,18 @@
-use crate::class_file::constant_pool::{ConstantPool, get_utf8};
+use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::class_reader::ClassReader;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes};
+use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::rc::Rc;
 use std::any::Any;
 use crate::class_file::code_attribute::CodeAttribute;
 use std::mem;
+use crate::class_file::attribute_info::Attribute::Code;
 
 pub struct MemberInfo {
     cp:Rc<ConstantPool>,
     access_flags:u16,
     name_index:u16,
     descriptor_index:u16,
-    attributes:Vec<Box<dyn AttributeInfo>>
+    attributes:Vec<Attribute>
 }
 
 impl MemberInfo {
@@ -37,30 +38,19 @@ impl MemberInfo {
     }
 
     pub fn name(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.name_index as usize);
+        return self.cp.get_utf8(self.name_index as usize);
     }
 
     pub fn descriptor(&self) -> &str {
-        return get_utf8(self.cp.clone(),self.descriptor_index as usize);
+        return self.cp.get_utf8(self.descriptor_index as usize);
     }
 
     pub fn code_attributes(&self) -> Option<&CodeAttribute>{
-        println!("attr len :{}",self.attributes.len());
         for i in 0..self.attributes.len() {
             let attribute = &self.attributes[i];
-            let any:&dyn Any = attribute as &dyn Any;
-//            unsafe {
-//                let (data, _v_table) : (usize, usize) =  mem::transmute(any);
-//                let p = data as * const () as * const CodeAttribute;
-//                println!("p :{:?}",p);
-//                return Some(&(*p));
-//            }
-            let code = any.downcast_ref::<CodeAttribute>();
-            if code.is_some() {
-                println!("downcast_ref CodeAttribute");
-                return Some(code.unwrap());
-            } else {
-                println!("not downcast_ref CodeAttribute");
+            match attribute {
+                Code(attr) => return Some(attr),
+                _ => {}
             }
         }
         return None;

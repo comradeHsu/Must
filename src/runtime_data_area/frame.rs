@@ -7,7 +7,7 @@ use std::cell::RefCell;
 pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
-    thread:Rc<Thread>,
+    thread:Rc<RefCell<Thread>>,
     next_pc:i32
 }
 
@@ -23,7 +23,7 @@ impl Frame {
 //    }
 
     #[inline]
-    pub fn with_capacity(thread:Rc<Thread>,max_locals:usize,max_stack:usize) -> Frame {
+    pub fn with_capacity(thread:Rc<RefCell<Thread>>,max_locals:usize,max_stack:usize) -> Frame {
         return Frame{
             local_vars: LocalVars::with_capacity(max_locals),
             operand_stack: OperandStack::new(max_stack),
@@ -51,6 +51,11 @@ impl Frame {
     pub fn set_next_pc(&mut self,next_pc:i32) {
         self.next_pc = next_pc;
     }
+
+    #[inline]
+    pub fn thread(&self) -> Rc<RefCell<Thread>> {
+        return self.thread.clone();
+    }
 }
 
 #[cfg(test)]
@@ -64,7 +69,7 @@ mod test {
 
     #[test]
     fn test_frame() {
-        let thread = Rc::new((Thread::new_thread()));
+        let thread = Rc::new(RefCell::new(Thread::new_thread()));
         let mut frame = Frame::with_capacity(thread,100,100);
         test_local_vars(&mut frame.local_vars.unwrap());
         test_operand_stack(&mut frame.operand_stack.unwrap());

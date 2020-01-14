@@ -14,6 +14,7 @@ impl LocalVars {
         if max_locals > 0 {
             let mut vec = Vec::new();
             vec.resize_with(max_locals,|| -> Slot {Slot::new()});
+            println!("vars len:{}",vec.len());
             return Some(LocalVars{ vars: vec});
         }
         return None;

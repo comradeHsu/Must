@@ -34,7 +34,7 @@ impl Stack {
         return frame;
     }
 
-    pub fn top(&mut self) -> &Frame {
+    pub fn top(& self) -> &Frame {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
