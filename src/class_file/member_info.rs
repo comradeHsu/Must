@@ -5,7 +5,8 @@ use std::rc::Rc;
 use std::any::Any;
 use crate::class_file::code_attribute::CodeAttribute;
 use std::mem;
-use crate::class_file::attribute_info::Attribute::Code;
+use crate::class_file::attribute_info::Attribute::{Code, ConstantValue};
+use crate::class_file::constant_value_attribute::ConstantValueAttribute;
 
 pub struct MemberInfo {
     cp:Rc<ConstantPool>,
@@ -55,6 +56,16 @@ impl MemberInfo {
             let attribute = &self.attributes[i];
             match attribute {
                 Code(attr) => return Some(attr),
+                _ => {}
+            }
+        }
+        return None;
+    }
+
+    pub fn constant_value_attr(&self) -> Option<&ConstantValueAttribute> {
+        for attribute in &self.attributes {
+            match attribute {
+                ConstantValue(attr) => return Some(attr),
                 _ => {}
             }
         }

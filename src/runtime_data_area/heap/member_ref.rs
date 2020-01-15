@@ -2,6 +2,8 @@ use crate::runtime_data_area::heap::sym_ref::SymRef;
 use crate::class_file::constant_pool::ConstantMemberRefInfo;
 use std::rc::Rc;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
+use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 
 pub struct MemberRef {
     sym_ref:SymRef,
@@ -30,5 +32,25 @@ impl MemberRef {
     #[inline]
     pub fn set_constant_pool(&mut self,pool:Rc<ConstantPool>) {
         self.sym_ref.set_constant_pool(pool);
+    }
+
+    #[inline]
+    pub fn constant_pool(&self) -> &ConstantPool {
+        return self.sym_ref.constant_pool();
+    }
+
+    #[inline]
+    pub fn name(&self) -> &str {
+        return self.name.as_str();
+    }
+
+    #[inline]
+    pub fn descriptor(&self) -> &str {
+        return self.descriptor.as_str();
+    }
+
+    #[inline]
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.sym_ref.resolved_class();
     }
 }

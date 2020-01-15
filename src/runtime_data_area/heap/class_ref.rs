@@ -11,4 +11,6 @@ impl ClassRef {
     pub fn new_class_ref(cp:Rc<ConstantPool>,info:&ConstantClassInfo) -> ClassRef {
         return ClassRef{sym_ref:SymRef::new_sym_ref(cp,info)}
     }
+
+
 }

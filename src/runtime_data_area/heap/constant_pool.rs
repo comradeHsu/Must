@@ -2,14 +2,15 @@ use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use crate::class_file::constant_pool::{ConstantPool as Pool, ConstantInfoEnum};
 use crate::runtime_data_area::heap::constant_pool::Constant::*;
+use std::cell::RefCell;
 
 pub struct ConstantPool {
-    class:Rc<Class>,
+    class:Rc<RefCell<Class>>,
     constants:Vec<Constant>
 }
 
 impl ConstantPool {
-    pub fn new_constant_pool(class:Rc<Class>,pool:Pool) -> ConstantPool {
+    pub fn new_constant_pool(class:Rc<RefCell<Class>>,pool:Pool) -> ConstantPool {
         let size = pool.len();
         let mut constants = Vec::with_capacity(size);
         let mut index = 0usize;
@@ -33,6 +34,18 @@ impl ConstantPool {
             }
         }
         return ConstantPool{ class, constants };
+    }
+
+    pub fn get_constant(&self, index:usize) -> &Constant {
+        let constant = self.constants.get(index);
+        if constant.is_none() {
+            panic!("No constants at index {}", index);
+        }
+        return constant.unwrap();
+    }
+
+    pub fn class(&self) -> &Rc<RefCell<Class>> {
+        return &self.class;
     }
 }
 
