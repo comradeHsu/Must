@@ -45,6 +45,16 @@ use crate::instructions::control::lookup_switch::{LookUpSwitch};
 use crate::instructions::extended::wide::Wide;
 use crate::instructions::extended::ifnull::{IfNull, IfNonNull};
 use crate::instructions::extended::goto_w::GotoW;
+use crate::instructions::references::get_static::GetStatic;
+use crate::instructions::references::put_static::PutStatic;
+use crate::instructions::references::get_field::GetField;
+use crate::instructions::references::put_field::PutField;
+use crate::instructions::references::invoke_virtual::InvokeVirtual;
+use crate::instructions::references::invoke_special::InvokeSpecial;
+use crate::instructions::references::new::New;
+use crate::instructions::references::check_cast::CheckCast;
+use crate::instructions::references::instance_of::InstanceOf;
+use crate::instructions::constants::ldc::{LDC, LDCw, LDC2w};
 
 pub mod base;
 mod constants;
@@ -78,9 +88,9 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0x0f => Box::new(Dconst1::new()),
         0x10 => Box::new(BiPush::new()),
         0x11 => Box::new(SiPush::new()),
-//        0x12 => {},
-//        0x13 => {},
-//        0x14 => {},
+        0x12 => Box::new(LDC::new()),
+        0x13 => Box::new(LDCw::new()),
+        0x14 => Box::new(LDC2w::new()),
         0x15 => Box::new(ILoad::new()),
         0x16 => Box::new(LLoad::new()),
         0x17 => Box::new(FLoad::new()),
@@ -238,22 +248,22 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
 //        0xaf => {},
 //        0xb0 => {},
 //        0xb1 => {},
-//        0xb2 => {},
-//        0xb3 => {},
-//        0xb4 => {},
-//        0xb5 => {},
-//        0xb6 => {},
-//        0xb7 => {},
+        0xb2 => Box::new(GetStatic::new()),
+        0xb3 => Box::new(PutStatic::new()),
+        0xb4 => Box::new(GetField::new()),
+        0xb5 => Box::new(PutField::new()),
+        0xb6 => Box::new(InvokeVirtual::new()),
+        0xb7 => Box::new(InvokeSpecial::new()),
 //        0xb8 => {},
 //        0xb9 => {},
 //        0xba => {},
-//        0xbb => {},
+        0xbb => Box::new(New::new()),
 //        0xbc => {},
 //        0xbd => {},
 //        0xbe => {},
 //        0xbf => {},
-//        0xc0 => {},
-//        0xc1 => {},
+        0xc0 => Box::new(CheckCast::new()),
+        0xc1 => Box::new(InstanceOf::new()),
 //        0xc2 => {},
 //        0xc3 => {},
         0xc4 => Box::new(Wide::new()),

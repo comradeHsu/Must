@@ -2,18 +2,17 @@ use crate::instructions::base::instruction::{ConstantPoolInstruction, Instructio
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
-use std::borrow::Borrow;
 
-pub struct InstanceOf(ConstantPoolInstruction);
+pub struct CheckCast(ConstantPoolInstruction);
 
-impl InstanceOf {
+impl CheckCast {
     #[inline]
-    pub const fn new() -> InstanceOf {
-        return InstanceOf(ConstantPoolInstruction::new());
+    pub const fn new() -> CheckCast {
+        return CheckCast(ConstantPoolInstruction::new());
     }
 }
 
-impl Instruction for InstanceOf {
+impl Instruction for CheckCast {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);
     }
@@ -22,7 +21,6 @@ impl Instruction for InstanceOf {
         let stack = frame.operand_stack().expect("stack is none");
         let reference = stack.pop_ref();
         if reference.is_none() {
-            stack.push_int(0);
             return;
         }
         let cp = (*frame.method().class()).borrow().constant_pool();
@@ -32,10 +30,8 @@ impl Instruction for InstanceOf {
             _ => {}
         };
         let class = class_ref.resolved_class();
-        if (*reference.unwrap()).borrow().is_instance_of(class) {
-            stack.push_int(1);
-        } else {
-            stack.push_int(0);
+        if !(*reference.unwrap()).borrow().is_instance_of(class) {
+            panic!("java.lang.ClassCastException");
         }
     }
 }

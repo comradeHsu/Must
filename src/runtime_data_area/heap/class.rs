@@ -138,6 +138,44 @@ impl Class {
         return false
     }
 
+    pub fn is_assignable_from(&self, other:&Self) -> bool {
+        if self == other {
+            return true
+        }
+        if !self.is_interface() {
+            return other.is_sub_class_of(self);
+        } else {
+            return other.is_implements(self);
+        }
+    }
+
+    // self implements iface
+    pub fn is_implements(&self, interface: &Self) -> bool {
+        let mut super_class = self.super_class.as_ref();
+        while super_class.is_some() {
+            let interfaces = super_class.unwrap()
+                .borrow().interfaces.as_ref().unwrap();
+            for i in interfaces {
+                let interface_class = (*i).borrow();
+                if interface_class == interface || interface_class.is_sub_interface_of(interface){
+                    return true;
+                }
+            }
+            super_class = (*super_class.unwrap()).borrow().super_class.as_ref();
+        }
+        return false
+    }
+
+    ///
+    pub fn is_sub_interface_of(&self, other:&Self) -> bool {
+        for interface in &self.interfaces.unwrap() {
+            if interface == other || (*interface).borrow().is_sub_interface_of(other){
+                return true;
+            }
+        }
+        return false
+    }
+
     #[inline]
     pub fn new_object(class:&Rc<RefCell<Class>>) -> Object {
         return Object::new(class);

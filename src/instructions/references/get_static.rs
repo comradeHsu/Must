@@ -5,6 +5,13 @@ use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
 
 pub struct GetStatic(ConstantPoolInstruction);
 
+impl GetStatic {
+    #[inline]
+    pub const fn new() -> GetStatic {
+        return GetStatic(ConstantPoolInstruction::new());
+    }
+}
+
 impl Instruction for GetStatic {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

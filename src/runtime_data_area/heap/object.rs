@@ -3,6 +3,7 @@ use std::rc::Rc;
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
+use std::borrow::Borrow;
 
 //#[derive(Debug, PartialEq)]
 pub struct Object {
@@ -19,11 +20,17 @@ impl Object {
         };
     }
 
-    // getters
+    #[inline]
     pub fn class(&self) -> Rc<RefCell<Class>> {
         return self.class.clone();
     }
+    #[inline]
     pub fn fields(&mut self) -> &mut Slots {
         return self.fields.as_mut().unwrap();
+    }
+
+    #[inline]
+    pub fn is_instance_of(&self, class:Rc<RefCell<Class>>) -> bool {
+        return (*class).borrow().is_assignable_from(self.class.as_ref().borrow().borrow());
     }
 }

@@ -8,6 +8,13 @@ use std::cell::RefCell;
 
 pub struct New(ConstantPoolInstruction);
 
+impl New {
+    #[inline]
+    pub const fn new() -> New {
+        return New(ConstantPoolInstruction::new());
+    }
+}
+
 impl Instruction for New {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.0.fetch_operands(reader);

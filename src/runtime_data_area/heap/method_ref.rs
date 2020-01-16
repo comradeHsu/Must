@@ -18,4 +18,14 @@ impl MethodRef {
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
     }
+
+    #[inline]
+    pub fn name(&self) -> &str {
+        return self.member_ref.name();
+    }
+
+    #[inline]
+    pub fn descriptor(&self) -> &str {
+        return self.member_ref.descriptor();
+    }
 }
