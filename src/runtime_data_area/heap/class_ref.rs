@@ -2,6 +2,8 @@ use crate::runtime_data_area::heap::sym_ref::SymRef;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::rc::Rc;
 use crate::class_file::constant_pool::ConstantClassInfo;
+use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 
 pub struct ClassRef {
     sym_ref:SymRef
@@ -12,5 +14,8 @@ impl ClassRef {
         return ClassRef{sym_ref:SymRef::new_sym_ref(cp,info)}
     }
 
-
+    #[inline]
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.sym_ref.resolved_class();
+    }
 }

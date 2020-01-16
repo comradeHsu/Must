@@ -5,10 +5,11 @@ use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantFieldRefInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
+use std::borrow::Borrow;
 
 pub struct FieldRef {
     member_ref:MemberRef,
-    field:Option<Rc<Field>>
+    field:Option<Rc<RefCell<Field>>>
 }
 
 impl FieldRef {
@@ -21,15 +22,15 @@ impl FieldRef {
         return field_ref;
     }
 
-    fn ResolvedField(&mut self) -> Field {
+    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
         if self.field.is_none(){
-            self.resolveFieldRef()
+            self.resolve_field_ref()
         }
-        return self.field
+        return self.field.as_ref();
     }
 
     // jvms 5.4.3.2
-    fn resolveFieldRef(&mut self) {
+    fn resolve_field_ref(&mut self) {
         let class = self.member_ref.constant_pool().class();
         let resolved_class = self.member_ref.resolved_class();
         let field = FieldRef::lookup_field(&resolved_class,
@@ -38,20 +39,20 @@ impl FieldRef {
         if field.is_none(){
             panic!("java.lang.NoSuchFieldError");
         }
-        if !field.isAccessibleTo(d) {
+        if !field.unwrap().is_accessible_to((*class).borrow()) {
             panic!("java.lang.IllegalAccessError")
         }
 
-        self.field = field
+        self.field = Some(field.unwrap().clone());
     }
 
-    fn lookup_field(class: &Rc<RefCell<Class>>, name:&str, descriptor:&str) -> Option<&Field> {
-        for field in (*class).borrow().fields() {
+    fn lookup_field(class: &Rc<RefCell<Class>>, name:&str, descriptor:&str) -> Option<&Rc<RefCell<Field>>> {
+        for field in (*class).borrow().borrow().fields() {
             if field.name() == name && field.descriptor() == descriptor{
                 return Some(field);
             }
         }
-        let interfaces = (*class).borrow().interfaces();
+        let interfaces = (*class).borrow().borrow().interfaces();
         if interfaces.is_some() {
             for interface in interfaces.as_ref().unwrap() {
                 let field = FieldRef::lookup_field(interface,name,descriptor);
@@ -60,7 +61,7 @@ impl FieldRef {
                 }
             }
         }
-        let super_class =  (*class).borrow().super_class();
+        let super_class =  (*class).borrow().borrow().super_class();
         if super_class.is_some() {
             return FieldRef::lookup_field(super_class.unwrap(),name,descriptor);
         }

@@ -2,6 +2,7 @@ use crate::runtime_data_area::heap::class_member::ClassMember;
 use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
+use std::cell::RefCell;
 
 pub struct Method {
     class_member:ClassMember,
@@ -22,7 +23,7 @@ impl Method {
         };
     }
 
-    pub fn new_methods(class:Rc<Class>,infos:&Vec<MemberInfo>) -> Vec<Method> {
+    pub fn new_methods(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Method> {
         let mut methods = Vec::with_capacity(infos.len());
         for info in infos {
             let mut method = Method::new();
@@ -44,5 +45,15 @@ impl Method {
             },
             None => {}
         }
+    }
+
+    #[inline]
+    pub fn class(&self) -> Rc<RefCell<Class>> {
+        return self.class_member.class();
+    }
+
+    #[inline]
+    pub fn name(&self) -> &str {
+        return self.class_member.name();
     }
 }

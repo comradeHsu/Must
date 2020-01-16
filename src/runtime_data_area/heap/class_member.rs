@@ -2,12 +2,14 @@ use std::rc::Rc;
 use crate::runtime_data_area::heap::class::Class;
 use crate::class_file::member_info::MemberInfo;
 use crate::runtime_data_area::heap::access_flags::{PUBLIC, FINAL, PRIVATE, PROTECTED, STATIC, SYNTHETIC};
+use std::cell::RefCell;
+use std::borrow::Borrow;
 
 pub struct ClassMember {
     access_flags:u16,
     name:String,
     descriptor:String,
-    class:Rc<Class>
+    class:Rc<RefCell<Class>>
 }
 
 impl ClassMember {
@@ -18,7 +20,7 @@ impl ClassMember {
             access_flags: 0,
             name: "".to_string(),
             descriptor: "".to_string(),
-            class: Rc::new(Class::new())
+            class: Rc::new(RefCell::new(Class::none()))
         };
     }
 
@@ -29,7 +31,7 @@ impl ClassMember {
     }
 
     #[inline]
-    pub fn set_class(&mut self,class:Rc<Class>) {
+    pub fn set_class(&mut self,class:Rc<RefCell<Class>>) {
         self.class = class;
     }
 
@@ -41,6 +43,11 @@ impl ClassMember {
     #[inline]
     pub fn name(&self) -> &str{
         return self.name.as_str();
+    }
+
+    #[inline]
+    pub fn class(&self) -> Rc<RefCell<Class>> {
+        return self.class.clone();
     }
 
     #[inline]
@@ -79,7 +86,7 @@ impl ClassMember {
         }
         let other = self.class.clone();
         if self.is_protected() {
-            return class == other.as_ref() || class.is_sub_class_of(other.as_ref()) ||
+            return class == other.as_ref() || class.is_sub_class_of((*other).borrow().borrow()) ||
                 other.package_name() == class.package_name();
         }
         if !self.is_private() {

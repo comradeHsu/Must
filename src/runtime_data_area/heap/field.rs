@@ -2,6 +2,7 @@ use crate::runtime_data_area::heap::class_member::ClassMember;
 use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
+use std::cell::RefCell;
 
 pub struct Field {
     class_member:ClassMember,
@@ -19,7 +20,7 @@ impl Field {
         };
     }
 
-    pub fn new_fields(class:Rc<Class>,infos:&Vec<MemberInfo>) -> Vec<Field> {
+    pub fn new_fields(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Field> {
         let mut fields = Vec::with_capacity(infos.len());
         for info in infos {
             let mut field = Field::new();
@@ -72,6 +73,11 @@ impl Field {
     pub fn is_long_or_double(&self) -> bool {
         let descriptor = self.class_member.descriptor();
         return descriptor == "J" || descriptor == "D";
+    }
+
+    #[inline]
+    pub fn is_accessible_to(&self, class:&Class) -> bool {
+        return self.class_member.is_accessible_to(class);
     }
 
 }

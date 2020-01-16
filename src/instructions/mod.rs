@@ -56,6 +56,7 @@ mod conversions;
 mod comparisons;
 mod control;
 mod extended;
+mod references;
 
 pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
     let inst:Box<dyn Instruction> = match opcode {

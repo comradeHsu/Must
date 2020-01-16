@@ -93,6 +93,18 @@ pub struct ConstantPoolInstruction {
     index:usize
 }
 
+impl ConstantPoolInstruction {
+    #[inline]
+    pub fn new() -> ConstantPoolInstruction {
+        return ConstantPoolInstruction{ index: 0 };
+    }
+
+    #[inline]
+    pub fn index(&self) -> usize {
+        return self.index;
+    }
+}
+
 impl Instruction for ConstantPoolInstruction {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.index = reader.read_u16() as usize;

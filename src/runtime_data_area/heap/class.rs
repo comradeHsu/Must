@@ -9,6 +9,7 @@ use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::slot::Slot;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::cell::RefCell;
+use crate::runtime_data_area::heap::object::Object;
 
 type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -18,7 +19,7 @@ pub struct Class {
     super_class_name:String,
     interfaces_name:Vec<&'static str>,
     constant_pool:Rc<ConstantPool>,
-    fields:Vec<Field>,
+    fields:Vec<Rc<RefCell<Field>>>,
     methods:Vec<Method>,
     loader:Rc<RefCell<ClassLoader>>,
     super_class:Option<Rc<RefCell<Class>>>,
@@ -138,6 +139,11 @@ impl Class {
     }
 
     #[inline]
+    pub fn new_object(class:&Rc<RefCell<Class>>) -> Object {
+        return Object::new(class);
+    }
+
+    #[inline]
     pub fn set_class_loader(&mut self,class_loader:Rc<RefCell<ClassLoader>>) {
         self.loader = class_loader;
     }
@@ -206,7 +212,7 @@ impl Class {
     }
 
     #[inline]
-    pub fn fields(&self) -> &Vec<Field> {
+    pub fn fields(&self) -> &Vec<Rc<RefCell<Field>>> {
         return &self.fields;
     }
 
@@ -221,7 +227,7 @@ impl Class {
     }
 
     #[inline]
-    pub fn mut_fields(&mut self) -> &mut Vec<Field> {
+    pub fn mut_fields(&mut self) -> &mut Vec<Rc<RefCell<Field>>> {
         return &mut self.fields;
     }
 

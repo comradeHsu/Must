@@ -3,11 +3,13 @@ use crate::runtime_data_area::operand_stack::OperandStack;
 use crate::runtime_data_area::thread::Thread;
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::runtime_data_area::heap::method::Method;
 
 pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
     thread:Rc<RefCell<Thread>>,
+    method:&'static Method,
     next_pc:i32
 }
 
@@ -28,6 +30,7 @@ impl Frame {
             local_vars: LocalVars::with_capacity(max_locals),
             operand_stack: OperandStack::new(max_stack),
             thread: thread,
+            method: &(),
             next_pc: 0
         };
     }
@@ -55,6 +58,11 @@ impl Frame {
     #[inline]
     pub fn thread(&self) -> Rc<RefCell<Thread>> {
         return self.thread.clone();
+    }
+
+    #[inline]
+    pub fn method(&self) -> &Method {
+        return self.method;
     }
 }
 

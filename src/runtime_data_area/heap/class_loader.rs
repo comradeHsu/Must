@@ -109,9 +109,9 @@ impl ClassLoader {
         if super_class.is_some() {
             slot_id = (*super_class.unwrap()).borrow().instance_slot_count() as usize;
         }
-        for field in (*class).borrow_mut().mut_fields() {
+        for field in (*class).borrow_mut().fields() {
             if !field.parent().is_static() {
-                field.set_slot(slot_id);
+                (*field).borrow_mut().set_slot(slot_id);
                 slot_id += 1;
                 if field.is_long_or_double() {
                     slot_id += 1;
@@ -123,9 +123,9 @@ impl ClassLoader {
 
     fn calc_static_field_slot_ids(class:Rc<RefCell<Class>>) {
         let mut slot_id = 0usize;
-        for field in (*class).borrow_mut().mut_fields() {
+        for field in (*class).borrow_mut().fields() {
             if field.parent().is_static() {
-                field.set_slot(slot_id);
+                (*field).borrow_mut().set_slot(slot_id);
                 slot_id += 1;
                 if field.is_long_or_double() {
                     slot_id += 1;
@@ -140,18 +140,18 @@ impl ClassLoader {
         for field in (*class).borrow_mut().mut_fields() {
             let parent = field.parent();
             if parent.is_static() && parent.is_final(){
-                ClassLoader::init_static_final_var(class.clone(), field)
+                ClassLoader::init_static_final_var(class.clone(), field.clone())
             }
         }
     }
 
-    fn init_static_final_var(class:Rc<RefCell<Class>>, field: &mut Field) {
+    fn init_static_final_var(class:Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
         let vars = (*class).borrow_mut().mut_static_vars().expect("static_vars is none");
         let pool = (*class).borrow().constant_pool();
-        let cp_index = field.const_value_index();
-        let slot_id = field.slot_id();
+        let cp_index = (*field).borrow().const_value_index();
+        let slot_id = (*field).borrow().slot_id();
         if cp_index > 0 {
-            match field.parent().descriptor() {
+            match (*field).borrow().parent().descriptor() {
                 "Z" | "B" | "C" | "S" | "I" => {
                     let val = pool.get_constant(cp_index);
                     match val {
