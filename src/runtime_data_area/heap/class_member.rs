@@ -4,7 +4,9 @@ use crate::class_file::member_info::MemberInfo;
 use crate::runtime_data_area::heap::access_flags::{PUBLIC, FINAL, PRIVATE, PROTECTED, STATIC, SYNTHETIC};
 use std::cell::RefCell;
 use std::borrow::Borrow;
+use std::ops::Deref;
 
+#[derive(Debug)]
 pub struct ClassMember {
     access_flags:u16,
     name:String,
@@ -84,14 +86,15 @@ impl ClassMember {
         if self.is_public() {
             return true;
         }
-        let other = self.class.clone();
+        let o = self.class.clone();
+        let other = (*o).borrow();
         if self.is_protected() {
-            return class == other.as_ref() || class.is_sub_class_of((*other).borrow().borrow()) ||
+            return class == other.deref() || class.is_sub_class_of(other.deref()) ||
                 other.package_name() == class.package_name();
         }
         if !self.is_private() {
             return other.package_name() == class.package_name();
         }
-        return class == other;
+        return class == other.deref();
     }
 }

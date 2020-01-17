@@ -229,7 +229,7 @@ pub fn new(tag:u8, cp: Rc<ConstantPool>) -> ConstantInfoEnum {
     return constant_info;
 }
 
-struct ConstantIntegerInfo {
+pub struct ConstantIntegerInfo {
     val:i32
 }
 
@@ -250,7 +250,7 @@ impl ConstantInfo for ConstantIntegerInfo {
     }
 }
 
-struct ConstantFloatInfo {
+pub struct ConstantFloatInfo {
     val:f32
 }
 
@@ -272,7 +272,7 @@ impl ConstantInfo for ConstantFloatInfo {
     }
 }
 
-struct ConstantLongInfo {
+pub struct ConstantLongInfo {
     val:i64
 }
 
@@ -294,7 +294,7 @@ impl ConstantInfo for ConstantLongInfo {
     }
 }
 
-struct ConstantDoubleInfo {
+pub struct ConstantDoubleInfo {
     val:f64
 }
 
@@ -319,7 +319,7 @@ impl ConstantInfo for ConstantDoubleInfo {
     }
 }
 
-struct ConstantUtf8Info {
+pub struct ConstantUtf8Info {
     val:String
 }
 
@@ -337,7 +337,7 @@ impl ConstantInfo for ConstantUtf8Info {
     }
 }
 
-struct ConstantStringInfo {
+pub struct ConstantStringInfo {
     cp:Rc<ConstantPool>,
     string_index:u16
 }
@@ -379,7 +379,7 @@ impl ConstantInfo for ConstantClassInfo {
     }
 }
 
-struct ConstantNameAndTypeInfo {
+pub struct ConstantNameAndTypeInfo {
     name_index:u16,
     desc_index:u16
 }
@@ -410,6 +410,7 @@ impl ConstantMemberRefInfo {
     }
 
     pub fn class_name(&self) -> &str {
+        println!("ConstantMemberRefInfo pool len:{}",self.cp.len());
         return self.cp.get_class_name(self.class_index as usize);
     }
 
@@ -469,7 +470,7 @@ impl ConstantInfo for ConstantInterfaceMethodRefInfo {
     }
 }
 
-struct ConstantInvokeDynamicInfo {
+pub struct ConstantInvokeDynamicInfo {
     bootstrap_method_attr_index: u16,
     name_and_type_index: u16
 }
@@ -481,7 +482,7 @@ impl ConstantInfo for ConstantInvokeDynamicInfo {
     }
 }
 
-struct ConstantMethodHandleInfo {
+pub struct ConstantMethodHandleInfo {
     reference_kind:u8,
     reference_index:u16
 }
@@ -493,7 +494,7 @@ impl ConstantInfo for ConstantMethodHandleInfo {
     }
 }
 
-struct ConstantMethodTypeInfo {
+pub struct ConstantMethodTypeInfo {
     descriptor_index:u16
 }
 

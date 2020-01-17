@@ -10,7 +10,7 @@ pub struct New(ConstantPoolInstruction);
 
 impl New {
     #[inline]
-    pub const fn new() -> New {
+    pub fn new() -> New {
         return New(ConstantPoolInstruction::new());
     }
 }
@@ -23,10 +23,11 @@ impl Instruction for New {
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
         let pool = (*class).borrow().constant_pool();
-        let constant = pool.get_constant(self.0.index());
+        let mut borrow_pool = (*pool).borrow_mut();
+        let constant = borrow_pool.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
         let class = class_ref.resolved_class();
         let ref_class= (*class).borrow();

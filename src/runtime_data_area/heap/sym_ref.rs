@@ -5,9 +5,11 @@ use crate::class_file::constant_pool::ConstantClassInfo;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use std::ops::Deref;
 use std::cell::RefCell;
+use std::borrow::Borrow;
 
+#[derive(Debug)]
 pub struct SymRef {
-    constant_pool:Rc<ConstantPool>,
+    constant_pool:Rc<RefCell<ConstantPool>>,
     class_name:String,
     class:Option<Rc<RefCell<Class>>>
 }
@@ -16,14 +18,14 @@ impl SymRef {
     #[inline]
     pub fn new() -> SymRef{
         return SymRef{
-            constant_pool: Rc::new(ConstantPool::into()),
+            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
             class_name: "".to_string(),
             class: None
         };
     }
 
     #[inline]
-    pub fn with_pool(pool:Rc<ConstantPool>) -> SymRef{
+    pub fn with_pool(pool:Rc<RefCell<ConstantPool>>) -> SymRef{
         return SymRef{
             constant_pool: pool,
             class_name: "".to_string(),
@@ -31,7 +33,7 @@ impl SymRef {
         };
     }
 
-    pub fn new_sym_ref(cp:Rc<ConstantPool>,info:&ConstantClassInfo) -> SymRef {
+    pub fn new_sym_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantClassInfo) -> SymRef {
         return SymRef{
             constant_pool: cp,
             class_name: info.name().to_string(),
@@ -45,27 +47,28 @@ impl SymRef {
     }
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<ConstantPool>) {
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
         self.constant_pool = pool;
     }
 
     #[inline]
-    pub fn constant_pool(&self) -> &ConstantPool {
-        return self.constant_pool.as_ref();
+    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
+        return self.constant_pool.clone();
     }
 
     pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
         if self.class.is_none() {
             self.resolved_class_ref();
         }
-        return self.class.expect("this ref has not class").clone();
+        let class = self.class.as_ref().unwrap();
+        return class.clone();
     }
 
     pub fn resolved_class_ref(&mut self) {
-        let class = self.constant_pool.class();
+        let class = (*self.constant_pool).borrow().class().clone();
         let class_loader = (*class).borrow().loader();
         let ref_class = ClassLoader::load_class(class_loader,self.class_name.as_str());
-        if !(*ref_class).borrow().is_accessible_to((*class).borrow().deref()) {
+        if !(*ref_class).borrow().is_accessible_to((*class).borrow().borrow().deref()) {
             panic!("java.lang.IllegalAccessError");
         }
         self.class = Some(ref_class);

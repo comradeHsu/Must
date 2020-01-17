@@ -4,6 +4,7 @@ use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
 
+#[derive(Debug)]
 pub struct Method {
     class_member:ClassMember,
     max_stack:usize,
@@ -23,14 +24,14 @@ impl Method {
         };
     }
 
-    pub fn new_methods(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Method> {
+    pub fn new_methods(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Rc<Method>> {
         let mut methods = Vec::with_capacity(infos.len());
         for info in infos {
             let mut method = Method::new();
             method.class_member.set_class(class.clone());
             method.class_member.copy_member_info(info);
             method.copy_attributes(info);
-            methods.push(method);
+            methods.push(Rc::new(method));
         }
         return methods;
     }
@@ -55,5 +56,25 @@ impl Method {
     #[inline]
     pub fn name(&self) -> &str {
         return self.class_member.name();
+    }
+
+    #[inline]
+    pub fn descriptor(&self) -> &str {
+        return self.class_member.descriptor();
+    }
+
+    #[inline]
+    pub fn max_stack(&self) -> usize {
+        return self.max_stack;
+    }
+
+    #[inline]
+    pub fn max_locals(&self) -> usize {
+        return self.max_locals;
+    }
+
+    #[inline]
+    pub fn code(&self) -> &Vec<u8> {
+        return &self.code;
     }
 }

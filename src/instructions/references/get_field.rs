@@ -7,7 +7,7 @@ pub struct GetField(ConstantPoolInstruction);
 
 impl GetField {
     #[inline]
-    pub const fn new() -> GetField {
+    pub fn new() -> GetField {
         return GetField(ConstantPoolInstruction::new());
     }
 }
@@ -19,10 +19,11 @@ impl Instruction for GetField {
 
     fn execute(&mut self, frame: &mut Frame) {
         let cp = (*frame.method().class()).borrow().constant_pool();
-        let constant = cp.get_constant(self.0.index());
+        let mut borrow_cp = (*cp).borrow_mut();
+        let constant = borrow_cp.get_constant(self.0.index());
         let field_ref = match constant {
             FieldReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
         let field_option = field_ref.resolved_field();
         let field = (*field_option.unwrap()).borrow();
@@ -37,7 +38,8 @@ impl Instruction for GetField {
         }
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
-        let slots = (*class).borrow_mut().mut_static_vars().expect("slots is none");
+        let mut borrow_class = (*class).borrow_mut();
+        let slots = borrow_class.mut_static_vars().expect("slots is none");
         let first_char = desc.chars().next().unwrap();
         match first_char {
             'Z'|'B'|'C'|'S'|'I' => stack.push_int(slots.get_int(slot_id)),

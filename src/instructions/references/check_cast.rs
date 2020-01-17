@@ -7,7 +7,7 @@ pub struct CheckCast(ConstantPoolInstruction);
 
 impl CheckCast {
     #[inline]
-    pub const fn new() -> CheckCast {
+    pub fn new() -> CheckCast {
         return CheckCast(ConstantPoolInstruction::new());
     }
 }
@@ -24,10 +24,11 @@ impl Instruction for CheckCast {
             return;
         }
         let cp = (*frame.method().class()).borrow().constant_pool();
-        let constant = cp.get_constant(self.0.index());
+        let mut borrow_cp = (*cp).borrow_mut();
+        let constant = borrow_cp.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
         let class = class_ref.resolved_class();
         if !(*reference.unwrap()).borrow().is_instance_of(class) {

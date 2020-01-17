@@ -5,6 +5,7 @@ use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 
+#[derive(Debug)]
 pub struct MemberRef {
     sym_ref:SymRef,
     name:String,
@@ -14,7 +15,7 @@ pub struct MemberRef {
 impl MemberRef {
 
     #[inline]
-    pub fn with_pool(pool:Rc<ConstantPool>) -> MemberRef {
+    pub fn with_pool(pool:Rc<RefCell<ConstantPool>>) -> MemberRef {
         return MemberRef{
             sym_ref: SymRef::with_pool(pool),
             name: "".to_string(),
@@ -30,12 +31,12 @@ impl MemberRef {
     }
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<ConstantPool>) {
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
         self.sym_ref.set_constant_pool(pool);
     }
 
     #[inline]
-    pub fn constant_pool(&self) -> &ConstantPool {
+    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
         return self.sym_ref.constant_pool();
     }
 

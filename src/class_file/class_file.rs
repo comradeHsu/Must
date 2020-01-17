@@ -81,6 +81,7 @@ impl ClassFile {
     }
 
     pub fn constant_pool(&self) -> &ConstantPool {
+        println!("pool len:{}",self.constant_pool.len());
         return &self.constant_pool;
     }
 
@@ -107,10 +108,10 @@ impl ClassFile {
         return "" // 只有 java.lang.Object没有超类
     }
 
-    pub fn interface_names(&self) -> Vec<&str> {
+    pub fn interface_names(&self) -> Vec<String> {
         let mut interface_names = Vec::new();
         for index in &self.interfaces {
-            interface_names.push(self.constant_pool.get_class_name(*index as usize));
+            interface_names.push(self.constant_pool.get_class_name(*index as usize).to_string());
         }
         return interface_names;
     }

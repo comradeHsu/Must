@@ -10,18 +10,21 @@ use crate::runtime_data_area::slot::Slot;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
+use core::mem;
+use std::ops::Deref;
 
 type Interfaces = Vec<Rc<RefCell<Class>>>;
 
+#[derive(Debug)]
 pub struct Class {
     access_flags:u16,
     name:String,
     super_class_name:String,
-    interfaces_name:Vec<&'static str>,
-    constant_pool:Rc<ConstantPool>,
+    interfaces_name:Vec<String>,
+    constant_pool:Rc<RefCell<ConstantPool>>,
     fields:Vec<Rc<RefCell<Field>>>,
-    methods:Vec<Method>,
-    loader:Rc<RefCell<ClassLoader>>,
+    methods:Vec<Rc<Method>>,
+    loader:Option<Rc<RefCell<ClassLoader>>>,
     super_class:Option<Rc<RefCell<Class>>>,
     interfaces:Option<Interfaces>,
     instance_slot_count:u32,
@@ -38,10 +41,10 @@ impl Class {
             name: "".to_string(),
             super_class_name: "".to_string(),
             interfaces_name: vec![],
-            constant_pool: Rc::new(()),
+            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
             fields: vec![],
             methods: vec![],
-            loader: Rc::new(()),
+            loader: None,
             super_class: None,
             interfaces: None,
             instance_slot_count: 0,
@@ -51,22 +54,27 @@ impl Class {
     }
 
     #[inline]
-    pub fn new(class_file:ClassFile) -> Class {
-        return Class{
+    pub fn new(class_file:ClassFile) -> Rc<RefCell<Class>> {
+        let mut class = Class{
             access_flags: class_file.access_flags(),
             name: class_file.class_name().to_string(),
             super_class_name: class_file.super_class_name().to_string(),
             interfaces_name: class_file.interface_names(),
-            constant_pool: Rc::new(()),
+            constant_pool: ConstantPool::new_constant_pool(None,class_file.constant_pool()),
             fields: vec![],
             methods: vec![],
-            loader: Rc::new(()),
+            loader: None,
             super_class: None,
             interfaces: None,
             instance_slot_count: 0,
             static_slot_count: 0,
             static_vars: None
         };
+        let mut point = Rc::new(RefCell::new(class));
+        (*point).borrow_mut().constant_pool.borrow_mut().set_class(point.clone());
+        (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
+        (*point).borrow_mut().fields = Field::new_fields(point.clone(),class_file.fields());
+        return point;
     }
 
     #[inline]
@@ -128,12 +136,14 @@ impl Class {
 
     // self extends c
     pub fn is_sub_class_of(&self, other:&Self) -> bool {
-        let mut super_class = self.super_class.as_ref();
+        let mut super_class = self.super_class.clone();
         while super_class.is_some() {
-            if other == (*super_class.unwrap()).borrow() {
+            let rc = super_class.unwrap();
+            let rc_super_class = (*rc).borrow();
+            if other == rc_super_class.deref() {
                 return true;
             }
-            super_class = (*super_class.unwrap()).borrow().super_class.as_ref();
+            super_class = rc_super_class.super_class.clone();
         }
         return false
     }
@@ -151,39 +161,52 @@ impl Class {
 
     // self implements iface
     pub fn is_implements(&self, interface: &Self) -> bool {
-        let mut super_class = self.super_class.as_ref();
+        let mut super_class = self.super_class.clone();
         while super_class.is_some() {
-            let interfaces = super_class.unwrap()
-                .borrow().interfaces.as_ref().unwrap();
+            let rc = super_class.unwrap();
+            let ref_class = (*rc).borrow();
+            let interfaces = ref_class.interfaces.as_ref().unwrap();
             for i in interfaces {
                 let interface_class = (*i).borrow();
-                if interface_class == interface || interface_class.is_sub_interface_of(interface){
+                if interface_class.deref() == interface || interface_class.is_sub_interface_of(interface){
                     return true;
                 }
             }
-            super_class = (*super_class.unwrap()).borrow().super_class.as_ref();
+            super_class = ref_class.super_class.clone();
         }
         return false
     }
 
     ///
     pub fn is_sub_interface_of(&self, other:&Self) -> bool {
-        for interface in &self.interfaces.unwrap() {
-            if interface == other || (*interface).borrow().is_sub_interface_of(other){
+        let interfaces = self.interfaces.as_ref().unwrap();
+        for interface in interfaces {
+            let interface = interface.clone();
+            if (*interface).borrow().deref() == other || (*interface).borrow().is_sub_interface_of(other){
                 return true;
             }
         }
         return false
     }
 
+    pub fn get_main_method(&self) -> Option<Rc<Method>> {
+        for method in self.methods() {
+            let method = method.clone();
+            if  method.name() == "main" && method.descriptor() ==  "([Ljava/lang/String;)V" {
+                return Some(method);
+            }
+        }
+        return None;
+    }
+
     #[inline]
     pub fn new_object(class:&Rc<RefCell<Class>>) -> Object {
-        return Object::new(class);
+        return Object::new(class.clone());
     }
 
     #[inline]
     pub fn set_class_loader(&mut self,class_loader:Rc<RefCell<ClassLoader>>) {
-        self.loader = class_loader;
+        self.loader = Some(class_loader);
     }
 
     #[inline]
@@ -222,13 +245,14 @@ impl Class {
     }
 
     #[inline]
-    pub fn interfaces_name(&self) -> &Vec<&str> {
+    pub fn interfaces_name(&self) -> &Vec<String> {
         return &self.interfaces_name;
     }
 
     #[inline]
     pub fn loader(&self) -> Rc<RefCell<ClassLoader>>{
-        return self.loader.clone();
+        let loader = self.loader.as_ref().unwrap();
+        return loader.clone();
     }
 
     #[inline]
@@ -255,12 +279,17 @@ impl Class {
     }
 
     #[inline]
-    pub fn interfaces(&self) -> &Option<Interfaces> {
-        return &self.interfaces;
+    pub fn interfaces(&self) -> Option<&Interfaces> {
+        return self.interfaces.as_ref();
     }
 
     #[inline]
-    pub fn constant_pool(&self) -> Rc<ConstantPool> {
+    pub fn methods(&self) -> &Vec<Rc<Method>> {
+        return &self.methods;
+    }
+
+    #[inline]
+    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
         return self.constant_pool.clone();
     }
 
@@ -274,3 +303,21 @@ impl Class {
         return self.static_vars.as_mut();
     }
 }
+
+impl PartialEq for Class {
+    fn eq(&self, other: &Self) -> bool {
+        if self.name() == other.name() {
+            return true;
+        }
+        return false;
+    }
+}
+
+//impl PartialEq for &Class {
+//    fn eq(&self, other: &Self) -> bool {
+//        if self.name() == other.name() {
+//            return true;
+//        }
+//        return false;
+//    }
+//}

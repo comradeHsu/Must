@@ -6,14 +6,16 @@ use crate::class_file::constant_pool::ConstantFieldRefInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 use std::borrow::Borrow;
+use std::ops::Deref;
 
+#[derive(Debug)]
 pub struct FieldRef {
     member_ref:MemberRef,
     field:Option<Rc<RefCell<Field>>>
 }
 
 impl FieldRef {
-    pub fn new_field_ref(cp:Rc<ConstantPool>,info:&ConstantFieldRefInfo) -> FieldRef {
+    pub fn new_field_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantFieldRefInfo) -> FieldRef {
         let mut field_ref = FieldRef{
             member_ref: MemberRef::with_pool(cp),
             field: None
@@ -31,7 +33,8 @@ impl FieldRef {
 
     // jvms 5.4.3.2
     fn resolve_field_ref(&mut self) {
-        let class = self.member_ref.constant_pool().class();
+        let cp = self.member_ref.constant_pool();
+        let class = (*cp).borrow().class();
         let resolved_class = self.member_ref.resolved_class();
         let field = FieldRef::lookup_field(&resolved_class,
                                            self.member_ref.name(),
@@ -39,29 +42,34 @@ impl FieldRef {
         if field.is_none(){
             panic!("java.lang.NoSuchFieldError");
         }
-        if !field.unwrap().is_accessible_to((*class).borrow()) {
+        let rc_field = field.unwrap().clone();
+        if !(*rc_field).borrow().is_accessible_to((*class).borrow().deref()) {
             panic!("java.lang.IllegalAccessError")
         }
 
-        self.field = Some(field.unwrap().clone());
+        self.field = Some(rc_field);
     }
 
-    fn lookup_field(class: &Rc<RefCell<Class>>, name:&str, descriptor:&str) -> Option<&Rc<RefCell<Field>>> {
-        for field in (*class).borrow().borrow().fields() {
-            if field.name() == name && field.descriptor() == descriptor{
-                return Some(field);
+    fn lookup_field(class: &Rc<RefCell<Class>>, name:&str, descriptor:&str) -> Option<Rc<RefCell<Field>>> {
+        let class = class.clone();
+        for field in (*class).borrow().fields() {
+            let rc_field = field.clone();
+            if (*rc_field).borrow().name() == name && (*rc_field).borrow().descriptor() == descriptor{
+                return Some(field.clone());
             }
         }
-        let interfaces = (*class).borrow().borrow().interfaces();
+        let borrow_class = (*class).borrow();
+        let interfaces = borrow_class.interfaces();
         if interfaces.is_some() {
-            for interface in interfaces.as_ref().unwrap() {
+            for interface in interfaces.unwrap() {
                 let field = FieldRef::lookup_field(interface,name,descriptor);
                 if field.is_some() {
                     return field;
                 }
             }
         }
-        let super_class =  (*class).borrow().borrow().super_class();
+        let borrow_class = (*class).borrow();
+        let super_class =  borrow_class.super_class();
         if super_class.is_some() {
             return FieldRef::lookup_field(super_class.unwrap(),name,descriptor);
         }

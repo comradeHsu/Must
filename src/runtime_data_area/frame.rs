@@ -9,20 +9,21 @@ pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
     thread:Rc<RefCell<Thread>>,
-    method:&'static Method,
+    method:Rc<Method>,
     next_pc:i32
 }
 
 impl Frame {
-//    #[inline]
-//    pub fn new() -> Frame {
-//        return Frame{
-//            local_vars: None,
-//            operand_stack: None,
-//            thread: &(),
-//            next_pc: 0
-//        };
-//    }
+    #[inline]
+    pub fn new(thread:Rc<RefCell<Thread>>,method:Rc<Method>) -> Frame {
+        return Frame{
+            local_vars: LocalVars::with_capacity(method.max_locals()),
+            operand_stack: OperandStack::new(method.max_stack()),
+            thread,
+            method,
+            next_pc: 0
+        };
+    }
 
     #[inline]
     pub fn with_capacity(thread:Rc<RefCell<Thread>>,max_locals:usize,max_stack:usize) -> Frame {
@@ -30,7 +31,7 @@ impl Frame {
             local_vars: LocalVars::with_capacity(max_locals),
             operand_stack: OperandStack::new(max_stack),
             thread: thread,
-            method: &(),
+            method: Rc::new(Method::new()),
             next_pc: 0
         };
     }
@@ -62,7 +63,7 @@ impl Frame {
 
     #[inline]
     pub fn method(&self) -> &Method {
-        return self.method;
+        return self.method.as_ref();
     }
 }
 

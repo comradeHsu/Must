@@ -7,7 +7,7 @@ pub struct PutField(ConstantPoolInstruction);
 
 impl PutField {
     #[inline]
-    pub const fn new() -> PutField {
+    pub fn new() -> PutField {
         return PutField(ConstantPoolInstruction::new());
     }
 }
@@ -21,10 +21,11 @@ impl Instruction for PutField {
         let current_method = frame.method();
         let current_class = current_method.class();
         let cp = (*current_class).borrow().constant_pool();
-        let constant = cp.get_constant(self.0.index());
+        let mut borrow_cp = (*cp).borrow_mut();
+        let constant = borrow_cp.get_constant(self.0.index());
         let field_ref = match constant {
             FieldReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
         let field_option = field_ref.resolved_field();
         let field = (*field_option.unwrap()).borrow();

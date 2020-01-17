@@ -8,25 +8,26 @@ use core::mem;
 use crate::runtime_data_area::heap::field_ref::FieldRef;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 
+#[derive(Debug)]
 pub struct ConstantPool {
-    class:Rc<RefCell<Class>>,
+    class:Option<Rc<RefCell<Class>>>,
     constants:Vec<Constant>
 }
 
 impl ConstantPool {
 
-    fn none() -> ConstantPool {
+    pub fn none() -> ConstantPool {
         return ConstantPool{
-            class: Rc::new(RefCell::new(Class::none())),
+            class: Option::None,
             constants: vec![]
         };
     }
 
-    pub fn new_constant_pool(class:Rc<RefCell<Class>>,pool:Pool) -> Rc<ConstantPool> {
+    pub fn new_constant_pool(class:Option<Rc<RefCell<Class>>>,pool:&Pool) -> Rc<RefCell<ConstantPool>> {
         let size = pool.len();
         let mut constants = Vec::with_capacity(size);
         let mut index = 0usize;
-        let mut cp = Rc::new(ConstantPool::none());
+        let mut cp = Rc::new(RefCell::new(ConstantPool::none()));
         while index < size {
             let info_enum = pool.get_info(index).unwrap();
             let constant = match info_enum {
@@ -44,23 +45,33 @@ impl ConstantPool {
                 ConstantInfoEnum::MethodRef(info) => {
                     MethodReference(MethodRef::new_method_ref(cp.clone(),info))
                 },
-                _ => {}
+                _ => panic!("Unknown constant type")
             };
             match constant {
-                Long(val) | Double(val) => {
+                Long(_) | Double(_) => {
                     constants.push(constant);
                     constants.push(None);
-                    i += 1;
+                    index += 1;
                 },
                 _ => constants.push(constant)
             }
         }
-        let mut pool = Rc::new(ConstantPool{ class, constants });
+        let mut pool = Rc::new(RefCell::new(
+            ConstantPool{ class, constants }
+        ));
         mem::swap(&mut pool,&mut cp);
         return cp;
     }
 
-    pub fn get_constant(&self, index:usize) -> &Constant {
+    pub fn get_constant(&mut self, index:usize) -> &mut Constant {
+        let constant = self.constants.get_mut(index);
+        if constant.is_none() {
+            panic!("No constants at index {}", index);
+        }
+        return constant.unwrap();
+    }
+
+    pub fn get_constant_immutable(&self, index:usize) -> &Constant {
         let constant = self.constants.get(index);
         if constant.is_none() {
             panic!("No constants at index {}", index);
@@ -68,11 +79,19 @@ impl ConstantPool {
         return constant.unwrap();
     }
 
-    pub fn class(&self) -> &Rc<RefCell<Class>> {
-        return &self.class;
+
+    pub fn class(&self) -> Rc<RefCell<Class>> {
+        let class = self.class.as_ref().unwrap();
+        return class.clone();
+    }
+
+    #[inline]
+    pub fn set_class(&mut self,class:Rc<RefCell<Class>>) {
+        return self.class = Some(class);
     }
 }
 
+#[derive(Debug)]
 pub enum Constant {
     None,
     Integer(i32),

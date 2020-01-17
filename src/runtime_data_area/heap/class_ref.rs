@@ -5,12 +5,13 @@ use crate::class_file::constant_pool::ConstantClassInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 
+#[derive(Debug)]
 pub struct ClassRef {
     sym_ref:SymRef
 }
 
 impl ClassRef {
-    pub fn new_class_ref(cp:Rc<ConstantPool>,info:&ConstantClassInfo) -> ClassRef {
+    pub fn new_class_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantClassInfo) -> ClassRef {
         return ClassRef{sym_ref:SymRef::new_sym_ref(cp,info)}
     }
 
