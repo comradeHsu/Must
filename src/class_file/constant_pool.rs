@@ -30,37 +30,43 @@ impl ConstantPool {
             match &constant_info {
                 Long(info) => {
                     i = i + 1;
+                    vec.push(constant_info);
                     vec.push(None);
-                    println!("Long")
+                    println!("Long");
+                    continue;
                 },
                 Double(info) => {
                     i = i + 1;
+                    vec.push(constant_info);
                     vec.push(None);
-                    println!("Double")
+                    println!("Double");
+                    continue;
                 },
                 _ => {}
             }
             vec.push(constant_info);
             i += 1;
         }
+        let mut count = 0;
         for info in &vec {
             match info {
-                None => println!("none"),
-                Utf8(x) => println!("utf-8"),
-                Integer(x)=> println!("int"),
-                Float(x)=> println!("float"),
-                Long(x)=> println!("long"),
-                Double(x)=> println!("double"),
-                Class(x)=> println!("class"),
-                Str(x)=> println!("str"),
-                FieldRef(x)=> println!("field"),
-                MethodRef(x)=> println!("method"),
-                InterfaceMethodRef(x)=> println!("interface_method"),
-                NameAndType(x)=> println!("name and type"),
-                MethodHandle(x)=> println!("method handle"),
-                MethodType(x)=> println!("method type"),
-                InvokeDynamic(x)=> println!("invoke")
+                None => println!("c:{}-none",count),
+                Utf8(x) => println!("c:{}-utf-8",count),
+                Integer(x)=> println!("c:{}-int",count),
+                Float(x)=> println!("c:{}-float",count),
+                Long(x)=> println!("c:{}-long",count),
+                Double(x)=> println!("c:{}-double",count),
+                Class(x)=> println!("c:{}-class",count),
+                Str(x)=> println!("c:{}-str",count),
+                FieldRef(x)=> println!("c:{}-field",count),
+                MethodRef(x)=> println!("c:{}-method",count),
+                InterfaceMethodRef(x)=> println!("c:{}-interface_method",count),
+                NameAndType(x)=> println!("c:{}-name and type",count),
+                MethodHandle(x)=> println!("c:{}-method handle",count),
+                MethodType(x)=> println!("c:{}-method type",count),
+                InvokeDynamic(x)=> println!("c:{}-invoke",count)
             }
+            count+=1;
         }
         let mut c = Rc::new(RefCell::new(ConstantPool{vec}));
         ConstantPool::post_constant_pool(c.clone());

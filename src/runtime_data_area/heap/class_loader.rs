@@ -89,6 +89,7 @@ impl ClassLoader {
     pub fn resolve_super_class(class:Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let super_class_name = class.super_class_name();
+        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
             let super_class =
                 ClassLoader::load_class(class.loader(),super_class_name.unwrap().as_str());
