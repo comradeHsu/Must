@@ -19,7 +19,7 @@ type Interfaces = Vec<Rc<RefCell<Class>>>;
 pub struct Class {
     access_flags:u16,
     name:String,
-    super_class_name:String,
+    super_class_name:Option<String>,
     interfaces_name:Vec<String>,
     constant_pool:Rc<RefCell<ConstantPool>>,
     fields:Vec<Rc<RefCell<Field>>>,
@@ -39,7 +39,7 @@ impl Class {
         return Class{
             access_flags: 0,
             name: "".to_string(),
-            super_class_name: "".to_string(),
+            super_class_name: None,
             interfaces_name: vec![],
             constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
             fields: vec![],
@@ -55,10 +55,11 @@ impl Class {
 
     #[inline]
     pub fn new(class_file:ClassFile) -> Rc<RefCell<Class>> {
+        let super_name = class_file.super_class_name();
         let mut class = Class{
             access_flags: class_file.access_flags(),
             name: class_file.class_name().to_string(),
-            super_class_name: class_file.super_class_name().to_string(),
+            super_class_name: super_name,
             interfaces_name: class_file.interface_names(),
             constant_pool: ConstantPool::new_constant_pool(None,class_file.constant_pool()),
             fields: vec![],
@@ -70,6 +71,7 @@ impl Class {
             static_slot_count: 0,
             static_vars: None
         };
+        println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
         (*point).borrow_mut().constant_pool.borrow_mut().set_class(point.clone());
         (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
@@ -240,8 +242,8 @@ impl Class {
     }
 
     #[inline]
-    pub fn super_class_name(&self) -> &str{
-        return self.super_class_name.as_str();
+    pub fn super_class_name(&self) -> Option<&String>{
+        return self.super_class_name.as_ref();
     }
 
     #[inline]

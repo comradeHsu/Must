@@ -2,9 +2,10 @@ use crate::class_file::constant_pool::ConstantPool;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct CodeAttribute {
-    cp:Rc<ConstantPool>,
+    cp:Rc<RefCell<ConstantPool>>,
     max_stack:u16,
     max_locals:u16,
     code:Vec<u8>,
@@ -15,7 +16,7 @@ pub struct CodeAttribute {
 impl CodeAttribute {
     pub fn new() -> CodeAttribute {
         return CodeAttribute{
-            cp: Rc::new(ConstantPool::new()),
+            cp: Rc::new(RefCell::new(ConstantPool::new())),
             max_stack: 0,
             max_locals: 0,
             code: vec![],
@@ -24,7 +25,7 @@ impl CodeAttribute {
         };
     }
 
-    pub fn with_cp(cp:Rc<ConstantPool>) -> CodeAttribute {
+    pub fn with_cp(cp:Rc<RefCell<ConstantPool>>) -> CodeAttribute {
         return CodeAttribute{
             cp,
             max_stack: 0,

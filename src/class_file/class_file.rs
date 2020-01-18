@@ -4,11 +4,13 @@ use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::vec::Vec;
 use std::rc::Rc;
+use std::cell::{RefCell, Ref};
+use std::borrow::Borrow;
 
 pub struct ClassFile {
     minor_version:u16,
     major_version:u16,
-    constant_pool:Rc<ConstantPool>,
+    constant_pool:Rc<RefCell<ConstantPool>>,
     access_flags:u16,
     this_class:u16,
     super_class:u16,
@@ -24,7 +26,7 @@ impl ClassFile {
         let mut class_file = ClassFile{
             minor_version: 0,
             major_version: 0,
-            constant_pool: Rc::new(ConstantPool::new()),
+            constant_pool: Rc::new(RefCell::new(ConstantPool::new())),
             access_flags: 0,
             this_class: 0,
             super_class: 0,
@@ -80,9 +82,8 @@ impl ClassFile {
         return self.major_version;
     }
 
-    pub fn constant_pool(&self) -> &ConstantPool {
-        println!("pool len:{}",self.constant_pool.len());
-        return &self.constant_pool;
+    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
+        return self.constant_pool.clone();
     }
 
     pub fn access_flags(&self) -> u16 {
@@ -97,21 +98,24 @@ impl ClassFile {
         return &self.methods;
     }
 
-    pub fn class_name(&self) -> &str {
-        return self.constant_pool.get_class_name(self.this_class as usize);
+    pub fn class_name(&self) -> String {
+        let clone = self.constant_pool.clone();
+        let borrow = (*clone).borrow();
+        return borrow.get_class_name(self.this_class as usize).to_owned();
     }
 
-    pub fn super_class_name(&self) -> &str {
+    pub fn super_class_name(&self) -> Option<String> {
         if self.super_class > 0 {
-            return self.constant_pool.get_class_name(self.super_class as usize);
+            let borrow = (*self.constant_pool).borrow();
+            return Some(borrow.get_class_name(self.super_class as usize).to_owned());
         }
-        return "" // 只有 java.lang.Object没有超类
+        return None // 只有 java.lang.Object没有超类
     }
 
     pub fn interface_names(&self) -> Vec<String> {
         let mut interface_names = Vec::new();
         for index in &self.interfaces {
-            interface_names.push(self.constant_pool.get_class_name(*index as usize).to_string());
+            interface_names.push((*self.constant_pool).borrow().get_class_name(*index as usize).to_string());
         }
         return interface_names;
     }
@@ -120,10 +124,10 @@ impl ClassFile {
         println!("ClassFile:");
         println!("  minor_version:{}",self.minor_version);
         println!("  major_version:{}",self.major_version);
-        println!("  constant_pool count:{}",&self.constant_pool.len());
+        println!("  constant_pool count:{}",(*self.constant_pool).borrow().len());
         println!("  access_flags:{}",self.access_flags);
         println!("  this_class:{}",self.class_name());
-        println!("  super_class_name:{}",self.super_class_name());
+        println!("  super_class_name:{}",self.super_class_name().unwrap());
         println!("  interface_names:[");
         let interface_names = self.interface_names();
         for interface_name in interface_names {
@@ -140,5 +144,28 @@ impl ClassFile {
             println!("    {},",field.name());
         }
         println!("  ]");
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::rc::Rc;
+    use core::mem;
+    use std::cell::RefCell;
+
+    #[test]
+    fn test_swap() {
+        let mut rc_1 = Rc::new("123");
+        let rc_2 = rc_1.clone();
+        let mut rc_3 = Rc::new("456");
+        mem::swap(&mut rc_1, &mut rc_3);
+        println!("rc_1:{},rc_2:{},rc_3:{}",rc_1,rc_2,rc_3);
+    }
+
+    #[test]
+    fn test_into_inner() {
+//        let mut rc_1 = Rc::new(RefCell::new("123"));
+//        let x = rc_1.into_inner();
+//        println!("rc_1:{:?},x:{}",rc_1,x);
     }
 }

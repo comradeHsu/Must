@@ -30,9 +30,12 @@ fn main() {
 fn start_jvm(cmd: &Cmd) {
     let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
     let class_path = Rc::new(cp);
+    println!("init classPath");
     let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
+    println!("init class_loader");
     let class_name = cmd.class.clone().replace('.',"/");
     let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
+    println!("init main_class");
     let main_method = (*main_class).borrow().get_main_method();
     if main_method.is_some() {
         interpret(main_method.unwrap());
@@ -54,21 +57,21 @@ fn load_class(class_name:&String,cp:&ClassPath) -> ClassFile {
     return class_file;
 }
 
-fn get_main_method(class_file:&ClassFile) -> Option<&MemberInfo> {
-    for method in class_file.methods() {
-        if  method.name() == "main" && method.descriptor() ==  "([Ljava/lang/String;)V" {
-            return Some(method);
-        }
-    }
-    return None;
-}
+//fn get_main_method(class_file:&ClassFile) -> Option<&MemberInfo> {
+//    for method in class_file.methods() {
+//        if  method.name().as_str() == "main" && method.descriptor().as_str() ==  "([Ljava/lang/String;)V" {
+//            return Some(method);
+//        }
+//    }
+//    return None;
+//}
 
 #[cfg(test)]
 mod tests{
     use std::env;
     use std::time::SystemTime;
     use crate::class_path::class_path::ClassPath;
-    use crate::{load_class, get_main_method};
+    use crate::{load_class};
     use crate::interpreter::interpret;
     use crate::cmd::Cmd;
     use std::rc::Rc;
@@ -87,7 +90,9 @@ mod tests{
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
+        println!("init classPath");
         let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
+        println!("init class_loader");
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();

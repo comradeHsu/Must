@@ -5,6 +5,7 @@ use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantInterfaceMethodRefInfo;
 use std::cell::RefCell;
 
+#[derive(Debug)]
 pub struct InterfaceMethodRef {
     member_ref:MemberRef,
     method:Rc<Method>

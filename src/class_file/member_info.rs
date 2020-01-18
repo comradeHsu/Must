@@ -7,9 +7,10 @@ use crate::class_file::code_attribute::CodeAttribute;
 use std::mem;
 use crate::class_file::attribute_info::Attribute::{Code, ConstantValue};
 use crate::class_file::constant_value_attribute::ConstantValueAttribute;
+use std::cell::RefCell;
 
 pub struct MemberInfo {
-    cp:Rc<ConstantPool>,
+    cp:Rc<RefCell<ConstantPool>>,
     access_flags:u16,
     name_index:u16,
     descriptor_index:u16,
@@ -17,7 +18,7 @@ pub struct MemberInfo {
 }
 
 impl MemberInfo {
-    pub fn read_member(reader:&mut ClassReader, cp: Rc<ConstantPool>) -> MemberInfo {
+    pub fn read_member(reader:&mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> MemberInfo {
         let mut mem =  MemberInfo{
             cp:cp.clone(),
             access_flags: reader.read_u16(),
@@ -29,7 +30,7 @@ impl MemberInfo {
         return mem;
     }
 
-    pub fn read_members(reader:&mut ClassReader, cp: Rc<ConstantPool>) -> Vec<MemberInfo> {
+    pub fn read_members(reader:&mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> Vec<MemberInfo> {
         let member_count = reader.read_u16();
         let mut members:Vec<MemberInfo> = Vec::new();
         for _i in 0..member_count {
@@ -43,12 +44,14 @@ impl MemberInfo {
         return self.access_flags;
     }
 
-    pub fn name(&self) -> &str {
-        return self.cp.get_utf8(self.name_index as usize);
+    pub fn name(&self) -> String {
+        let borrow = (*self.cp).borrow();
+        return borrow.get_utf8(self.name_index as usize).to_owned();
     }
 
-    pub fn descriptor(&self) -> &str {
-        return self.cp.get_utf8(self.descriptor_index as usize);
+    pub fn descriptor(&self) -> String {
+        let borrow = (*self.cp).borrow();
+        return borrow.get_utf8(self.descriptor_index as usize).to_owned();
     }
 
     pub fn code_attributes(&self) -> Option<&CodeAttribute>{

@@ -47,17 +47,17 @@ impl ClassLoader {
         let clone_loader = loader.clone();
 //        let mut_loader = (*clone_loader).borrow();
         let class_op = (*clone_loader).borrow().get_class(class_name);
+        println!("name:{},class_op:{}",class_name,class_op.is_some());
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
-        let class = (*loader).borrow_mut().load_non_array_class(class_name);
-        (*class).borrow_mut().set_class_loader(loader);
+        let class = ClassLoader::load_non_array_class(loader,class_name);
         return class;
     }
 
-    pub fn load_non_array_class(&mut self,class_name:&str) -> Rc<RefCell<Class>> {
-        let (bytes,entry) = self.read_class(class_name);
-        let class = self.define_class(bytes);
+    pub fn load_non_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
+        let (bytes,entry) = (*loader).borrow().read_class(class_name);
+        let class = ClassLoader::define_class(loader,bytes);
         ClassLoader::link(&class);
         return class;
     }
@@ -70,12 +70,14 @@ impl ClassLoader {
         return result.unwrap();
     }
 
-    pub fn define_class(&mut self,data:Vec<u8>) -> Rc<RefCell<Class>> {
+    pub fn define_class(loader:Rc<RefCell<ClassLoader>>,data:Vec<u8>) -> Rc<RefCell<Class>> {
         let mut class = ClassLoader::parse_class(data);
-//        class.set_class_loader(Rc::clone());
+        (*class).borrow_mut().set_class_loader(loader.clone());
+        println!("class:{:?}",(*class).borrow().name());
         ClassLoader::resolve_super_class(class.clone());
         ClassLoader::resolve_interfaces(class.clone());
-        self.class_map.insert((*class).borrow().name().to_string(),class.clone());
+        println!("class_name:{}",(*class).borrow().name());
+        (*loader).borrow_mut().class_map.insert((*class).borrow().name().to_string(),class.clone());
         return class;
     }
 
@@ -86,9 +88,10 @@ impl ClassLoader {
 
     pub fn resolve_super_class(class:Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
-        if class.name() != "java/lang/Object" {
+        let super_class_name = class.super_class_name();
+        if class.name() != "java/lang/Object" && super_class_name.is_some() {
             let super_class =
-                ClassLoader::load_class(class.loader(),class.super_class_name());
+                ClassLoader::load_class(class.loader(),super_class_name.unwrap().as_str());
             class.set_super_class(super_class);
         }
     }

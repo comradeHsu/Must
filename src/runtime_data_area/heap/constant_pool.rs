@@ -7,6 +7,7 @@ use crate::runtime_data_area::heap::class_ref::ClassRef;
 use core::mem;
 use crate::runtime_data_area::heap::field_ref::FieldRef;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
+use crate::runtime_data_area::heap::interface_method_ref::InterfaceMethodRef;
 
 #[derive(Debug)]
 pub struct ConstantPool {
@@ -23,13 +24,15 @@ impl ConstantPool {
         };
     }
 
-    pub fn new_constant_pool(class:Option<Rc<RefCell<Class>>>,pool:&Pool) -> Rc<RefCell<ConstantPool>> {
-        let size = pool.len();
+    pub fn new_constant_pool(class:Option<Rc<RefCell<Class>>>,pool:Rc<RefCell<Pool>>) -> Rc<RefCell<ConstantPool>> {
+        let borrow_pool = (*pool).borrow();
+        let size = borrow_pool.len();
         let mut constants = Vec::with_capacity(size);
         let mut index = 0usize;
         let mut cp = Rc::new(RefCell::new(ConstantPool::none()));
+        println!("step-1");
         while index < size {
-            let info_enum = pool.get_info(index).unwrap();
+            let info_enum = borrow_pool.get_info(index).unwrap();
             let constant = match info_enum {
                 ConstantInfoEnum::Integer(info) => Integer(info.val()),
                 ConstantInfoEnum::Float(info) => Float(info.val()),
@@ -45,7 +48,10 @@ impl ConstantPool {
                 ConstantInfoEnum::MethodRef(info) => {
                     MethodReference(MethodRef::new_method_ref(cp.clone(),info))
                 },
-                _ => panic!("Unknown constant type")
+                ConstantInfoEnum::InterfaceMethodRef(info) => {
+                    InterfaceMethodReference(InterfaceMethodRef::new_method_ref(cp.clone(),info))
+                },
+                _ => None
             };
             match constant {
                 Long(_) | Double(_) => {
@@ -53,9 +59,12 @@ impl ConstantPool {
                     constants.push(None);
                     index += 1;
                 },
+                None => {},
                 _ => constants.push(constant)
             }
+            index += 1;
         }
+        println!("step-2");
         let mut pool = Rc::new(RefCell::new(
             ConstantPool{ class, constants }
         ));
@@ -102,5 +111,5 @@ pub enum Constant {
     ClassReference(ClassRef),
     FieldReference(FieldRef),
     MethodReference(MethodRef),
-    InterfaceMethodRef()
+    InterfaceMethodReference(InterfaceMethodRef)
 }

@@ -5,6 +5,8 @@ use std::rc::Rc;
 use crate::class_file::makers_attribute::DeprecatedAttribute;
 use crate::class_file::member_info::display_16;
 use crate::class_file::constant_pool::ConstantInfoEnum::*;
+use std::cell::RefCell;
+use std::borrow::Borrow;
 
 //pub type ConstantPool = Vec<ConstantInfoEnum>;
 
@@ -18,9 +20,9 @@ impl ConstantPool {
         return ConstantPool{ vec: vec![] };
     }
 
-    pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<ConstantPool> {
+    pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<RefCell<ConstantPool>> {
         let cp_count = reader.read_u16();
-        let mut cp = Rc::new(ConstantPool::new());
+        let mut cp = Rc::new(RefCell::new(ConstantPool::new()));
         let mut vec: Vec<ConstantInfoEnum> = Vec::new();
         let mut i = 1;
         while i < cp_count {
@@ -41,9 +43,44 @@ impl ConstantPool {
             vec.push(constant_info);
             i += 1;
         }
-        let mut c = Rc::new(ConstantPool{vec});
-        mem::swap(&mut c, &mut cp);
-        return cp;
+        for info in &vec {
+            match info {
+                None => println!("none"),
+                Utf8(x) => println!("utf-8"),
+                Integer(x)=> println!("int"),
+                Float(x)=> println!("float"),
+                Long(x)=> println!("long"),
+                Double(x)=> println!("double"),
+                Class(x)=> println!("class"),
+                Str(x)=> println!("str"),
+                FieldRef(x)=> println!("field"),
+                MethodRef(x)=> println!("method"),
+                InterfaceMethodRef(x)=> println!("interface_method"),
+                NameAndType(x)=> println!("name and type"),
+                MethodHandle(x)=> println!("method handle"),
+                MethodType(x)=> println!("method type"),
+                InvokeDynamic(x)=> println!("invoke")
+            }
+        }
+        let mut c = Rc::new(RefCell::new(ConstantPool{vec}));
+        ConstantPool::post_constant_pool(c.clone());
+        return c;
+    }
+
+    fn post_constant_pool(rc_pool:Rc<RefCell<ConstantPool>>) {
+        let clone_pool = rc_pool.clone();
+        let pool = &mut (*clone_pool).borrow_mut().vec;
+        for c in pool {
+            match c {
+                Class(info) => info.cp = rc_pool.clone(),
+                Str(info) => info.cp = rc_pool.clone(),
+                FieldRef(info) => info.0.cp = rc_pool.clone(),
+                MethodRef(info) => info.0.cp = rc_pool.clone(),
+                MethodRef(info) => info.0.cp = rc_pool.clone(),
+                InterfaceMethodRef(info) => info.0.cp = rc_pool.clone(),
+                _ => {}
+            }
+        }
     }
 
     pub fn get_constant_info(&self, index: usize) -> &ConstantInfoEnum {
@@ -68,6 +105,7 @@ impl ConstantPool {
 
     pub fn get_class_name(&self, index: usize) -> &str {
         let info = self.get_constant_info(index);
+        println!("info:{:?}",index);
         let mut class = match info {
             Class(class) => class,
             _ => panic!("info is not NameAndType")
@@ -182,7 +220,7 @@ pub trait ConstantInfo {
     fn read_info(&mut self,reader: &mut ClassReader);
 }
 
-pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> ConstantInfoEnum {
+pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
     let dat = display_16(reader.data.clone());
     let tag = reader.read_u8();
     let mut constant_info = new(tag,cp);
@@ -190,7 +228,7 @@ pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Consta
     return constant_info;
 }
 
-pub fn new(tag:u8, cp: Rc<ConstantPool>) -> ConstantInfoEnum {
+pub fn new(tag:u8, cp: Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
     let constant_info:ConstantInfoEnum = match ConstantInfoTag::from(tag) {
         ConstantInfoTag::ConstantUtf8 => Utf8(ConstantUtf8Info{ val: String::new() }),
         ConstantInfoTag::ConstantInteger => Integer(ConstantIntegerInfo{ val: 0 }),
@@ -338,7 +376,7 @@ impl ConstantInfo for ConstantUtf8Info {
 }
 
 pub struct ConstantStringInfo {
-    cp:Rc<ConstantPool>,
+    cp:Rc<RefCell<ConstantPool>>,
     string_index:u16
 }
 
@@ -347,8 +385,9 @@ impl ConstantStringInfo {
         self.string_index = reader.read_u16();
     }
 
-    pub fn string(&self) -> &str {
-        return self.cp.get_utf8(self.string_index as usize);
+    pub fn string(&self) -> String {
+        let borrow = (*self.cp).borrow();
+        return borrow.get_utf8(self.string_index as usize).to_owned();
     }
 }
 
@@ -359,7 +398,7 @@ impl ConstantInfo for ConstantStringInfo {
 }
 
 pub struct ConstantClassInfo {
-    cp:Rc<ConstantPool>,
+    cp:Rc<RefCell<ConstantPool>>,
     name_index:u16
 }
 
@@ -368,8 +407,9 @@ impl ConstantClassInfo {
         self.name_index = reader.read_u16();
     }
 
-    pub fn name(&self) -> &str {
-        return "";
+    pub fn name(&self) -> String {
+        let borrow = (*self.cp).borrow();
+        return borrow.get_utf8(self.name_index as usize).to_owned();
     }
 }
 
@@ -398,7 +438,7 @@ impl ConstantInfo for ConstantNameAndTypeInfo {
 }
 
 pub struct ConstantMemberRefInfo {
-    cp:Rc<ConstantPool>,
+    cp:Rc<RefCell<ConstantPool>>,
     class_index:u16,
     name_and_type_index:u16
 }
@@ -409,13 +449,15 @@ impl ConstantMemberRefInfo {
         self.name_and_type_index = reader.read_u16();
     }
 
-    pub fn class_name(&self) -> &str {
-        println!("ConstantMemberRefInfo pool len:{}",self.cp.len());
-        return self.cp.get_class_name(self.class_index as usize);
+    pub fn class_name(&self) -> String {
+        let borrow = (*self.cp).borrow();
+        return borrow.get_class_name(self.class_index as usize).to_owned();
     }
 
-    pub fn name_and_descriptor(&self) -> (&str,&str) {
-        return self.cp.get_name_and_type(self.name_and_type_index as usize);
+    pub fn name_and_descriptor(&self) -> (String,String) {
+        let borrow = (*self.cp).borrow();
+        let (f,s)  = borrow.get_name_and_type(self.name_and_type_index as usize);
+        return (f.to_owned(),s.to_owned())
     }
 }
 
