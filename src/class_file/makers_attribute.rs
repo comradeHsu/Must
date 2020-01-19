@@ -13,7 +13,7 @@ impl DeprecatedAttribute {
 
 impl AttributeInfo for DeprecatedAttribute{
     fn read_info(&mut self, reader: &mut ClassReader) {
-        unimplemented!()
+
     }
 }
 

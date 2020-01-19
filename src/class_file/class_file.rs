@@ -127,7 +127,7 @@ impl ClassFile {
         println!("  constant_pool count:{}",(*self.constant_pool).borrow().len());
         println!("  access_flags:{}",self.access_flags);
         println!("  this_class:{}",self.class_name());
-        println!("  super_class_name:{}",self.super_class_name().unwrap());
+        println!("  super_class_name:{:?}",self.super_class_name());
         println!("  interface_names:[");
         let interface_names = self.interface_names();
         for interface_name in interface_names {

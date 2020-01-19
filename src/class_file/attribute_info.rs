@@ -25,11 +25,11 @@ pub trait AttributeInfo {
 }
 
 pub fn read_attributes(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> Vec<Attribute> {
-
+    let clone = reader.data.clone();
     let attr_count = reader.read_u16();
-
     let mut attributes = Vec::new();
-    for _ in 0..attr_count {
+    for _i in 0..attr_count {
+        println!("seq attr: {}",_i);
         attributes.push(read_attribute(reader,cp.clone()));
     }
     return attributes;
@@ -37,6 +37,7 @@ pub fn read_attributes(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> 
 
 pub fn read_attribute(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> Attribute {
     let attr_name_index = reader.read_u16();
+    println!("attr_name_index : {}",attr_name_index);
     let clone = cp.clone();
     let borrow_clone = (*clone).borrow();
     let attr_name = borrow_clone.get_utf8(attr_name_index as usize);
@@ -57,7 +58,7 @@ pub fn new(attr_name:&str,attr_len:u32,cp:Rc<RefCell<ConstantPool>>) -> Attribut
         "LocalVariableTable" => LocalVariableTable(LocalVariableTableAttribute::new()),
         "SourceFile" => SourceFile(SourceFileAttribute::with_cp(cp)),
         "Synthetic" => Synthetic(SyntheticAttribute::new()),
-        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
+//        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
         _ => Unparsed(UnparsedAttribute::new(attr_len))
     };
     return info;

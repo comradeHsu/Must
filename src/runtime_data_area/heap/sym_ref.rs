@@ -56,19 +56,18 @@ impl SymRef {
         return self.constant_pool.clone();
     }
 
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         if self.class.is_none() {
-            self.resolved_class_ref();
+            self.resolved_class_ref(class);
         }
         let class = self.class.as_ref().unwrap();
         return class.clone();
     }
 
-    pub fn resolved_class_ref(&mut self) {
-        let class = (*self.constant_pool).borrow().class().clone();
+    pub fn resolved_class_ref(&mut self,class:Rc<RefCell<Class>>) {
         let class_loader = (*class).borrow().loader();
         let ref_class = ClassLoader::load_class(class_loader,self.class_name.as_str());
-        if !(*ref_class).borrow().is_accessible_to((*class).borrow().borrow().deref()) {
+        if !(*ref_class).borrow().is_accessible_to((*class).borrow().deref()) {
             panic!("java.lang.IllegalAccessError");
         }
         self.class = Some(ref_class);

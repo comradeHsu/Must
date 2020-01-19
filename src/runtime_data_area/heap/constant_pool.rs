@@ -64,16 +64,28 @@ impl ConstantPool {
             }
             index += 1;
         }
-        println!("step-2");
         let mut pool = Rc::new(RefCell::new(
             ConstantPool{ class, constants }
         ));
-        mem::swap(&mut pool,&mut cp);
-        return cp;
+        let clone = pool.clone();
+        (*pool).borrow_mut().lazy_init_for_constants(&clone);
+        return pool;
+    }
+
+    fn lazy_init_for_constants(&mut self,pool:&Rc<RefCell<ConstantPool>>) {
+        for constant in &mut self.constants {
+            match constant {
+                ClassReference(c) => c.set_constant_pool(pool.clone()),
+                FieldReference(c) => c.set_constant_pool(pool.clone()),
+                MethodReference(c) => c.set_constant_pool(pool.clone()),
+                InterfaceMethodReference(c) => c.set_constant_pool(pool.clone()),
+                _ => {}
+            }
+        }
     }
 
     pub fn get_constant(&mut self, index:usize) -> &mut Constant {
-        let constant = self.constants.get_mut(index);
+        let constant = self.constants.get_mut(index-1);
         if constant.is_none() {
             panic!("No constants at index {}", index);
         }
@@ -81,7 +93,7 @@ impl ConstantPool {
     }
 
     pub fn get_constant_immutable(&self, index:usize) -> &Constant {
-        let constant = self.constants.get(index);
+        let constant = self.constants.get(index-1);
         if constant.is_none() {
             panic!("No constants at index {}", index);
         }

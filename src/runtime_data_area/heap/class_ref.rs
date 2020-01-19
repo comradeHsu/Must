@@ -16,7 +16,12 @@ impl ClassRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
-        return self.sym_ref.resolved_class();
+    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.sym_ref.resolved_class(class);
+    }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.sym_ref.set_constant_pool(pool);
     }
 }

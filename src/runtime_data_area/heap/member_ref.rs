@@ -51,7 +51,7 @@ impl MemberRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
-        return self.sym_ref.resolved_class();
+    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.sym_ref.resolved_class(class);
     }
 }

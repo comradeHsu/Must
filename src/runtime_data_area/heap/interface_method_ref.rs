@@ -20,4 +20,9 @@ impl InterfaceMethodRef {
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
     }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.member_ref.set_constant_pool(pool);
+    }
 }

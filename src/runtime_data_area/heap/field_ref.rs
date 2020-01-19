@@ -24,18 +24,16 @@ impl FieldRef {
         return field_ref;
     }
 
-    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self,class:Rc<RefCell<Class>>) -> Option<&Rc<RefCell<Field>>> {
         if self.field.is_none(){
-            self.resolve_field_ref()
+            self.resolve_field_ref(class)
         }
         return self.field.as_ref();
     }
 
     // jvms 5.4.3.2
-    fn resolve_field_ref(&mut self) {
-        let cp = self.member_ref.constant_pool();
-        let class = (*cp).borrow().class();
-        let resolved_class = self.member_ref.resolved_class();
+    fn resolve_field_ref(&mut self,class:Rc<RefCell<Class>>) {
+        let resolved_class = self.member_ref.resolved_class(class.clone());
         let field = FieldRef::lookup_field(&resolved_class,
                                            self.member_ref.name(),
                                            self.member_ref.descriptor());
@@ -74,5 +72,10 @@ impl FieldRef {
             return FieldRef::lookup_field(super_class.unwrap(),name,descriptor);
         }
         return None;
+    }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.member_ref.set_constant_pool(pool);
     }
 }

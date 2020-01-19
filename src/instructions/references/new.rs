@@ -29,7 +29,7 @@ impl Instruction for New {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let class = class_ref.resolved_class();
+        let class = class_ref.resolved_class(class.clone());
         let ref_class= (*class).borrow();
         if ref_class.is_interface() || ref_class.is_abstract(){
             panic!("java.lang.InstantiationError")

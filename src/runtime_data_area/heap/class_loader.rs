@@ -83,6 +83,7 @@ impl ClassLoader {
 
     pub fn parse_class(data:Vec<u8>) -> Rc<RefCell<Class>> {
         let class_file = ClassFile::parse(data);
+        class_file.display();
         return Class::new(class_file);
     }
 
@@ -129,10 +130,12 @@ impl ClassLoader {
 
     fn calc_instance_field_slot_ids(class:Rc<RefCell<Class>>) {
         let mut slot_id = 0usize;
-        let borrow_class =  (*class).borrow();
-        let super_class = borrow_class.super_class();
-        if super_class.is_some() {
-            slot_id = (**super_class.unwrap()).borrow().instance_slot_count() as usize;
+        {
+            let borrow_class = (*class).borrow();
+            let super_class = borrow_class.super_class();
+            if super_class.is_some() {
+                slot_id = (**super_class.unwrap()).borrow().instance_slot_count() as usize;
+            }
         }
         for field in (*class).borrow_mut().fields() {
             let field = field.clone();
@@ -163,20 +166,27 @@ impl ClassLoader {
     }
 
     fn alloc_and_init_static_vars(class:Rc<RefCell<Class>>) {
+        let count = (*class).borrow().static_slot_count() as usize;
         (*class).borrow_mut().set_static_vars(
-            Slots::with_capacity((*class).borrow().static_slot_count() as usize)
+            Slots::with_capacity(count)
         );
-        for field in (*class).borrow_mut().mut_fields() {
-            if field.borrow_mut().parent().is_static() && field.borrow_mut().parent().is_final(){
-                ClassLoader::init_static_final_var(class.clone(), field.clone())
+        let mut static_final_fields = Vec::new();
+        for field in (*class).borrow().fields() {
+            let is_static = field.borrow_mut().parent().is_static();
+            if is_static && field.borrow_mut().parent().is_final(){
+//                ClassLoader::init_static_final_var(class.clone(), field.clone())
+                static_final_fields.push(field.clone());
             }
+        }
+        for field in static_final_fields {
+            ClassLoader::init_static_final_var(class.clone(), field)
         }
     }
 
     fn init_static_final_var(class:Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
+        let pool = (*class).borrow().constant_pool();
         let mut borrow_class = (*class).borrow_mut();
         let vars = borrow_class.mut_static_vars().expect("static_vars is none");
-        let pool = (*class).borrow().constant_pool();
         let cp_index = (*field).borrow().const_value_index();
         let slot_id = (*field).borrow().slot_id();
         let borrow_pool = (*pool).borrow();

@@ -30,4 +30,9 @@ impl MethodRef {
     pub fn descriptor(&self) -> &str {
         return self.member_ref.descriptor();
     }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.member_ref.set_constant_pool(pool);
+    }
 }

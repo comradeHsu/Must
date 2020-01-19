@@ -85,12 +85,11 @@ mod tests{
             version_flag: false,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.GuassTest".to_string(),
+            class: "java.MyObject".to_string(),
             args: vec![]
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        println!("init classPath");
         let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
         println!("init class_loader");
         let class_name = cmd.class.clone().replace('.',"/");

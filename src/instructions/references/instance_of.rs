@@ -25,14 +25,15 @@ impl Instruction for InstanceOf {
             frame.operand_stack().expect("stack is none").push_int(0);
             return;
         }
-        let cp = (*frame.method().class()).borrow().constant_pool();
+        let class = frame.method().class();
+        let cp = (*class).borrow().constant_pool();
         let mut borrow_cp = (*cp).borrow_mut();
         let constant = borrow_cp.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let class = class_ref.resolved_class();
+        let class = class_ref.resolved_class(class);
         if (*reference.unwrap()).borrow().is_instance_of(class) {
             frame.operand_stack().expect("stack is none").push_int(1);
         } else {
