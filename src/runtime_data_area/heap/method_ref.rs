@@ -3,17 +3,19 @@ use crate::runtime_data_area::heap::method::Method;
 use std::rc::Rc;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantMethodRefInfo;
+use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 
 pub struct MethodRef {
     member_ref:MemberRef,
-    method:Rc<Method>
+    method:Option<Rc<Method>>
 }
 
 impl MethodRef {
     pub fn new_method_ref(cp:Rc<ConstantPool>,info:&ConstantMethodRefInfo) -> MethodRef {
         let mut field_ref = MethodRef{
             member_ref: MemberRef::with_pool(cp),
-            method: Rc::new(Method::new())
+            method: None
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
@@ -27,5 +29,37 @@ impl MethodRef {
     #[inline]
     pub fn descriptor(&self) -> &str {
         return self.member_ref.descriptor();
+    }
+
+    pub fn resolved_method(&self) -> Rc<Method> {
+        if self.method.is_none() {
+
+        }
+        return self.method;
+    }
+
+    pub fn resolved_method_ref(&self) {
+        let c = self.member_ref.constant_pool().class();
+        let class = self.member_ref.resolved_class();
+        if (*class).borrow().is_interface() {
+            panic!("java.lang.IncompatibleClassChangeError");
+        }
+
+    }
+
+    pub fn look_up_method(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
+
+    }
+
+    pub fn look_up_method_in_class(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
+        let super_class = (*class).borrow().super_class();
+        while super_class.is_some() {
+
+        }
+
+    }
+
+    pub fn look_up_method_in_interfaces(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
+
     }
 }

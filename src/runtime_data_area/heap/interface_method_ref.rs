@@ -3,6 +3,8 @@ use crate::runtime_data_area::heap::method::Method;
 use std::rc::Rc;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantInterfaceMethodRefInfo;
+use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 
 pub struct InterfaceMethodRef {
     member_ref:MemberRef,
@@ -18,4 +20,20 @@ impl InterfaceMethodRef {
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
     }
+
+    pub fn resolved_interface_method(&self) -> Rc<Method> {
+        if self.method.is_none() {
+
+        }
+        return self.method;
+    }
+
+    pub fn resolved_interface_method_ref(&self) -> Rc<Method> {
+
+    }
+
+    pub fn look_up_interface_method(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
+
+    }
+
 }
