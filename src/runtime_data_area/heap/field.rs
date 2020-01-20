@@ -4,6 +4,7 @@ use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
 
+#[derive(Debug)]
 pub struct Field {
     class_member:ClassMember,
     const_value_index:usize,
@@ -20,14 +21,14 @@ impl Field {
         };
     }
 
-    pub fn new_fields(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Field> {
+    pub fn new_fields(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Rc<RefCell<Field>>> {
         let mut fields = Vec::with_capacity(infos.len());
         for info in infos {
             let mut field = Field::new();
             field.class_member.set_class(class.clone());
             field.class_member.copy_member_info(info);
             field.copy_const_attribute(info);
-            fields.push(field);
+            fields.push(Rc::new(RefCell::new(field)));
         }
         return fields;
     }

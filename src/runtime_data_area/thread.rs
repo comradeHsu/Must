@@ -2,6 +2,7 @@ use crate::runtime_data_area::stack::Stack;
 use crate::runtime_data_area::frame::Frame;
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::runtime_data_area::heap::method::Method;
 
 pub struct Thread {
     pc:i32,
@@ -33,7 +34,7 @@ impl Thread {
         return self.stack.top();
     }
 
-    pub fn new_frame(thread:Rc<RefCell<Thread>>,max_locals:usize,max_stack:usize) -> Frame {
-        return Frame::with_capacity(thread,max_locals,max_stack);
+    pub fn new_frame(thread:Rc<RefCell<Thread>>,method:Rc<Method>) -> Frame {
+        return Frame::new(thread,method);
     }
 }

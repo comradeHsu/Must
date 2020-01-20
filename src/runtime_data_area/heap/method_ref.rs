@@ -6,13 +6,14 @@ use crate::class_file::constant_pool::ConstantMethodRefInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 
+#[derive(Debug)]
 pub struct MethodRef {
     member_ref:MemberRef,
     method:Option<Rc<Method>>
 }
 
 impl MethodRef {
-    pub fn new_method_ref(cp:Rc<ConstantPool>,info:&ConstantMethodRefInfo) -> MethodRef {
+    pub fn new_method_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantMethodRefInfo) -> MethodRef {
         let mut field_ref = MethodRef{
             member_ref: MemberRef::with_pool(cp),
             method: None
@@ -29,6 +30,11 @@ impl MethodRef {
     #[inline]
     pub fn descriptor(&self) -> &str {
         return self.member_ref.descriptor();
+    }
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.member_ref.set_constant_pool(pool);
     }
 
     pub fn resolved_method(&self) -> Rc<Method> {

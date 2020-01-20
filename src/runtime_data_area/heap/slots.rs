@@ -4,6 +4,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
 
+#[derive(Debug)]
 pub struct Slots {
     slots:Vec<Slot>
 }
@@ -15,7 +16,9 @@ impl Slots {
     }
 
     pub fn with_capacity(capacity:usize) -> Slots {
-        return Slots{ slots: Vec::with_capacity(capacity)};
+        let mut vec = Vec::new();
+        vec.resize_with(capacity,||{return Slot::new()});
+        return Slots{ slots: vec};
     }
 
     pub fn set_int(&mut self,index:usize,val:i32) {
@@ -67,9 +70,6 @@ impl Slots {
     }
 
     pub fn get_ref(&self,index:usize) -> Option<Rc<RefCell<Object>>> {
-        if self.slots[index].reference.is_none() {
-            panic!("slot is number");
-        }
-        return self.slots[index].reference;
+        return self.slots[index].reference.clone();
     }
 }

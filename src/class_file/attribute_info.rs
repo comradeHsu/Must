@@ -16,6 +16,7 @@ use crate::class_file::local_variable_type_table_attribute::LocalVariableTypeTab
 use crate::class_file::attribute_info::Attribute::*;
 use crate::class_file::inner_classes_attribute::InnerClassesAttribute;
 use crate::class_file::enclosing_method_attribute::EnclosingMethodAttribute;
+use std::cell::RefCell;
 
 pub trait AttributeInfo {
 
@@ -23,21 +24,23 @@ pub trait AttributeInfo {
 
 }
 
-pub fn read_attributes(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Vec<Attribute> {
-
+pub fn read_attributes(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> Vec<Attribute> {
+    let clone = reader.data.clone();
     let attr_count = reader.read_u16();
-
     let mut attributes = Vec::new();
-    for _ in 0..attr_count {
+    for _i in 0..attr_count {
+        println!("seq attr: {}",_i);
         attributes.push(read_attribute(reader,cp.clone()));
     }
     return attributes;
 }
 
-pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Attribute {
+pub fn read_attribute(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> Attribute {
     let attr_name_index = reader.read_u16();
+    println!("attr_name_index : {}",attr_name_index);
     let clone = cp.clone();
-    let attr_name = clone.get_utf8(attr_name_index as usize);
+    let borrow_clone = (*clone).borrow();
+    let attr_name = borrow_clone.get_utf8(attr_name_index as usize);
     let attr_len = reader.read_u32();
     let mut info = new(attr_name,attr_len,cp);
 
@@ -45,7 +48,7 @@ pub fn read_attribute(reader:&mut ClassReader,cp:Rc<ConstantPool>) -> Attribute 
     return info;
 }
 
-pub fn new(attr_name:&str,attr_len:u32,cp:Rc<ConstantPool>) -> Attribute {
+pub fn new(attr_name:&str,attr_len:u32,cp:Rc<RefCell<ConstantPool>>) -> Attribute {
     let info:Attribute = match attr_name {
         "Code" => Code(CodeAttribute::with_cp(cp)),
         "ConstantValue" => ConstantValue(ConstantValueAttribute::new()),
@@ -55,7 +58,7 @@ pub fn new(attr_name:&str,attr_len:u32,cp:Rc<ConstantPool>) -> Attribute {
         "LocalVariableTable" => LocalVariableTable(LocalVariableTableAttribute::new()),
         "SourceFile" => SourceFile(SourceFileAttribute::with_cp(cp)),
         "Synthetic" => Synthetic(SyntheticAttribute::new()),
-        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
+//        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
         _ => Unparsed(UnparsedAttribute::new(attr_len))
     };
     return info;

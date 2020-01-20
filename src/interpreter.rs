@@ -5,17 +5,14 @@ use crate::instructions::new_instruction;
 use std::rc::Rc;
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
+use crate::runtime_data_area::heap::method::Method;
 
-pub fn interpret(method_info:&MemberInfo) {
-    let code_attr = method_info.code_attributes().expect("code_attr is none");
-    let max_locals = code_attr.max_locals() as usize;
-    let max_stack = code_attr.max_stack() as usize;
-    let bytecode = code_attr.code();
+pub fn interpret(method:Rc<Method>) {
 
     let thread = Rc::new(RefCell::new(Thread::new_thread()));
-    let frame = Thread::new_frame(thread.clone(),max_locals, max_stack);
+    let frame = Thread::new_frame(thread.clone(),method.clone());
     (*thread).borrow_mut().push_frame(frame);
-    circulate(thread,bytecode);
+    circulate(thread,method.code());
 }
 
 pub fn circulate(mut thread:Rc<RefCell<Thread>>,bytecode:&Vec<u8>) {

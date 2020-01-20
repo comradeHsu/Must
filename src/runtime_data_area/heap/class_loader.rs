@@ -7,6 +7,8 @@ use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::constant_pool::Constant;
 use crate::runtime_data_area::heap::slots::Slots;
 use std::cell::{RefCell, RefMut};
+use std::fmt::{Debug, Formatter, Error};
+use std::borrow::Borrow;
 
 pub struct ClassLoader {
     class_path:Rc<ClassPath>,
@@ -27,19 +29,35 @@ impl ClassLoader {
         return &mut self.class_map;
     }
 
+    #[inline]
+    pub fn class_map_immutable(&self) -> &HashMap<String,Rc<RefCell<Class>>> {
+        return &self.class_map;
+    }
+
+    #[inline]
+    pub fn get_class(&self,name:&str) -> Option<Rc<RefCell<Class>>> {
+        let rs = self.class_map.get(name);
+        match rs {
+            Some(r) => return Some(r.clone()),
+            None => None
+        }
+    }
+
     pub fn load_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
-        let class_op = (*loader).borrow_mut().class_map().get(class_name);
+        let clone_loader = loader.clone();
+//        let mut_loader = (*clone_loader).borrow();
+        let class_op = (*clone_loader).borrow().get_class(class_name);
+        println!("name:{},class_op:{}",class_name,class_op.is_some());
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
-        let class = (*loader).borrow_mut().load_non_array_class(class_name);
-        (*class).borrow_mut().set_class_loader(loader);
+        let class = ClassLoader::load_non_array_class(loader,class_name);
         return class;
     }
 
-    pub fn load_non_array_class(&mut self,class_name:&str) -> Rc<RefCell<Class>> {
-        let (bytes,entry) = self.read_class(class_name);
-        let class = self.define_class(bytes);
+    pub fn load_non_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
+        let (bytes,entry) = (*loader).borrow().read_class(class_name);
+        let class = ClassLoader::define_class(loader,bytes);
         ClassLoader::link(&class);
         return class;
     }
@@ -52,36 +70,43 @@ impl ClassLoader {
         return result.unwrap();
     }
 
-    pub fn define_class(&mut self,data:Vec<u8>) -> Rc<RefCell<Class>> {
+    pub fn define_class(loader:Rc<RefCell<ClassLoader>>,data:Vec<u8>) -> Rc<RefCell<Class>> {
         let mut class = ClassLoader::parse_class(data);
-//        class.set_class_loader(Rc::clone());
-        ClassLoader::resolve_super_class(&mut class);
-        ClassLoader::resolve_interfaces(&mut class);
-        let class_point = Rc::new(RefCell::new(class));
-        self.class_map.insert(class_point.name().to_string(),class_point.clone());
-        return class_point;
+        (*class).borrow_mut().set_class_loader(loader.clone());
+        println!("class:{:?}",(*class).borrow().name());
+        ClassLoader::resolve_super_class(class.clone());
+        ClassLoader::resolve_interfaces(class.clone());
+        println!("class_name:{}",(*class).borrow().name());
+        (*loader).borrow_mut().class_map.insert((*class).borrow().name().to_string(),class.clone());
+        return class;
     }
 
-    pub fn parse_class(data:Vec<u8>) -> Class {
+    pub fn parse_class(data:Vec<u8>) -> Rc<RefCell<Class>> {
         let class_file = ClassFile::parse(data);
+        class_file.display();
         return Class::new(class_file);
     }
 
-    pub fn resolve_super_class(class:&mut Class) {
-        if class.name() != "java/lang/Object" {
-            let super_class = (*class.loader()).borrow_mut()
-                .load_class(class.super_class_name());
+    pub fn resolve_super_class(class:Rc<RefCell<Class>>) {
+        let mut class = (*class).borrow_mut();
+        let super_class_name = class.super_class_name();
+        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
+        if class.name() != "java/lang/Object" && super_class_name.is_some() {
+            let super_class =
+                ClassLoader::load_class(class.loader(),super_class_name.unwrap().as_str());
             class.set_super_class(super_class);
         }
     }
 
-    pub fn resolve_interfaces(class:&mut Class) {
+    pub fn resolve_interfaces(class:Rc<RefCell<Class>>) {
+        let mut class = (*class).borrow_mut();
         let interfaces_name = class.interfaces_name();
         let len = interfaces_name.len();
         if len > 0 {
             let mut interfaces = Vec::with_capacity(len);
             for name in interfaces_name {
-                let interface = (*class.loader()).borrow_mut().load_class(name);
+                let interface =
+                    ClassLoader::load_class(class.loader(),name);
                 interfaces.push(interface);
             }
             class.set_interfaces(interfaces);
@@ -105,15 +130,19 @@ impl ClassLoader {
 
     fn calc_instance_field_slot_ids(class:Rc<RefCell<Class>>) {
         let mut slot_id = 0usize;
-        let super_class = (*class).borrow().super_class();
-        if super_class.is_some() {
-            slot_id = (*super_class.unwrap()).borrow().instance_slot_count() as usize;
+        {
+            let borrow_class = (*class).borrow();
+            let super_class = borrow_class.super_class();
+            if super_class.is_some() {
+                slot_id = (**super_class.unwrap()).borrow().instance_slot_count() as usize;
+            }
         }
         for field in (*class).borrow_mut().fields() {
-            if !field.parent().is_static() {
+            let field = field.clone();
+            if !(*field).borrow().parent().is_static() {
                 (*field).borrow_mut().set_slot(slot_id);
                 slot_id += 1;
-                if field.is_long_or_double() {
+                if (*field).borrow().is_long_or_double() {
                     slot_id += 1;
                 }
             }
@@ -124,10 +153,11 @@ impl ClassLoader {
     fn calc_static_field_slot_ids(class:Rc<RefCell<Class>>) {
         let mut slot_id = 0usize;
         for field in (*class).borrow_mut().fields() {
-            if field.parent().is_static() {
+            let field = field.clone();
+            if (*field).borrow().parent().is_static() {
                 (*field).borrow_mut().set_slot(slot_id);
                 slot_id += 1;
-                if field.is_long_or_double() {
+                if (*field).borrow().is_long_or_double() {
                     slot_id += 1;
                 }
             }
@@ -136,45 +166,55 @@ impl ClassLoader {
     }
 
     fn alloc_and_init_static_vars(class:Rc<RefCell<Class>>) {
-        class.set_static_vars(Slots::with_capacity((*class).borrow().static_slot_count() as usize));
-        for field in (*class).borrow_mut().mut_fields() {
-            let parent = field.parent();
-            if parent.is_static() && parent.is_final(){
-                ClassLoader::init_static_final_var(class.clone(), field.clone())
+        let count = (*class).borrow().static_slot_count() as usize;
+        (*class).borrow_mut().set_static_vars(
+            Slots::with_capacity(count)
+        );
+        let mut static_final_fields = Vec::new();
+        for field in (*class).borrow().fields() {
+            let is_static = field.borrow_mut().parent().is_static();
+            if is_static && field.borrow_mut().parent().is_final(){
+//                ClassLoader::init_static_final_var(class.clone(), field.clone())
+                static_final_fields.push(field.clone());
             }
+        }
+        for field in static_final_fields {
+            ClassLoader::init_static_final_var(class.clone(), field)
         }
     }
 
     fn init_static_final_var(class:Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
-        let vars = (*class).borrow_mut().mut_static_vars().expect("static_vars is none");
         let pool = (*class).borrow().constant_pool();
+        let mut borrow_class = (*class).borrow_mut();
+        let vars = borrow_class.mut_static_vars().expect("static_vars is none");
         let cp_index = (*field).borrow().const_value_index();
         let slot_id = (*field).borrow().slot_id();
+        let borrow_pool = (*pool).borrow();
         if cp_index > 0 {
             match (*field).borrow().parent().descriptor() {
                 "Z" | "B" | "C" | "S" | "I" => {
-                    let val = pool.get_constant(cp_index);
+                    let val = borrow_pool.get_constant_immutable(cp_index);
                     match val {
                         Constant::Integer(v) => vars.set_int(slot_id,*v),
                         _ => {}
                     }
                 },
                 "J" => {
-                    let val = pool.get_constant(cp_index);
+                    let val = borrow_pool.get_constant_immutable(cp_index);
                     match val {
                         Constant::Long(v) => vars.set_long(slot_id,*v),
                         _ => {}
                     }
                 },
                 "F" => {
-                    let val = pool.get_constant(cp_index);
+                    let val = borrow_pool.get_constant_immutable(cp_index);
                     match val {
                         Constant::Float(v) => vars.set_float(slot_id,*v),
                         _ => {}
                     }
                 },
                 "D" => {
-                    let val = pool.get_constant(cp_index);
+                    let val = borrow_pool.get_constant_immutable(cp_index);
                     match val {
                         Constant::Double(v) => vars.set_double(slot_id,*v),
                         _ => {}
@@ -186,4 +226,10 @@ impl ClassLoader {
         }
     }
 
+}
+
+impl Debug for ClassLoader {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        unimplemented!()
+    }
 }

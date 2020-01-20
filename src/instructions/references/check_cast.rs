@@ -7,7 +7,7 @@ pub struct CheckCast(ConstantPoolInstruction);
 
 impl CheckCast {
     #[inline]
-    pub const fn new() -> CheckCast {
+    pub fn new() -> CheckCast {
         return CheckCast(ConstantPoolInstruction::new());
     }
 }
@@ -20,16 +20,19 @@ impl Instruction for CheckCast {
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("stack is none");
         let reference = stack.pop_ref();
+        stack.push_ref(reference.clone());
         if reference.is_none() {
             return;
         }
-        let cp = (*frame.method().class()).borrow().constant_pool();
-        let constant = cp.get_constant(self.0.index());
+        let c = frame.method().class();
+        let cp = (*c).borrow().constant_pool();
+        let mut borrow_cp = (*cp).borrow_mut();
+        let constant = borrow_cp.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
-        let class = class_ref.resolved_class();
+        let class = class_ref.resolved_class(c);
         if !(*reference.unwrap()).borrow().is_instance_of(class) {
             panic!("java.lang.ClassCastException");
         }

@@ -7,7 +7,7 @@ pub struct InvokeVirtual(ConstantPoolInstruction);
 
 impl InvokeVirtual {
     #[inline]
-    pub const fn new() -> InvokeVirtual {
+    pub fn new() -> InvokeVirtual {
         return InvokeVirtual(ConstantPoolInstruction::new());
     }
 }
@@ -19,21 +19,22 @@ impl Instruction for InvokeVirtual {
 
     fn execute(&mut self, frame: &mut Frame) {
         let cp = (*frame.method().class()).borrow().constant_pool();
-        let constant = cp.get_constant(self.0.index());
+        let mut borrow_cp = (*cp).borrow_mut();
+        let constant = borrow_cp.get_constant(self.0.index());
         let method_ref = match constant {
             MethodReference(c) => c,
-            _ => {}
+            _ => panic!("Unknown constant type")
         };
         if method_ref.name() == "println" {
             let stack = frame.operand_stack().expect("stack is none");
             match method_ref.descriptor() {
                 "(Z)V" => println!("{}",stack.pop_int() != 0),
-                "(C)V" => println!("{}",stack.pop_int() as char),
+                "(C)V" => println!("{}",stack.pop_int() as u8 as char),
                 "(I)V" | "(B)V" | "(S)V" => println!("{}",stack.pop_int()),
                 "(F)V" => println!("{}",stack.pop_float()),
                 "(J)V" => println!("{}",stack.pop_long()),
                 "(D)V" => println!("{}",stack.pop_double()),
-                _ => panic!("println: " + method_ref.descriptor())
+                _ => panic!("println: {}",method_ref.descriptor())
             }
             stack.pop_ref();
         }

@@ -6,13 +6,14 @@ use crate::class_file::constant_pool::ConstantInterfaceMethodRefInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 
+#[derive(Debug)]
 pub struct InterfaceMethodRef {
     member_ref:MemberRef,
     method:Rc<Method>
 }
 
 impl InterfaceMethodRef {
-    pub fn new_method_ref(cp:Rc<ConstantPool>,info:&ConstantInterfaceMethodRefInfo) -> InterfaceMethodRef {
+    pub fn new_method_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantInterfaceMethodRefInfo) -> InterfaceMethodRef {
         let mut field_ref = InterfaceMethodRef{
             member_ref: MemberRef::with_pool(cp),
             method: Rc::new(Method::new())
@@ -36,4 +37,9 @@ impl InterfaceMethodRef {
 
     }
 
+
+    #[inline]
+    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
+        self.member_ref.set_constant_pool(pool);
+    }
 }

@@ -1,7 +1,7 @@
 use crate::runtime_data_area::heap::access_flags::AccessFlag::*;
 
 pub enum AccessFlag {
-    Public = 0x0001,
+    Public(i32),
     Private(i32),
     Protected(i32),
     Static(i32),

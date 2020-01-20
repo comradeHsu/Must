@@ -6,7 +6,7 @@ pub struct InvokeSpecial(ConstantPoolInstruction);
 
 impl InvokeSpecial {
     #[inline]
-    pub const fn new() -> InvokeSpecial {
+    pub fn new() -> InvokeSpecial {
         return InvokeSpecial(ConstantPoolInstruction::new());
     }
 }
