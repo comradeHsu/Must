@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use crate::runtime_data_area::heap::class::Class;
 use crate::class_file::member_info::MemberInfo;
-use crate::runtime_data_area::heap::access_flags::{PUBLIC, FINAL, PRIVATE, PROTECTED, STATIC, SYNTHETIC};
+use crate::runtime_data_area::heap::access_flags::{PUBLIC, FINAL, PRIVATE, PROTECTED, STATIC, SYNTHETIC, ABSTRACT};
 use std::cell::RefCell;
 use std::borrow::Borrow;
 use std::ops::Deref;
@@ -80,6 +80,11 @@ impl ClassMember {
     #[inline]
     pub fn is_synthetic(&self) -> bool {
         return 0 != self.access_flags & SYNTHETIC;
+    }
+
+    #[inline]
+    pub fn is_abstract(&self) -> bool {
+        return 0 != self.access_flags & ABSTRACT;
     }
 
     pub fn is_accessible_to(&self, class:&Class) -> bool {

@@ -39,6 +39,11 @@ impl MethodRef {
         self.member_ref.set_constant_pool(pool);
     }
 
+    #[inline]
+    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class(class);
+    }
+
     pub fn resolved_method(&mut self) -> Option<Rc<Method>> {
         if self.method.is_none() {
             self.resolved_method_ref();

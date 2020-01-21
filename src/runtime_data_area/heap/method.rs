@@ -109,4 +109,14 @@ impl Method {
     pub fn is_static(&self) -> bool {
         return self.class_member.is_static();
     }
+
+    #[inline]
+    pub fn is_protected(&self) -> bool {
+        return self.class_member.is_protected();
+    }
+
+    #[inline]
+    pub fn is_abstract(&self) -> bool {
+        return self.class_member.is_abstract();
+    }
 }

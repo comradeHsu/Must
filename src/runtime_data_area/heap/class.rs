@@ -191,6 +191,11 @@ impl Class {
         return false
     }
 
+    // c extends self
+    pub fn is_super_class_of(&self, other:&Self) -> bool {
+        return other.is_sub_class_of(self);
+    }
+
     pub fn get_main_method(&self) -> Option<Rc<Method>> {
         for method in self.methods() {
             let method = method.clone();

@@ -34,6 +34,10 @@ impl Thread {
         return self.stack.top();
     }
 
+    pub fn current_frame_mut(&mut self) -> &mut Frame {
+        return self.stack.top_mut();
+    }
+
     pub fn new_frame(thread:Rc<RefCell<Thread>>,method:Rc<Method>) -> Frame {
         return Frame::new(thread,method);
     }

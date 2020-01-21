@@ -41,4 +41,12 @@ impl Stack {
         let frame = self.frames.get(self.size).unwrap();
         return frame;
     }
+
+    pub fn top_mut(&mut self) -> &mut Frame {
+        if self.frames.is_empty() {
+            panic!("jvm stack is empty!");
+        }
+        let frame = self.frames.get_mut(self.size).unwrap();
+        return frame;
+    }
 }

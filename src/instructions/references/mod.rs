@@ -7,3 +7,4 @@ pub mod instance_of;
 pub mod check_cast;
 pub mod invoke_special;
 pub mod invoke_virtual;
+pub mod invoke_static;
