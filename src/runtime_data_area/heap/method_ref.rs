@@ -4,7 +4,9 @@ use std::rc::Rc;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantMethodRefInfo;
 use std::cell::RefCell;
-use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::class::{Class, Interfaces};
+use std::borrow::Borrow;
+use std::ops::Deref;
 
 #[derive(Debug)]
 pub struct MethodRef {
@@ -37,35 +39,72 @@ impl MethodRef {
         self.member_ref.set_constant_pool(pool);
     }
 
-    pub fn resolved_method(&self) -> Rc<Method> {
+    pub fn resolved_method(&mut self) -> Option<Rc<Method>> {
         if self.method.is_none() {
-
+            self.resolved_method_ref();
         }
-        return self.method;
+        return self.method.clone();
     }
 
-    pub fn resolved_method_ref(&self) {
-        let c = self.member_ref.constant_pool().class();
-        let class = self.member_ref.resolved_class();
+    pub fn resolved_method_ref(&mut self) {
+        let pool = self.member_ref.constant_pool();
+        let c = (*pool).borrow().class();
+        let class = self.member_ref.resolved_class(c);
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
-
-    }
-
-    pub fn look_up_method(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
-
-    }
-
-    pub fn look_up_method_in_class(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
-        let super_class = (*class).borrow().super_class();
-        while super_class.is_some() {
-
+        let method = MethodRef::look_up_method(class.clone(),self.name(),self.descriptor());
+        if method.is_none() {
+            panic!("java.lang.NoSuchMethodError");
         }
+        if (*method.clone().unwrap()).is_accessible_to((*class).borrow().deref()) {
+            panic!("java.lang.IllegalAccessError");
+        }
+        self.method = method;
+    }
+
+    pub fn look_up_method(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Option<Rc<Method>> {
+        let mut method = MethodRef::look_up_method_in_class(class.clone(),name,desc);
+        if method.is_none() {
+            method = MethodRef::look_up_method_in_interfaces(
+                (*class).borrow().interfaces().unwrap(),name,desc);
+        }
+        return method;
+    }
+
+    pub fn look_up_method_in_class(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Option<Rc<Method>> {
+        let borrow = (*class).borrow();
+        let mut super_class = borrow.super_class();
+        while super_class.is_some() {
+            let value = super_class.unwrap().clone();
+            let borrow_value = (*value).borrow();
+            let methods = borrow_value.methods();
+            for method in methods {
+                if method.name() == name && method.descriptor() == desc {
+                    return Some(method.clone())
+                }
+            }
+            super_class = borrow_value.super_class();
+        }
+        return None;
 
     }
 
-    pub fn look_up_method_in_interfaces(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Method {
-
+    pub fn look_up_method_in_interfaces(interfaces:&Interfaces,name:&str,desc:&str) -> Option<Rc<Method>> {
+        for interface in interfaces {
+            let borrow = (**interface).borrow();
+            let methods = borrow.methods();
+            for method in methods {
+                if method.name() == name && method.descriptor() == desc {
+                    return Some(method.clone())
+                }
+            }
+            let method = MethodRef::look_up_method_in_interfaces(
+                (**interface).borrow().interfaces().unwrap(),name,desc);
+            if method.is_some() {
+                return method;
+            }
+        }
+        return None;
     }
 }

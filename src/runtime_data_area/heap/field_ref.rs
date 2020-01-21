@@ -69,7 +69,7 @@ impl FieldRef {
         let borrow_class = (*class).borrow();
         let super_class =  borrow_class.super_class();
         if super_class.is_some() {
-            return FieldRef::lookup_field(super_class.unwrap(),name,descriptor);
+            return FieldRef::lookup_field(&super_class.unwrap(),name,descriptor);
         }
         return None;
     }

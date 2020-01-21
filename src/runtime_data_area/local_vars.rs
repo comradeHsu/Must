@@ -74,6 +74,10 @@ impl LocalVars {
         let slot = self.vars.get(index).expect("index is wrong");
         return slot.get_ref();
     }
+
+    pub fn set_slot(&mut self, index: usize, val: Slot) {
+        self.vars[index] = val;
+    }
 }
 
 

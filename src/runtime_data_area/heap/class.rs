@@ -13,7 +13,7 @@ use crate::runtime_data_area::heap::object::Object;
 use core::mem;
 use std::ops::Deref;
 
-type Interfaces = Vec<Rc<RefCell<Class>>>;
+pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
 #[derive(Debug)]
 pub struct Class {
@@ -258,9 +258,9 @@ impl Class {
     }
 
     #[inline]
-    pub fn super_class(&self) -> Option<&Rc<RefCell<Class>>>{
+    pub fn super_class(&self) -> Option<Rc<RefCell<Class>>>{
         if self.super_class.is_some() {
-            return self.super_class.as_ref();
+            return self.super_class.clone();
         }
         return None;
     }

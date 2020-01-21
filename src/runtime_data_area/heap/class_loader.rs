@@ -134,7 +134,7 @@ impl ClassLoader {
             let borrow_class = (*class).borrow();
             let super_class = borrow_class.super_class();
             if super_class.is_some() {
-                slot_id = (**super_class.unwrap()).borrow().instance_slot_count() as usize;
+                slot_id = (*super_class.unwrap()).borrow().instance_slot_count() as usize;
             }
         }
         for field in (*class).borrow_mut().fields() {
