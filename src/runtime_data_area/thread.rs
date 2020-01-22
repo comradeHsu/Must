@@ -41,4 +41,10 @@ impl Thread {
     pub fn new_frame(thread:Rc<RefCell<Thread>>,method:Rc<Method>) -> Frame {
         return Frame::new(thread,method);
     }
+
+    #[inline]
+    pub fn is_stack_empty(&self) -> bool {
+        return self.stack.is_empty();
+    }
+
 }

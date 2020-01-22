@@ -6,6 +6,7 @@ use std::rc::Rc;
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method::Method;
+use crate::runtime_data_area::frame::Frame;
 
 pub fn interpret(method:Rc<Method>) {
 
@@ -16,21 +17,25 @@ pub fn interpret(method:Rc<Method>) {
 }
 
 pub fn circulate(mut thread:Rc<RefCell<Thread>>,bytecode:&Vec<u8>) {
-    let mut frame = (*thread).borrow_mut().pop_frame();
     let mut reader = BytecodeReader::new();
     loop {
-        let pc = frame.next_pc();
-        (*thread).borrow_mut().set_pc(pc);
+        let mut borrow_thread = (*thread).borrow_mut();
+        let pc = borrow_thread.current_frame().next_pc();
+        borrow_thread.set_pc(pc);
         let mut codes = Vec::with_capacity(bytecode.len());
         for c in bytecode {
             codes.push(*c);
         }
-        reader.reset(codes,pc);
+        reader.reset(codes, pc);
+        let mut frame = borrow_thread.current_frame_mut();
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);
         inst.fetch_operands(&mut reader);
         frame.set_next_pc(reader.pc());
-        inst.execute(&mut frame);
+        inst.execute(frame);
+        if borrow_thread.is_stack_empty() {
+            break;
+        }
     }
 }
 

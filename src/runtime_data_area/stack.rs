@@ -38,7 +38,8 @@ impl Stack {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
-        let frame = self.frames.get(self.size).unwrap();
+        println!("size:{},len:{}",self.size,self.frames.len());
+        let frame = self.frames.get(self.size-1).unwrap();
         return frame;
     }
 
@@ -46,7 +47,12 @@ impl Stack {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
-        let frame = self.frames.get_mut(self.size).unwrap();
+        let frame = self.frames.get_mut(self.size-1).unwrap();
         return frame;
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        return self.size == 0;
     }
 }

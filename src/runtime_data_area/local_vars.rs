@@ -4,6 +4,7 @@ use std::rc::Rc;
 use crate::utils::numbers::{i64_to_f64, f64_to_i64, i32_to_f32, f32_to_i32, i64_back_bytes_to_i32, i64_from_i32_bytes};
 use crate::runtime_data_area::heap::object::Object;
 
+#[derive(Clone)]
 pub struct LocalVars {
     vars:Vec<Slot>
 }

@@ -28,7 +28,7 @@ impl Instruction for InvokeStatic {
             _ => panic!("Unknown constant type")
         };
         let resolved_method = method_ref.resolved_method(pool_class).unwrap();
-        if resolved_method.is_static() {
+        if !resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
         invoke_method(frame,resolved_method);

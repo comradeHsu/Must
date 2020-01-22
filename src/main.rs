@@ -85,7 +85,7 @@ mod tests{
             version_flag: false,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.MyObject".to_string(),
+            class: "java.FibonacciTest".to_string(),
             args: vec![]
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);

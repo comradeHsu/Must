@@ -5,6 +5,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method::Method;
 
+#[derive(Clone)]
 pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,

@@ -10,6 +10,13 @@ pub struct InvokeInterface {
     index:usize
 }
 
+impl InvokeInterface {
+    #[inline]
+    pub const fn new() -> InvokeInterface {
+        return InvokeInterface{ index: 0 };
+    }
+}
+
 impl Instruction for InvokeInterface {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.index = reader.read_u16() as usize;

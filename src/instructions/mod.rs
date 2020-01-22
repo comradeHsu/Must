@@ -55,6 +55,9 @@ use crate::instructions::references::new::New;
 use crate::instructions::references::check_cast::CheckCast;
 use crate::instructions::references::instance_of::InstanceOf;
 use crate::instructions::constants::ldc::{LDC, LDCw, LDC2w};
+use crate::instructions::control::r#return::*;
+use crate::instructions::references::invoke_static::InvokeStatic;
+use crate::instructions::references::invoke_interface::InvokeInterface;
 
 pub mod base;
 mod constants;
@@ -242,20 +245,20 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
 //        0xa9 => {},
         0xaa => Box::new(TableSwitch::new()),
         0xab => Box::new(LookUpSwitch::new()),
-//        0xac => {},
-//        0xad => {},
-//        0xae => {},
-//        0xaf => {},
-//        0xb0 => {},
-//        0xb1 => {},
+        0xac => Box::new(IReturn::new()),
+        0xad => Box::new(LReturn::new()),
+        0xae => Box::new(FReturn::new()),
+        0xaf => Box::new(DReturn::new()),
+        0xb0 => Box::new(AReturn::new()),
+        0xb1 => Box::new(Return::new()),
         0xb2 => Box::new(GetStatic::new()),
         0xb3 => Box::new(PutStatic::new()),
         0xb4 => Box::new(GetField::new()),
         0xb5 => Box::new(PutField::new()),
         0xb6 => Box::new(InvokeVirtual::new()),
         0xb7 => Box::new(InvokeSpecial::new()),
-//        0xb8 => {},
-//        0xb9 => {},
+        0xb8 => Box::new(InvokeStatic::new()),
+        0xb9 => Box::new(InvokeInterface::new()),
 //        0xba => {},
         0xbb => Box::new(New::new()),
 //        0xbc => {},
