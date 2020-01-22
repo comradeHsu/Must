@@ -104,4 +104,9 @@ impl OperandStack {
         self.size -= 1;
         return slot;
     }
+
+    #[inline]
+    pub fn get_ref_from_top(&self,index:usize) -> Option<Rc<RefCell<Object>>> {
+        return self.slots[self.size-1-index].reference.clone();
+    }
 }

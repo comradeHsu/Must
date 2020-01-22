@@ -111,6 +111,11 @@ impl Method {
     }
 
     #[inline]
+    pub fn is_public(&self) -> bool {
+        return self.class_member.is_public();
+    }
+
+    #[inline]
     pub fn is_protected(&self) -> bool {
         return self.class_member.is_protected();
     }

@@ -24,6 +24,7 @@ impl Instruction for InvokeSpecial {
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
         let cp = (*class).borrow().constant_pool();
+        let pool_class = (*cp).borrow().class();
         let mut borrow_cp = (*cp).borrow_mut();
         let constant = borrow_cp.get_constant(self.0.index());
         let method_ref = match constant {
@@ -31,7 +32,12 @@ impl Instruction for InvokeSpecial {
             _ => panic!("Unknown constant type")
         };
         let resolved_class = method_ref.resolved_class(class.clone());
-        let resolved_method = method_ref.resolved_method().unwrap();
+        println!("pool class:{}",(*pool_class).borrow().name());
+        println!("method class:{}",(*class).borrow().name());
+        println!("class:{}",(*resolved_class).borrow().name());
+
+        let resolved_method = method_ref.resolved_method(pool_class).unwrap();
+        println!("resolved_method class:{}",(*resolved_method.class()).borrow().name());
         if resolved_method.name() == "<init>" && resolved_method.class() != resolved_class  {
             panic!("java.lang.NoSuchMethodError")
         }
@@ -39,7 +45,7 @@ impl Instruction for InvokeSpecial {
             panic!("java.lang.IncompatibleClassChangeError")
         }
         let object = frame.operand_stack()
-            .expect("stack is none").pop_ref();
+            .expect("stack is none").get_ref_from_top(resolved_method.arg_slot_count());
         if object.is_none() {
             panic!("java.lang.NullPointerException");
         }

@@ -44,17 +44,15 @@ impl MethodRef {
         return self.member_ref.resolved_class(class);
     }
 
-    pub fn resolved_method(&mut self) -> Option<Rc<Method>> {
+    pub fn resolved_method(&mut self,pool_class:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
         if self.method.is_none() {
-            self.resolved_method_ref();
+            self.resolved_method_ref(pool_class);
         }
         return self.method.clone();
     }
 
-    pub fn resolved_method_ref(&mut self) {
-        let pool = self.member_ref.constant_pool();
-        let c = (*pool).borrow().class();
-        let class = self.member_ref.resolved_class(c);
+    pub fn resolved_method_ref(&mut self,pool_class:Rc<RefCell<Class>>) {
+        let class = self.member_ref.resolved_class(pool_class);
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -62,7 +60,7 @@ impl MethodRef {
         if method.is_none() {
             panic!("java.lang.NoSuchMethodError");
         }
-        if (*method.clone().unwrap()).is_accessible_to((*class).borrow().deref()) {
+        if !(*method.clone().unwrap()).is_accessible_to((*class).borrow().deref()) {
             panic!("java.lang.IllegalAccessError");
         }
         self.method = method;
@@ -78,8 +76,7 @@ impl MethodRef {
     }
 
     pub fn look_up_method_in_class(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Option<Rc<Method>> {
-        let borrow = (*class).borrow();
-        let mut super_class = borrow.super_class();
+        let mut super_class = Some(class);
         while super_class.is_some() {
             let value = super_class.unwrap().clone();
             let borrow_value = (*value).borrow();
