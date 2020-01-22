@@ -32,9 +32,6 @@ impl Instruction for InvokeSpecial {
             _ => panic!("Unknown constant type")
         };
         let resolved_class = method_ref.resolved_class(class.clone());
-        println!("pool class:{}",(*pool_class).borrow().name());
-        println!("method class:{}",(*class).borrow().name());
-        println!("class:{}",(*resolved_class).borrow().name());
 
         let resolved_method = method_ref.resolved_method(pool_class).unwrap();
         println!("resolved_method class:{}",(*resolved_method.class()).borrow().name());

@@ -8,3 +8,4 @@ pub mod check_cast;
 pub mod invoke_special;
 pub mod invoke_virtual;
 pub mod invoke_static;
+pub mod invoke_interface;

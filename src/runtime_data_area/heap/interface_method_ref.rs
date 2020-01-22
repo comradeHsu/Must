@@ -77,4 +77,9 @@ impl InterfaceMethodRef {
     pub fn descriptor(&self) -> &str {
         return self.member_ref.descriptor();
     }
+
+    #[inline]
+    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class(class);
+    }
 }

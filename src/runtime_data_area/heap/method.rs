@@ -121,6 +121,11 @@ impl Method {
     }
 
     #[inline]
+    pub fn is_private(&self) -> bool {
+        return self.class_member.is_private();
+    }
+
+    #[inline]
     pub fn is_abstract(&self) -> bool {
         return self.class_member.is_abstract();
     }
