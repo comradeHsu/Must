@@ -5,7 +5,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method::Method;
 
-#[derive(Clone)]
 pub struct Frame {
     local_vars:Option<LocalVars>,
     operand_stack:Option<OperandStack>,
@@ -65,6 +64,11 @@ impl Frame {
     #[inline]
     pub fn method(&self) -> &Method {
         return self.method.as_ref();
+    }
+
+    #[inline]
+    pub fn boxed(data:Self) -> Rc<RefCell<Frame>> {
+        return Rc::new(RefCell::new(data));
     }
 }
 
