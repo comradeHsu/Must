@@ -67,6 +67,11 @@ impl Frame {
     }
 
     #[inline]
+    pub fn method_ptr(&self) -> Rc<Method> {
+        return self.method.clone();
+    }
+
+    #[inline]
     pub fn boxed(data:Self) -> Rc<RefCell<Frame>> {
         return Rc::new(RefCell::new(data));
     }
