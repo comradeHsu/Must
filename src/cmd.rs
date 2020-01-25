@@ -1,6 +1,7 @@
 pub struct Cmd {
     pub help_flag: bool,
     pub version_flag: bool,
+    pub verbose_class:bool,
     pub cp_option: String,
     pub x_jre_option:String,
     pub class: String,
@@ -12,6 +13,7 @@ impl Cmd {
         return Cmd {
             help_flag: false,
             version_flag: false,
+            verbose_class: false,
             cp_option: String::new(),
             x_jre_option: String::new(),
             class: String::new(),
@@ -35,6 +37,8 @@ impl Cmd {
                 "help" => cmd.help_flag = true,
                 "?" => cmd.help_flag = true,
                 "version" => cmd.version_flag = true,
+                "-verbose" => cmd.verbose_class = true,
+                "-verbose:class" => cmd.verbose_class = true,
                 "class" => cmd.class = arg,
                 "cp" => cmd.cp_option = arg,
 //                "classPath" => cmd.cp_option = arg,

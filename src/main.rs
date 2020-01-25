@@ -31,7 +31,7 @@ fn start_jvm(cmd: &Cmd) {
     let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
     let class_path = Rc::new(cp);
     println!("init classPath");
-    let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
+    let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path,cmd.verbose_class)));
     println!("init class_loader");
     let class_name = cmd.class.clone().replace('.',"/");
     let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -83,6 +83,7 @@ mod tests{
         let cmd = Cmd{
             help_flag: false,
             version_flag: false,
+            verbose_class: true,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
             class: "java.FibonacciTest".to_string(),
@@ -90,7 +91,8 @@ mod tests{
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
+        let class_loader = Rc::new(RefCell::new(
+            ClassLoader::new(class_path,cmd.verbose_class)));
         println!("init class_loader");
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -107,6 +109,7 @@ mod tests{
         let cmd = Cmd{
             help_flag: false,
             version_flag: false,
+            verbose_class: false,
             cp_option: "D:/test".to_string(),
             x_jre_option: "".to_string(),
             class: "com.compile.Main".to_string(),
@@ -114,7 +117,8 @@ mod tests{
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path)));
+        let class_loader = Rc::new(RefCell::new(
+            ClassLoader::new(class_path,cmd.verbose_class)));
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();

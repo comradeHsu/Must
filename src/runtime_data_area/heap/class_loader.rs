@@ -12,14 +12,16 @@ use std::borrow::Borrow;
 
 pub struct ClassLoader {
     class_path:Rc<ClassPath>,
+    verbose_class:bool,
     class_map:HashMap<String,Rc<RefCell<Class>>>
 }
 
 impl ClassLoader {
     #[inline]
-    pub fn new(class_path:Rc<ClassPath>) -> ClassLoader {
+    pub fn new(class_path:Rc<ClassPath>,verbose_class:bool) -> ClassLoader {
         return ClassLoader{
             class_path: class_path,
+            verbose_class,
             class_map: Default::default()
         };
     }
@@ -45,9 +47,8 @@ impl ClassLoader {
 
     pub fn load_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
         let clone_loader = loader.clone();
-//        let mut_loader = (*clone_loader).borrow();
         let class_op = (*clone_loader).borrow().get_class(class_name);
-        println!("name:{},class_op:{}",class_name,class_op.is_some());
+//        println!("name:{},class_op:{}",class_name,class_op.is_some());
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
@@ -59,6 +60,9 @@ impl ClassLoader {
         let (bytes,entry) = (*loader).borrow().read_class(class_name);
         let class = ClassLoader::define_class(loader,bytes);
         ClassLoader::link(&class);
+        if (*loader).borrow().verbose_class {
+            println!("Loaded {}.class from {}",class_name,entry.to_string());
+        }
         return class;
     }
 
@@ -73,10 +77,10 @@ impl ClassLoader {
     pub fn define_class(loader:Rc<RefCell<ClassLoader>>,data:Vec<u8>) -> Rc<RefCell<Class>> {
         let mut class = ClassLoader::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
-        println!("class:{:?}",(*class).borrow().name());
+//        println!("class:{:?}",(*class).borrow().name());
         ClassLoader::resolve_super_class(class.clone());
         ClassLoader::resolve_interfaces(class.clone());
-        println!("class_name:{}",(*class).borrow().name());
+//        println!("class_name:{}",(*class).borrow().name());
         (*loader).borrow_mut().class_map.insert((*class).borrow().name().to_string(),class.clone());
         return class;
     }
