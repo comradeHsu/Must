@@ -26,17 +26,17 @@ impl Thread {
         self.stack.push(frame);
     }
 
-    pub fn pop_frame(&mut self) -> Frame {
+    pub fn pop_frame(&mut self) -> Rc<RefCell<Frame>> {
         return self.stack.pop();
     }
 
-    pub fn current_frame(& self) -> &Frame {
+    pub fn current_frame(& self) -> Rc<RefCell<Frame>> {
         return self.stack.top();
     }
 
-    pub fn current_frame_mut(&mut self) -> &mut Frame {
-        return self.stack.top_mut();
-    }
+//    pub fn current_frame_mut(&mut self) -> &mut Frame {
+//        return self.stack.top_mut();
+//    }
 
     pub fn new_frame(thread:Rc<RefCell<Thread>>,method:Rc<Method>) -> Frame {
         return Frame::new(thread,method);

@@ -48,27 +48,6 @@ impl ConstantPool {
             vec.push(constant_info);
             i += 1;
         }
-        let mut count = 0;
-        for info in &vec {
-            match info {
-                None => println!("c:{}-none",count),
-                Utf8(x) => println!("c:{}-utf-8",count),
-                Integer(x)=> println!("c:{}-int",count),
-                Float(x)=> println!("c:{}-float",count),
-                Long(x)=> println!("c:{}-long",count),
-                Double(x)=> println!("c:{}-double",count),
-                Class(x)=> println!("c:{}-class",count),
-                Str(x)=> println!("c:{}-str",count),
-                FieldRef(x)=> println!("c:{}-field",count),
-                MethodRef(x)=> println!("c:{}-method",count),
-                InterfaceMethodRef(x)=> println!("c:{}-interface_method",count),
-                NameAndType(x)=> println!("c:{}-name and type",count),
-                MethodHandle(x)=> println!("c:{}-method handle",count),
-                MethodType(x)=> println!("c:{}-method type",count),
-                InvokeDynamic(x)=> println!("c:{}-invoke",count)
-            }
-            count+=1;
-        }
         let mut c = Rc::new(RefCell::new(ConstantPool{vec}));
         ConstantPool::post_constant_pool(c.clone());
         return c;
@@ -112,7 +91,6 @@ impl ConstantPool {
 
     pub fn get_class_name(&self, index: usize) -> &str {
         let info = self.get_constant_info(index);
-        println!("info:{:?}",index);
         let mut class = match info {
             Class(class) => class,
             _ => panic!("info is not NameAndType")
