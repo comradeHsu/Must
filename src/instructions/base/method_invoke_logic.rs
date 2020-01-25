@@ -7,7 +7,6 @@ pub fn invoke_method(frame:&mut Frame, method:Rc<Method>) {
     let thread = frame.thread();
     let mut new_frame = Thread::new_frame(thread.clone(),method.clone());
     let arg_slot_count = method.arg_slot_count();
-    println!("arg_slot_count {}",arg_slot_count);
     if arg_slot_count > 0 {
         let stack = frame.operand_stack().expect("stack is none");
         for size in 0..arg_slot_count {

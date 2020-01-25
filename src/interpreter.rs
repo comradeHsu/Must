@@ -9,6 +9,7 @@ use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::frame::Frame;
 use std::ops::DerefMut;
 use std::time::SystemTime;
+use chrono::Local;
 
 pub fn interpret(method:Rc<Method>) {
 
@@ -20,7 +21,7 @@ pub fn interpret(method:Rc<Method>) {
 
 pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
     let mut reader = BytecodeReader::new();
-    println!("start {:?}",SystemTime::now());
+    println!("start {:?}",Local::now());
     loop {
 //        let mut borrow_thread = (*thread).borrow_mut();
         let current_frame = (*thread).borrow().current_frame();
@@ -41,8 +42,8 @@ pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
         if (*thread).borrow().is_stack_empty() {
             break;
         }
-        println!("end {:?}",SystemTime::now());
     }
+    println!("end {:?}",Local::now());
 }
 
 #[cfg(test)]

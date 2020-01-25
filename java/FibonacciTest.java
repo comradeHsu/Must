@@ -2,7 +2,7 @@ package java;
 public class FibonacciTest {
 
     public static void main(String[] args) {
-        long x = fibonacci(10);
+        long x = fibonacci(20);
         System.out.println(x);
     }
 

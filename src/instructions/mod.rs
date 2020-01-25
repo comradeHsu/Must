@@ -279,6 +279,6 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
             panic!("instruction error")
         }
     };
-    println!("instruction:{:?}",opcode);
+//    println!("instruction:{:?}",opcode);
     return inst;
 }
