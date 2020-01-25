@@ -30,7 +30,6 @@ impl ConstantPool {
         let mut constants = Vec::with_capacity(size);
         let mut index = 0usize;
         let mut cp = Rc::new(RefCell::new(ConstantPool::none()));
-        println!("step-1");
         while index < size {
             let info_enum = borrow_pool.get_info(index).unwrap();
             let constant = match info_enum {
@@ -59,7 +58,7 @@ impl ConstantPool {
                     constants.push(None);
                     index += 1;
                 },
-                None => {},
+//                None => {},  must be annotated
                 _ => constants.push(constant)
             }
             index += 1;
@@ -109,6 +108,12 @@ impl ConstantPool {
     #[inline]
     pub fn set_class(&mut self,class:Rc<RefCell<Class>>) {
         return self.class = Some(class);
+    }
+
+    /// for debug
+    #[inline]
+    pub fn size(&self) -> usize {
+        return self.constants.len();
     }
 }
 

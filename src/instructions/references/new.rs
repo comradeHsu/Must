@@ -5,6 +5,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::instructions::base::class_init_logic::init_class;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -30,6 +31,11 @@ impl Instruction for New {
             _ => panic!("Unknown constant type")
         };
         let class = class_ref.resolved_class(class.clone());
+        if !(*class).borrow().initialized() {
+            frame.revert_next_pc();
+            init_class(frame.thread(),class.clone());
+            return;
+        }
         let ref_class= (*class).borrow();
         if ref_class.is_interface() || ref_class.is_abstract(){
             panic!("java.lang.InstantiationError")

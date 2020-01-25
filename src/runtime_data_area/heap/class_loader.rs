@@ -58,7 +58,7 @@ impl ClassLoader {
 
     pub fn load_non_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
         let (bytes,entry) = (*loader).borrow().read_class(class_name);
-        let class = ClassLoader::define_class(loader,bytes);
+        let class = ClassLoader::define_class(loader.clone(),bytes);
         ClassLoader::link(&class);
         if (*loader).borrow().verbose_class {
             println!("Loaded {}.class from {}",class_name,entry.to_string());

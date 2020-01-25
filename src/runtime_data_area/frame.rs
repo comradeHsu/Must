@@ -57,6 +57,11 @@ impl Frame {
     }
 
     #[inline]
+    pub fn revert_next_pc(&mut self) {
+        self.next_pc = (*self.thread).borrow().get_pc();
+    }
+
+    #[inline]
     pub fn thread(&self) -> Rc<RefCell<Thread>> {
         return self.thread.clone();
     }

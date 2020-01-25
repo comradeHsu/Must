@@ -4,6 +4,7 @@ use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method_descriptor::MethodDescriptorParser;
+use crate::runtime_data_area::heap::access_flags::NATIVE;
 
 #[derive(Debug)]
 pub struct Method {
@@ -128,5 +129,10 @@ impl Method {
     #[inline]
     pub fn is_abstract(&self) -> bool {
         return self.class_member.is_abstract();
+    }
+
+    #[inline]
+    pub fn is_native(&self) -> bool {
+        return 0 != self.class_member.access_flags() & NATIVE;
     }
 }

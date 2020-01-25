@@ -3,6 +3,7 @@ use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
 use crate::instructions::base::method_invoke_logic::invoke_method;
+use crate::instructions::base::class_init_logic::init_class;
 
 pub struct InvokeStatic(ConstantPoolInstruction);
 
@@ -30,6 +31,12 @@ impl Instruction for InvokeStatic {
         let resolved_method = method_ref.resolved_method(pool_class).unwrap();
         if !resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
+        }
+        let class = resolved_method.class();
+        if !(*class).borrow().initialized() {
+            frame.revert_next_pc();
+            init_class(frame.thread(),class.clone());
+            return;
         }
         invoke_method(frame,resolved_method);
     }

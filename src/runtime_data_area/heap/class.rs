@@ -29,7 +29,8 @@ pub struct Class {
     interfaces:Option<Interfaces>,
     instance_slot_count:u32,
     static_slot_count:u32,
-    static_vars:Option<Slots>
+    static_vars:Option<Slots>,
+    initialized:bool
 }
 
 impl Class {
@@ -49,7 +50,8 @@ impl Class {
             interfaces: None,
             instance_slot_count: 0,
             static_slot_count: 0,
-            static_vars: None
+            static_vars: None,
+            initialized: false
         };
     }
 
@@ -69,7 +71,8 @@ impl Class {
             interfaces: None,
             instance_slot_count: 0,
             static_slot_count: 0,
-            static_vars: None
+            static_vars: None,
+            initialized: false
         };
         println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
@@ -161,7 +164,7 @@ impl Class {
         }
     }
 
-    // self implements iface
+    // self implements interface
     pub fn is_implements(&self, interface: &Self) -> bool {
         let mut super_class = self.super_class.clone();
         while super_class.is_some() {
@@ -301,6 +304,16 @@ impl Class {
     }
 
     #[inline]
+    pub fn initialized(&self) -> bool {
+        return self.initialized;
+    }
+
+    #[inline]
+    pub fn set_initialized(&mut self) {
+        self.initialized = true;
+    }
+
+    #[inline]
     pub fn mut_fields(&mut self) -> &mut Vec<Rc<RefCell<Field>>> {
         return &mut self.fields;
     }
@@ -308,6 +321,20 @@ impl Class {
     #[inline]
     pub fn mut_static_vars(&mut self) -> Option<&mut Slots> {
         return self.static_vars.as_mut();
+    }
+
+    #[inline]
+    pub fn get_clinit_method(&self) -> Option<Rc<Method>> {
+        return self.get_static_method("<clinit>","()V");
+    }
+
+    pub fn get_static_method(&self,name:&str,desc:&str) -> Option<Rc<Method>> {
+        for method in &self.methods {
+            if method.is_static() && method.name() == name && desc == method.descriptor() {
+                return Some(method.clone());
+            }
+        }
+        return None;
     }
 }
 
@@ -319,12 +346,3 @@ impl PartialEq for Class {
         return false;
     }
 }
-
-//impl PartialEq for &Class {
-//    fn eq(&self, other: &Self) -> bool {
-//        if self.name() == other.name() {
-//            return true;
-//        }
-//        return false;
-//    }
-//}

@@ -48,6 +48,11 @@ impl ClassMember {
     }
 
     #[inline]
+    pub fn access_flags(&self) -> u16{
+        return self.access_flags;
+    }
+
+    #[inline]
     pub fn class(&self) -> Rc<RefCell<Class>> {
         return self.class.clone();
     }

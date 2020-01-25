@@ -16,4 +16,12 @@ pub fn invoke_method(frame:&mut Frame, method:Rc<Method>) {
         }
     }
     (*thread).borrow_mut().push_frame(new_frame);
+    // hack!
+    if method.is_native() {
+        if method.name() == "registerNatives" {
+            (*thread).borrow_mut().pop_frame();
+        } else {
+            panic!("native method:{} {} {}",(*method.class()).borrow().name(),method.name(),method.descriptor());
+        }
+    }
 }

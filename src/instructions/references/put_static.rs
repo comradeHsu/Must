@@ -2,6 +2,7 @@ use crate::instructions::base::instruction::{ConstantPoolInstruction, Instructio
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use crate::instructions::base::class_init_logic::init_class;
 
 pub struct PutStatic(ConstantPoolInstruction);
 
@@ -30,6 +31,11 @@ impl Instruction for PutStatic {
         let field_option = field_ref.resolved_field(current_class.clone());
         let field = (*field_option.unwrap()).borrow();
         let class = field.parent().class();
+        if !(*class).borrow().initialized() {
+            frame.revert_next_pc();
+            init_class(frame.thread(),class.clone());
+            return;
+        }
         if  !field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
