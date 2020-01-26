@@ -4,11 +4,13 @@ use std::collections::HashMap;
 use crate::runtime_data_area::heap::class::Class;
 use crate::class_file::class_file::ClassFile;
 use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::constant_pool::Constant;
+use crate::runtime_data_area::heap::constant_pool::{Constant, ConstantPool};
 use crate::runtime_data_area::heap::slots::Slots;
 use std::cell::{RefCell, RefMut};
 use std::fmt::{Debug, Formatter, Error};
 use std::borrow::Borrow;
+use crate::runtime_data_area::heap::access_flags::PUBLIC;
+use crate::utils::boxed;
 
 pub struct ClassLoader {
     class_path:Rc<ClassPath>,
@@ -52,8 +54,19 @@ impl ClassLoader {
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
+        if class_name.starts_with('[') {
+            return ClassLoader::load_array_class(loader,class_name);
+        }
         let class = ClassLoader::load_non_array_class(loader,class_name);
         return class;
+    }
+
+    ///load array's class
+    fn load_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
+        let class = Class::new_array_class(loader.clone(),class_name);
+        let class_ptr = boxed(class);
+        (*loader).borrow_mut().class_map.insert(class_name.to_string(),class_ptr.clone());
+        return class_ptr;
     }
 
     pub fn load_non_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
@@ -77,10 +90,8 @@ impl ClassLoader {
     pub fn define_class(loader:Rc<RefCell<ClassLoader>>,data:Vec<u8>) -> Rc<RefCell<Class>> {
         let mut class = ClassLoader::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
-//        println!("class:{:?}",(*class).borrow().name());
         ClassLoader::resolve_super_class(class.clone());
         ClassLoader::resolve_interfaces(class.clone());
-//        println!("class_name:{}",(*class).borrow().name());
         (*loader).borrow_mut().class_map.insert((*class).borrow().name().to_string(),class.clone());
         return class;
     }

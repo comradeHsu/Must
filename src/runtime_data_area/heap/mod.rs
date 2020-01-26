@@ -1,4 +1,5 @@
 pub mod object;
+pub mod array_object;
 pub mod class;
 pub mod access_flags;
 pub mod field;

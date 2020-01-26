@@ -3,13 +3,13 @@ use std::rc::Rc;
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
-use std::borrow::Borrow;
-use std::fmt::{Debug, Formatter, Error};
+use std::borrow::{Borrow, BorrowMut};
+use crate::runtime_data_area::heap::object::DataType::StandardObject;
 
 #[derive(Debug)]
 pub struct Object {
-    class:Rc<RefCell<Class>>,
-    fields:Option<Slots>
+    pub class:Rc<RefCell<Class>>,
+    pub data:DataType
 }
 
 impl Object {
@@ -17,7 +17,7 @@ impl Object {
         let count = (*class).borrow().instance_slot_count();
         return Object{
             class: class.clone(),
-            fields: Some(Slots::with_capacity(count as usize))
+            data: StandardObject(Some(Slots::with_capacity(count as usize)))
         };
     }
 
@@ -27,7 +27,11 @@ impl Object {
     }
     #[inline]
     pub fn fields(&mut self) -> &mut Slots {
-        return self.fields.as_mut().unwrap();
+        let fields = &mut self.data;
+        match fields {
+            StandardObject(data) => data.as_mut().unwrap(),
+            _ => panic!("The Object is array")
+        }
     }
 
     #[inline]
@@ -45,4 +49,17 @@ impl PartialEq for Object {
         }
         return false;
     }
+}
+
+#[derive(Debug)]
+pub enum DataType {
+    StandardObject(Option<Slots>),
+    Bytes(Vec<i8>),
+    Shorts(Vec<i16>),
+    Ints(Vec<i32>),
+    Longs(Vec<i64>),
+    Chars(Vec<u16>),
+    Floats(Vec<f32>),
+    Doubles(Vec<f64>),
+    References(Vec<Rc<RefCell<Object>>>)
 }

@@ -12,6 +12,8 @@ use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
 use core::mem;
 use std::ops::Deref;
+use crate::runtime_data_area::heap::array_object::ArrayObject;
+use crate::runtime_data_area::heap::object::DataType::{Bytes, Chars, Shorts, Ints, Longs, Floats, Doubles, References};
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -80,6 +82,32 @@ impl Class {
         (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(),class_file.fields());
         return point;
+    }
+
+    #[inline]
+    pub fn new_array_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Class {
+        let mut interfaces = Vec::new();
+        interfaces.push(ClassLoader::load_class(loader.clone(),"java/lang/Cloneable"));
+        interfaces.push(ClassLoader::load_class(loader.clone(),"java/io/Serializable"));
+        let class = Class{
+            access_flags: PUBLIC,
+            name: class_name.to_string(),
+            super_class_name: Some("java/lang/Object".to_string()),
+            interfaces_name: vec![],
+            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+            fields: vec![],
+            methods: vec![],
+            loader: Some(loader.clone()),
+            super_class: Some(ClassLoader::load_class(loader.clone(),"java/lang/Object")),
+            interfaces: Some(
+                interfaces
+            ),
+            instance_slot_count: 0,
+            static_slot_count: 0,
+            static_vars: None,
+            initialized: true
+        };
+        return class;
     }
 
     #[inline]
@@ -335,6 +363,30 @@ impl Class {
             }
         }
         return None;
+    }
+
+
+    ///about array's class
+    /// like int[]
+    #[inline]
+    pub fn new_array(class:&Rc<RefCell<Class>>,count:usize) -> ArrayObject {
+        if !(**class).borrow().is_array() {
+            panic!("Not array class: {}", (**class).borrow().name());
+        }
+        match (**class).borrow().name() {
+            "[Z" | "[B" => ArrayObject::from_data(class.clone(),Bytes(Vec::with_capacity(count))),
+            "[C" => ArrayObject::from_data(class.clone(),Chars(Vec::with_capacity(count))),
+            "[S" => ArrayObject::from_data(class.clone(),Shorts(Vec::with_capacity(count))),
+            "[I" => ArrayObject::from_data(class.clone(),Ints(Vec::with_capacity(count))),
+            "[J" => ArrayObject::from_data(class.clone(),Longs(Vec::with_capacity(count))),
+            "[F" => ArrayObject::from_data(class.clone(),Floats(Vec::with_capacity(count))),
+            "[D" => ArrayObject::from_data(class.clone(),Doubles(Vec::with_capacity(count))),
+            _ => ArrayObject::from_data(class.clone(),References(Vec::with_capacity(count)))
+        }
+    }
+
+    pub fn is_array(&self) -> bool {
+        return self.name.starts_with('[');
     }
 }
 
