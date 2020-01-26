@@ -6,6 +6,7 @@ use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use std::cell::RefCell;
 use crate::instructions::base::class_init_logic::init_class;
+use crate::utils::boxed;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -41,6 +42,6 @@ impl Instruction for New {
             panic!("java.lang.InstantiationError")
         }
         let object = Class::new_object(&class);
-        frame.operand_stack().expect("").push_ref(Some(Rc::new(RefCell::new(object))));
+        frame.operand_stack().expect("").push_ref(Some(boxed(object)));
     }
 }
