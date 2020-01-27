@@ -14,6 +14,7 @@ use core::mem;
 use std::ops::Deref;
 use crate::runtime_data_area::heap::array_object::ArrayObject;
 use crate::runtime_data_area::heap::object::DataType::{Bytes, Chars, Shorts, Ints, Longs, Floats, Doubles, References};
+use crate::runtime_data_area::heap::class_name_helper::{PrimitiveTypes};
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -388,6 +389,12 @@ impl Class {
     pub fn is_array(&self) -> bool {
         return self.name.starts_with('[');
     }
+
+    pub fn array_class(&self) -> Rc<RefCell<Class>> {
+        let array_class_name = PrimitiveTypes::instance().unwrap().get_array_class_name(self.name.as_str());
+        return ClassLoader::load_class(self.loader().clone(),array_class_name.as_str());
+    }
+
 }
 
 impl PartialEq for Class {

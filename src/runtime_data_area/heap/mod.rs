@@ -15,3 +15,4 @@ pub mod method_ref;
 pub mod interface_method_ref;
 pub mod class_loader;
 pub mod method_descriptor;
+mod class_name_helper;

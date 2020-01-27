@@ -1,0 +1,28 @@
+use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
+use crate::runtime_data_area::frame::Frame;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
+
+pub struct ArrayLength(NoOperandsInstruction);
+
+impl ArrayLength {
+    #[inline]
+    pub fn new() -> ArrayLength {
+        return ArrayLength(NoOperandsInstruction::new());
+    }
+}
+
+impl Instruction for ArrayLength {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
+        self.0.fetch_operands(reader);
+    }
+
+    fn execute(&mut self, frame: &mut Frame) {
+        let stack = frame.operand_stack().expect("stack is none");
+        let object = stack.pop_ref();
+        if object.is_none() {
+            panic!("java.lang.NullPointerException");
+        }
+        let array_len = (*object.unwrap()).borrow().array_length();
+        stack.push_int(array_len as i32);
+    }
+}

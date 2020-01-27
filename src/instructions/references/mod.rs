@@ -10,3 +10,5 @@ pub mod invoke_special;
 pub mod invoke_virtual;
 pub mod invoke_static;
 pub mod invoke_interface;
+pub mod anew_array;
+pub mod array_length;
