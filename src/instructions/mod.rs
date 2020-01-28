@@ -282,3 +282,9 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
 //    println!("instruction:{:?}",opcode);
     return inst;
 }
+
+fn check_index(arr_len:usize, index:usize) {
+    if index < 0 || index >= arr_len {
+        panic!("ArrayIndexOutOfBoundsException")
+    }
+}

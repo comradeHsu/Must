@@ -6,7 +6,7 @@ use crate::runtime_data_area::heap::class::Class;
 
 pub type ArrayObject = Object;
 
-impl ArrayObject {
+impl Object {
 
     #[inline]
     pub fn from_data(class:Rc<RefCell<Class>>,data:DataType) -> ArrayObject {
@@ -23,8 +23,22 @@ impl ArrayObject {
         }
     }
 
+    pub fn mut_bytes(&mut self) -> &mut Vec<i8> {
+        match &mut self.data {
+            Bytes(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
     pub fn shorts(&self) -> &Vec<i16> {
         match &self.data {
+            Shorts(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
+    pub fn mut_shorts(&mut self) -> &mut Vec<i16> {
+        match &mut self.data {
             Shorts(array) => array,
             _ => panic!("The object type is error")
         }
@@ -37,8 +51,22 @@ impl ArrayObject {
         }
     }
 
+    pub fn mut_ints(&mut self) -> &mut Vec<i32> {
+        match &mut self.data {
+            Ints(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
     pub fn longs(&self) -> &Vec<i64> {
         match &self.data {
+            Longs(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
+    pub fn mut_longs(&mut self) -> &mut Vec<i64> {
+        match &mut self.data {
             Longs(array) => array,
             _ => panic!("The object type is error")
         }
@@ -51,8 +79,22 @@ impl ArrayObject {
         }
     }
 
+    pub fn mut_chars(&mut self) -> &mut Vec<u16> {
+        match &mut self.data {
+            Chars(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
     pub fn floats(&self) -> &Vec<f32> {
         match &self.data {
+            Floats(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
+    pub fn mut_floats(&mut self) -> &mut Vec<f32> {
+        match &mut self.data {
             Floats(array) => array,
             _ => panic!("The object type is error")
         }
@@ -65,8 +107,22 @@ impl ArrayObject {
         }
     }
 
-    pub fn references(&self) -> &Vec<Rc<RefCell<Object>>> {
+    pub fn mut_doubles(&mut self) -> &mut Vec<f64> {
+        match &mut self.data {
+            Doubles(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
+    pub fn references(&self) -> &Vec<Option<Rc<RefCell<Object>>>> {
         match &self.data {
+            References(array) => array,
+            _ => panic!("The object type is error")
+        }
+    }
+
+    pub fn mut_references(&mut self) -> &mut Vec<Option<Rc<RefCell<Object>>>> {
+        match &mut self.data {
             References(array) => array,
             _ => panic!("The object type is error")
         }

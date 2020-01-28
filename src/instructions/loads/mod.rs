@@ -3,3 +3,4 @@ pub mod lload;
 pub mod dload;
 pub mod fload;
 pub mod aload;
+pub mod array_aload;

@@ -61,5 +61,5 @@ pub enum DataType {
     Chars(Vec<u16>),
     Floats(Vec<f32>),
     Doubles(Vec<f64>),
-    References(Vec<Rc<RefCell<Object>>>)
+    References(Vec<Option<Rc<RefCell<Object>>>>)
 }
