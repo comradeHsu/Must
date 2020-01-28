@@ -395,6 +395,11 @@ impl Class {
         return ClassLoader::load_class(self.loader().clone(),array_class_name.as_str());
     }
 
+    pub fn component_class(&self) -> Rc<RefCell<Class>> {
+        let component_class_name = PrimitiveTypes::instance().unwrap().get_component_class_name(self.name.as_str());
+        return ClassLoader::load_class(self.loader().clone(),component_class_name.as_str());
+    }
+
 }
 
 impl PartialEq for Class {

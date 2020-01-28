@@ -45,5 +45,31 @@ impl PrimitiveTypes {
         return "L".to_string() + class_name + ";"
     }
 
+    pub fn get_component_class_name(&self,class_name:&str) -> String {
+        if class_name.starts_with('[') {
+            let (_, component_type_descriptor) = class_name.split_at(1);
+            return self.to_class_name(component_type_descriptor)
+        }
+        panic!("Not array: {}", class_name);
+    }
+
+    pub fn to_class_name(&self,descriptor:&str) -> String {
+        if descriptor.starts_with('[') { // array
+            return descriptor.to_string();
+        }
+        if descriptor.starts_with('L') { // object
+            let (_,desc) = descriptor.split_at(1);
+            return desc.to_string();
+        }
+
+        let data = &self.data;
+        for (k,v) in data {
+            if *v == descriptor { // primitive
+                return k.to_string();
+            }
+        }
+
+        panic!("Invalid descriptor: {}",descriptor);
+    }
 }
 
