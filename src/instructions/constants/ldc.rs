@@ -1,7 +1,8 @@
 use crate::instructions::base::instruction::{LocalVarsInstruction, ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::{Integer, Float, Long, Double};
+use crate::runtime_data_area::heap::constant_pool::Constant::{Integer, Float, Long, Double, Str};
+use crate::runtime_data_area::heap::string_pool::StringPool;
 
 pub struct LDC(LocalVarsInstruction);
 
@@ -79,6 +80,10 @@ fn ldc(frame: &mut Frame, index:usize) {
     match constant {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),
+        Str(v) => {
+            let string = StringPool::java_string((*class).borrow().loader(),v.clone());
+            frame.operand_stack().expect("stack is none").push_ref(Some(string))
+        }
         _ => panic!("todo: ldc!")
     }
 }

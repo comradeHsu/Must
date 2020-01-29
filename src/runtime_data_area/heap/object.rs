@@ -38,6 +38,23 @@ impl Object {
     pub fn is_instance_of(&self, class:Rc<RefCell<Class>>) -> bool {
         return (*class).borrow().is_assignable_from(self.class.as_ref().borrow().borrow());
     }
+
+    pub fn set_ref_var(&mut self, name:&str, descriptor:&str, reference:Rc<RefCell<Object>>) {
+        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+        let slots = self.fields();
+        slots.set_ref((*field.unwrap()).borrow().slot_id(),Some(reference));
+    }
+
+    pub fn get_ref_var(&self, name:&str, descriptor:&str) -> Option<Rc<RefCell<Object>>> {
+        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+        let fields = &self.data;
+        let slots = match fields {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array")
+        };
+        return slots.get_ref((*field.unwrap()).borrow().slot_id());
+    }
+
 }
 
 impl PartialEq for Object {

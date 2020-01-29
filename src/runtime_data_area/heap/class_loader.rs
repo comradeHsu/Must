@@ -11,6 +11,7 @@ use std::fmt::{Debug, Formatter, Error};
 use std::borrow::Borrow;
 use crate::runtime_data_area::heap::access_flags::PUBLIC;
 use crate::utils::boxed;
+use crate::runtime_data_area::heap::string_pool::StringPool;
 
 pub struct ClassLoader {
     class_path:Rc<ClassPath>,
@@ -200,6 +201,7 @@ impl ClassLoader {
 
     fn init_static_final_var(class:Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
         let pool = (*class).borrow().constant_pool();
+        let loader = (*class).borrow().loader();
         let mut borrow_class = (*class).borrow_mut();
         let vars = borrow_class.mut_static_vars().expect("static_vars is none");
         let cp_index = (*field).borrow().const_value_index();
@@ -235,7 +237,15 @@ impl ClassLoader {
                         _ => {}
                     }
                 },
-                "Ljava/lang/String;" => {},
+                "Ljava/lang/String;" => {
+                    let val = borrow_pool.get_constant_immutable(cp_index);
+                    let mete_str = match val {
+                        Constant::Str(v) => v.as_str(),
+                        _ => panic!("It's not string")
+                    };
+                    let java_string = StringPool::java_string(loader,mete_str.to_string());
+                    vars.set_ref(slot_id,Some(java_string));
+                },
                 _ => {}
             }
         }

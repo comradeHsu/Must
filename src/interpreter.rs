@@ -10,11 +10,18 @@ use crate::runtime_data_area::frame::Frame;
 use std::ops::DerefMut;
 use std::time::SystemTime;
 use chrono::Local;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::runtime_data_area::heap::object::Object;
+use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::utils::boxed;
 
-pub fn interpret(method:Rc<Method>) {
+pub fn interpret(method:Rc<Method>,args:&Vec<String>) {
 
     let thread = Rc::new(RefCell::new(Thread::new_thread()));
-    let frame = Thread::new_frame(thread.clone(),method.clone());
+    let mut frame = Thread::new_frame(thread.clone(),method.clone());
+    let java_args = create_args_array((*method.class()).borrow().loader(),args);
+    frame.local_vars().expect("vars is none").set_ref(0,Some(java_args));
     (*thread).borrow_mut().push_frame(frame);
     circulate(thread);
 }
@@ -45,6 +52,21 @@ pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
     }
     println!("end {:?}",Local::now());
 }
+
+fn create_args_array(loader:Rc<RefCell<ClassLoader>>, args:&Vec<String>) -> Rc<RefCell<Object>> {
+    let string_class = ClassLoader::load_class(
+        loader.clone(),
+        "java/lang/String"
+    );
+    let args_arr_class = (*string_class).borrow().array_class();
+    let mut args_arr = Class::new_array(&args_arr_class,args.len());
+    let java_args = args_arr.mut_references();
+    for i in 0..java_args.len() {
+        java_args[i] = Some(StringPool::java_string(loader.clone(),args[i].clone()));
+    }
+    return boxed(args_arr);
+}
+
 
 #[cfg(test)]
 mod test {

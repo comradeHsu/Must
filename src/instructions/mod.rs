@@ -58,6 +58,12 @@ use crate::instructions::constants::ldc::{LDC, LDCw, LDC2w};
 use crate::instructions::control::r#return::*;
 use crate::instructions::references::invoke_static::InvokeStatic;
 use crate::instructions::references::invoke_interface::InvokeInterface;
+use crate::instructions::loads::array_aload::{IAload, LAload, FAload, DAload, AAload, BAload, CAload, SAload};
+use crate::instructions::stores::array_astore::{IAStore, LAStore, FAStore, DAStore, AAStore, BAStore, CAStore, SAStore};
+use crate::instructions::references::new_array::NewArray;
+use crate::instructions::references::anew_array::ANewArray;
+use crate::instructions::references::array_length::ArrayLength;
+use crate::instructions::references::multi_anew_array::MultiANewArray;
 
 pub mod base;
 mod constants;
@@ -119,14 +125,14 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0x2b => Box::new(ALoad1::new()),
         0x2c => Box::new(ALoad2::new()),
         0x2d => Box::new(ALoad3::new()),
-//        0x2e => {},
-//        0x2f => {},
-//        0x30 => {},
-//        0x31 => {},
-//        0x32 => {},
-//        0x33 => {},
-//        0x34 => {},
-//        0x35 => {},
+        0x2e => Box::new(IAload::new()),
+        0x2f => Box::new(LAload::new()),
+        0x30 => Box::new(FAload::new()),
+        0x31 => Box::new(DAload::new()),
+        0x32 => Box::new(AAload::new()),
+        0x33 => Box::new(BAload::new()),
+        0x34 => Box::new(CAload::new()),
+        0x35 => Box::new(SAload::new()),
         0x36 => Box::new(IStore::new()),
         0x37 => Box::new(LStore::new()),
         0x38 => Box::new(FStore::new()),
@@ -152,14 +158,14 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0x4c => Box::new(AStore1::new()),
         0x4d => Box::new(AStore2::new()),
         0x4e => Box::new(AStore3::new()),
-//        0x4f => {},
-//        0x50 => {},
-//        0x51 => {},
-//        0x52 => {},
-//        0x53 => {},
-//        0x54 => {},
-//        0x55 => {},
-//        0x56 => {},
+        0x4f => Box::new(IAStore::new()),
+        0x50 => Box::new(LAStore::new()),
+        0x51 => Box::new(FAStore::new()),
+        0x52 => Box::new(DAStore::new()),
+        0x53 => Box::new(AAStore::new()),
+        0x54 => Box::new(BAStore::new()),
+        0x55 => Box::new(CAStore::new()),
+        0x56 => Box::new(SAStore::new()),
         0x57 => Box::new(Pop::new()),
         0x58 => Box::new(Pop2::new()),
         0x59 => Box::new(Dup::new()),
@@ -261,16 +267,16 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xb9 => Box::new(InvokeInterface::new()),
 //        0xba => {},
         0xbb => Box::new(New::new()),
-//        0xbc => {},
-//        0xbd => {},
-//        0xbe => {},
+        0xbc => Box::new(NewArray::new()),
+        0xbd => Box::new(ANewArray::new()),
+        0xbe => Box::new(ArrayLength::new()),
 //        0xbf => {},
         0xc0 => Box::new(CheckCast::new()),
         0xc1 => Box::new(InstanceOf::new()),
 //        0xc2 => {},
 //        0xc3 => {},
         0xc4 => Box::new(Wide::new()),
-//        0xc5 => {},
+        0xc5 => Box::new(MultiANewArray::new()),
         0xc6 => Box::new(IfNull::new()),
         0xc7 => Box::new(IfNonNull::new()),
         0xc8 => Box::new(GotoW::new()),
@@ -284,7 +290,7 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
 }
 
 fn check_index(arr_len:usize, index:usize) {
-    if index < 0 || index >= arr_len {
+    if index >= arr_len {
         panic!("ArrayIndexOutOfBoundsException")
     }
 }

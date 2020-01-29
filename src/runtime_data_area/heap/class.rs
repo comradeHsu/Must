@@ -8,7 +8,7 @@ use crate::runtime_data_area::heap::access_flags::{AccessFlag, PUBLIC, FINAL, SU
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::slot::Slot;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use std::cell::RefCell;
+use std::cell::{RefCell, Ref};
 use crate::runtime_data_area::heap::object::Object;
 use core::mem;
 use std::ops::Deref;
@@ -186,11 +186,34 @@ impl Class {
         if self == other {
             return true
         }
-        if !self.is_interface() {
-            return other.is_sub_class_of(self);
+        if !other.is_array() {
+            if !other.is_interface() {
+                if !self.is_interface() {
+                    return other.is_sub_class_of(self);
+                } else {
+                    return other.is_implements(self);
+                }
+            } else {
+                if !self.is_interface() {
+                    return self.is_java_lang_object();
+                } else {
+                    return self.is_sub_interface_of(other);
+                }
+            }
         } else {
-            return other.is_implements(self);
+            if !self.is_array() {
+                if !self.is_interface() {
+                    return self.is_java_lang_object();
+                } else {
+                    return self.is_java_lang_cloneable() || self.is_java_io_serializable();
+                }
+            } else {
+                let sc = other.component_class();
+                let tc = self.component_class();
+                return sc == tc || (*tc).borrow().is_assignable_from((*sc).borrow().deref());
+            }
         }
+        return false;
     }
 
     // self implements interface
@@ -234,6 +257,35 @@ impl Class {
             if  method.name() == "main" && method.descriptor() ==  "([Ljava/lang/String;)V" {
                 return Some(method);
             }
+        }
+        return None;
+    }
+
+    #[inline]
+    pub fn is_java_lang_object(&self) -> bool {
+        return self.name.as_str() == "java/lang/Object";
+    }
+
+    #[inline]
+    pub fn is_java_lang_cloneable(&self) -> bool {
+        return self.name.as_str() == "java/lang/Cloneable";
+    }
+
+    #[inline]
+    pub fn is_java_io_serializable(&self) -> bool {
+        return self.name.as_str() == "java/io/Serializable";
+    }
+
+    pub fn get_field(mut class_ptr:Option<Rc<RefCell<Class>>>,name:&str, descriptor:&str, is_static:bool) -> Option<Rc<RefCell<Field>>> {
+        while class_ptr.is_some() {
+            let class = class_ptr.unwrap();
+            for field in (*class).borrow().fields() {
+                let borrow = (**field).borrow();
+                if borrow.parent().is_static() == is_static && borrow.name() == name && borrow.descriptor() == descriptor {
+                    return Some(field.clone());
+                }
+            }
+            class_ptr = (*class).borrow().super_class();
         }
         return None;
     }
@@ -375,14 +427,14 @@ impl Class {
             panic!("Not array class: {}", (**class).borrow().name());
         }
         match (**class).borrow().name() {
-            "[Z" | "[B" => ArrayObject::from_data(class.clone(),Bytes(Vec::with_capacity(count))),
-            "[C" => ArrayObject::from_data(class.clone(),Chars(Vec::with_capacity(count))),
-            "[S" => ArrayObject::from_data(class.clone(),Shorts(Vec::with_capacity(count))),
-            "[I" => ArrayObject::from_data(class.clone(),Ints(Vec::with_capacity(count))),
-            "[J" => ArrayObject::from_data(class.clone(),Longs(Vec::with_capacity(count))),
-            "[F" => ArrayObject::from_data(class.clone(),Floats(Vec::with_capacity(count))),
-            "[D" => ArrayObject::from_data(class.clone(),Doubles(Vec::with_capacity(count))),
-            _ => ArrayObject::from_data(class.clone(),References(Vec::with_capacity(count)))
+            "[Z" | "[B" => ArrayObject::from_data(class.clone(),Bytes(vec![0;count])),
+            "[C" => ArrayObject::from_data(class.clone(),Chars(vec![0;count])),
+            "[S" => ArrayObject::from_data(class.clone(),Shorts(vec![0;count])),
+            "[I" => ArrayObject::from_data(class.clone(),Ints(vec![0;count])),
+            "[J" => ArrayObject::from_data(class.clone(),Longs(vec![0;count])),
+            "[F" => ArrayObject::from_data(class.clone(),Floats(vec![0f32;count])),
+            "[D" => ArrayObject::from_data(class.clone(),Doubles(vec![0f64;count])),
+            _ => ArrayObject::from_data(class.clone(),References(vec![None;count]))
         }
     }
 

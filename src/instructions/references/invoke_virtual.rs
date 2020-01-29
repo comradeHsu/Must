@@ -23,6 +23,15 @@ impl InvokeVirtual {
             "(F)V" => println!("{}",stack.pop_float()),
             "(J)V" => println!("{}",stack.pop_long()),
             "(D)V" => println!("{}",stack.pop_double()),
+            "(Ljava/lang/String;)V" => {
+                let java_str = stack.pop_ref();
+                let mete_str = (*java_str.unwrap()).borrow()
+                    .get_ref_var("value", "[C").expect("str is null");
+                let borrow = (*mete_str).borrow();
+                let string = borrow.chars();
+                let target = String::from_utf16(string).expect("u16 seqs has mistake");
+                println!("{}",target);
+            },
             _ => panic!("println: {}",desc)
         }
         stack.pop_ref();

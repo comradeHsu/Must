@@ -38,7 +38,7 @@ fn start_jvm(cmd: &Cmd) {
     println!("init main_class");
     let main_method = (*main_class).borrow().get_main_method();
     if main_method.is_some() {
-        interpret(main_method.unwrap());
+        interpret(main_method.unwrap(),&cmd.args);
     } else {
         println!("Main method not found in class {}", cmd.class);
     }
@@ -86,9 +86,12 @@ mod tests{
             verbose_class: true,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.FibonacciTest".to_string(),
+            class: "java.BubbleSortTest".to_string(),
             args: vec![]
         };
+        let vec = "ha哈哈";
+        let s:Vec<u16> = vec.encode_utf16().collect();
+        println!("vec {:?}",s);
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
         let class_loader = Rc::new(RefCell::new(
@@ -98,7 +101,7 @@ mod tests{
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
         if main_method.is_some() {
-            interpret(main_method.unwrap());
+            interpret(main_method.unwrap(),&cmd.args);
         } else {
             println!("Main method not found in class {}", cmd.class);
         }
@@ -123,7 +126,7 @@ mod tests{
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
         if main_method.is_some() {
-            interpret(main_method.unwrap());
+            interpret(main_method.unwrap(),&cmd.args);
         } else {
             println!("Main method not found in class {}", cmd.class);
         }
