@@ -9,7 +9,8 @@ use crate::runtime_data_area::heap::object::DataType::StandardObject;
 #[derive(Debug)]
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
-    pub data:DataType
+    pub data:DataType,
+    pub meta:()
 }
 
 impl Object {
@@ -17,7 +18,8 @@ impl Object {
         let count = (*class).borrow().instance_slot_count();
         return Object{
             class: class.clone(),
-            data: StandardObject(Some(Slots::with_capacity(count as usize)))
+            data: StandardObject(Some(Slots::with_capacity(count as usize))),
+            meta: ()
         };
     }
 

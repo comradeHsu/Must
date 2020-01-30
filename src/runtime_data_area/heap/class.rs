@@ -33,7 +33,8 @@ pub struct Class {
     instance_slot_count:u32,
     static_slot_count:u32,
     static_vars:Option<Slots>,
-    initialized:bool
+    initialized:bool,
+    java_class:Option<Rc<RefCell<Object>>>
 }
 
 impl Class {
@@ -54,7 +55,8 @@ impl Class {
             instance_slot_count: 0,
             static_slot_count: 0,
             static_vars: None,
-            initialized: false
+            initialized: false,
+            java_class: None
         };
     }
 
@@ -75,7 +77,8 @@ impl Class {
             instance_slot_count: 0,
             static_slot_count: 0,
             static_vars: None,
-            initialized: false
+            initialized: false,
+            java_class: None
         };
         println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
@@ -106,9 +109,31 @@ impl Class {
             instance_slot_count: 0,
             static_slot_count: 0,
             static_vars: None,
-            initialized: true
+            initialized: true,
+            java_class: None
         };
         return class;
+    }
+
+    #[inline]
+    pub fn primitive_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Class {
+        return Class{
+            access_flags: PUBLIC,
+            name: class_name.to_string(),
+            super_class_name: None,
+            interfaces_name: vec![],
+            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+            fields: vec![],
+            methods: vec![],
+            loader: Some(loader),
+            super_class: None,
+            interfaces: None,
+            instance_slot_count: 0,
+            static_slot_count: 0,
+            static_vars: None,
+            initialized: true,
+            java_class: None
+        };
     }
 
     #[inline]
@@ -347,6 +372,21 @@ impl Class {
     }
 
     #[inline]
+    pub fn java_class(&self) -> Option<&Rc<RefCell<Object>>> {
+        return self.java_class.as_ref();
+    }
+
+    #[inline]
+    pub fn get_java_class(&self) -> Option<Rc<RefCell<Object>>> {
+        return self.java_class.clone();
+    }
+
+    #[inline]
+    pub fn set_java_class(&mut self,object:Option<Rc<RefCell<Object>>>) {
+        return self.java_class = object;
+    }
+
+    #[inline]
     pub fn super_class(&self) -> Option<Rc<RefCell<Class>>>{
         if self.super_class.is_some() {
             return self.super_class.clone();
@@ -417,6 +457,14 @@ impl Class {
         }
         return None;
     }
+
+    #[inline]
+    pub fn java_name(&self) -> String {
+        let mut string = self.name.clone();
+        string.replace('/',".");
+        return string;
+    }
+
 
 
     ///about array's class

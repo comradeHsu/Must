@@ -5,6 +5,7 @@ mod runtime_data_area;
 mod utils;
 mod instructions;
 mod interpreter;
+mod native;
 
 use crate::cmd::Cmd;
 use crate::class_path::class_path::{ClassPath, Entry};
@@ -31,7 +32,7 @@ fn start_jvm(cmd: &Cmd) {
     let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
     let class_path = Rc::new(cp);
     println!("init classPath");
-    let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path,cmd.verbose_class)));
+    let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
     println!("init class_loader");
     let class_name = cmd.class.clone().replace('.',"/");
     let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -94,8 +95,7 @@ mod tests{
         println!("vec {:?}",s);
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(
-            ClassLoader::new(class_path,cmd.verbose_class)));
+        let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
         println!("init class_loader");
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -120,8 +120,7 @@ mod tests{
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(
-            ClassLoader::new(class_path,cmd.verbose_class)));
+        let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();

@@ -12,7 +12,8 @@ impl Object {
     pub fn from_data(class:Rc<RefCell<Class>>,data:DataType) -> ArrayObject {
         return Object{
             class,
-            data
+            data,
+            meta: ()
         };
     }
 

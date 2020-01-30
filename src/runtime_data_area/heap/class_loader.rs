@@ -12,6 +12,7 @@ use std::borrow::Borrow;
 use crate::runtime_data_area::heap::access_flags::PUBLIC;
 use crate::utils::boxed;
 use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 
 pub struct ClassLoader {
     class_path:Rc<ClassPath>,
@@ -21,12 +22,48 @@ pub struct ClassLoader {
 
 impl ClassLoader {
     #[inline]
-    pub fn new(class_path:Rc<ClassPath>,verbose_class:bool) -> ClassLoader {
-        return ClassLoader{
-            class_path: class_path,
+    pub fn new(class_path:Rc<ClassPath>,verbose_class:bool) -> Rc<RefCell<ClassLoader>> {
+        let class_loader =  boxed(ClassLoader{
+            class_path,
             verbose_class,
             class_map: Default::default()
-        };
+        });
+        ClassLoader::load_basic_classes(class_loader.clone());
+        ClassLoader::load_primitive_classes(class_loader.clone());
+        return class_loader;
+    }
+
+    fn load_basic_classes(loader:Rc<RefCell<ClassLoader>>) {
+        let java_lang_class = ClassLoader::load_class(loader.clone(),"java/lang/Class");
+        let borrow = (*loader).borrow();
+        let maps = borrow.class_map_immutable();
+        for (k,v) in maps {
+            let mut borrow_class = (**v).borrow_mut();
+            let j_l_class = borrow_class.java_class();
+            if j_l_class.is_none() {
+                let mut class_object = Class::new_object(&java_lang_class);
+//                class_object.meta = v.clone();
+                let boxed = boxed(class_object);
+                borrow_class.set_java_class(Some(boxed));
+            }
+        }
+    }
+
+    fn load_primitive_classes(loader:Rc<RefCell<ClassLoader>>) {
+        let primitives = PrimitiveTypes::instance().unwrap();
+        let maps = primitives.primitive_types();
+        for (k,v) in maps {
+            ClassLoader::load_primitive_class(loader.clone(),k);
+        }
+    }
+
+    fn load_primitive_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) {
+        let mut class = Class::primitive_class(loader.clone(),class_name);
+        let class_class= (*loader).borrow().get_class("java/lang/Class");
+        let class_object = Class::new_object(&class_class.unwrap());
+        //
+        class.set_java_class(Some(boxed(class_object)));
+        (*loader).borrow_mut().class_map.insert(class_name.to_string(),boxed(class));
     }
 
     #[inline]
@@ -50,16 +87,25 @@ impl ClassLoader {
 
     pub fn load_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) -> Rc<RefCell<Class>> {
         let clone_loader = loader.clone();
-        let class_op = (*clone_loader).borrow().get_class(class_name);
-//        println!("name:{},class_op:{}",class_name,class_op.is_some());
+        let class_op: Option<Rc<RefCell<Class>>> = (*clone_loader).borrow().get_class(class_name);
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
+        let mut class:Option<Rc<RefCell<Class>>> = None;
         if class_name.starts_with('[') {
-            return ClassLoader::load_array_class(loader,class_name);
+            class = Some(ClassLoader::load_array_class(loader.clone(),class_name));
+        } else {
+            class = Some(ClassLoader::load_non_array_class(loader.clone(), class_name));
         }
-        let class = ClassLoader::load_non_array_class(loader,class_name);
-        return class;
+        let value = class.unwrap();
+        let class_class= (*loader).borrow().get_class("java/lang/Class");
+        if class_class.is_some() {
+            let mut class_object = Class::new_object(&class_class.unwrap());
+//                class_object.meta = v.clone();
+            let boxed = boxed(class_object);
+            (*value).borrow_mut().set_java_class(Some(boxed));
+        }
+        return value;
     }
 
     ///load array's class

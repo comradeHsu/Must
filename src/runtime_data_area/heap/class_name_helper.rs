@@ -71,5 +71,10 @@ impl PrimitiveTypes {
 
         panic!("Invalid descriptor: {}",descriptor);
     }
+
+    #[inline]
+    pub fn primitive_types(&self) -> &HashMap<&'static str,&'static str> {
+        return &self.data;
+    }
 }
 
