@@ -42,7 +42,6 @@ pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
         for c in bytecode {
             codes.push(*c);
         }
-        println!("  method:{} desc:{},code len:{}",method.name(),method.descriptor(), codes.len());
         reader.reset(codes, pc);
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);

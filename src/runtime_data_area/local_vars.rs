@@ -78,6 +78,11 @@ impl LocalVars {
     pub fn set_slot(&mut self, index: usize, val: Slot) {
         self.vars[index] = val;
     }
+
+    #[inline]
+    pub fn get_this(&self) -> Option<Rc<RefCell<Object>>> {
+        return self.get_ref(0);
+    }
 }
 
 

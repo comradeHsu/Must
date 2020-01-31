@@ -42,7 +42,7 @@ impl ClassLoader {
             let j_l_class = borrow_class.java_class();
             if j_l_class.is_none() {
                 let mut class_object = Class::new_object(&java_lang_class);
-//                class_object.meta = v.clone();
+                class_object.set_meta(v.clone());
                 let boxed = boxed(class_object);
                 borrow_class.set_java_class(Some(boxed));
             }
@@ -60,10 +60,11 @@ impl ClassLoader {
     fn load_primitive_class(loader:Rc<RefCell<ClassLoader>>,class_name:&str) {
         let mut class = Class::primitive_class(loader.clone(),class_name);
         let class_class= (*loader).borrow().get_class("java/lang/Class");
-        let class_object = Class::new_object(&class_class.unwrap());
-        //
-        class.set_java_class(Some(boxed(class_object)));
-        (*loader).borrow_mut().class_map.insert(class_name.to_string(),boxed(class));
+        let mut class_object = Class::new_object(&class_class.unwrap());
+        let boxed_class = boxed(class);
+        class_object.set_meta(boxed_class.clone());
+        (*boxed_class).borrow_mut().set_java_class(Some(boxed(class_object)));
+        (*loader).borrow_mut().class_map.insert(class_name.to_string(),boxed_class);
     }
 
     #[inline]
@@ -101,7 +102,7 @@ impl ClassLoader {
         let class_class= (*loader).borrow().get_class("java/lang/Class");
         if class_class.is_some() {
             let mut class_object = Class::new_object(&class_class.unwrap());
-//                class_object.meta = v.clone();
+            class_object.set_meta(value.clone());
             let boxed = boxed(class_object);
             (*value).borrow_mut().set_java_class(Some(boxed));
         }
@@ -145,14 +146,14 @@ impl ClassLoader {
 
     pub fn parse_class(data:Vec<u8>) -> Rc<RefCell<Class>> {
         let class_file = ClassFile::parse(data);
-        class_file.display();
+//        class_file.display();
         return Class::new(class_file);
     }
 
     pub fn resolve_super_class(class:Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let super_class_name = class.super_class_name();
-        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
+//        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
             let super_class =
                 ClassLoader::load_class(class.loader(),super_class_name.unwrap().as_str());

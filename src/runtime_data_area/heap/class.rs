@@ -80,7 +80,7 @@ impl Class {
             initialized: false,
             java_class: None
         };
-        println!("class:{:?}",class.name.as_str());
+//        println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
         (*point).borrow_mut().constant_pool.borrow_mut().set_class(point.clone());
         (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
@@ -460,8 +460,7 @@ impl Class {
 
     #[inline]
     pub fn java_name(&self) -> String {
-        let mut string = self.name.clone();
-        string.replace('/',".");
+        let string = self.name.replace('/',".");
         return string;
     }
 

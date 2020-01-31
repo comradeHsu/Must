@@ -10,7 +10,7 @@ use crate::runtime_data_area::heap::object::DataType::StandardObject;
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
     pub data:DataType,
-    pub meta:()
+    pub meta:Option<Rc<RefCell<Class>>>
 }
 
 impl Object {
@@ -19,7 +19,7 @@ impl Object {
         return Object{
             class: class.clone(),
             data: StandardObject(Some(Slots::with_capacity(count as usize))),
-            meta: ()
+            meta: None
         };
     }
 
@@ -27,6 +27,17 @@ impl Object {
     pub fn class(&self) -> Rc<RefCell<Class>> {
         return self.class.clone();
     }
+
+    #[inline]
+    pub fn meta(&self) -> Option<Rc<RefCell<Class>>> {
+        return self.meta.clone();
+    }
+
+    #[inline]
+    pub fn set_meta(&mut self,meta:Rc<RefCell<Class>>) {
+        self.meta = Some(meta);
+    }
+
     #[inline]
     pub fn fields(&mut self) -> &mut Slots {
         let fields = &mut self.data;
