@@ -23,6 +23,11 @@ impl MethodDescriptor {
     }
 
     #[inline]
+    pub fn return_type(&self)-> &String {
+        return &self.return_type;
+    }
+
+    #[inline]
     pub fn parameter_types(&self) -> &Vec<String> {
         return &self.parameter_types;
     }

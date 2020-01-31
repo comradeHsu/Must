@@ -44,7 +44,7 @@ impl Method {
         let md = MethodDescriptorParser::parse_method_descriptor(method.descriptor());
         method.calc_arg_slot_count(md.parameter_types());
         if method.is_native() {
-
+            method.inject_code_attribute(md.return_type());
         }
         return Rc::new(method);
     }
@@ -81,7 +81,7 @@ impl Method {
         self.max_locals = self.arg_slot_count;
         let first = return_type.chars().next().unwrap();
         match first {
-            'V' => self.code = vec![0xfe, 0xb], // return
+            'V' => self.code = vec![0xfe, 0xb1], // return
             'D' => self.code = vec![0xfe, 0xaf], // dreturn
             'F' => self.code = vec![0xfe, 0xae], // freturn
             'J' => self.code = vec![0xfe, 0xad], // lreturn

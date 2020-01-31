@@ -107,6 +107,9 @@ impl OperandStack {
 
     #[inline]
     pub fn get_ref_from_top(&self,index:usize) -> Option<Rc<RefCell<Object>>> {
+        if self.size <= index {
+            println!("IndexOutOf:{} size:{}",index,self.size);
+        }
         return self.slots[self.size-1-index].reference.clone();
     }
 }
