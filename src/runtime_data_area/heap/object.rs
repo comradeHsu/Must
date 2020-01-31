@@ -48,6 +48,16 @@ impl Object {
     }
 
     #[inline]
+    pub fn mut_data(&mut self) -> &mut DataType {
+        return &mut self.data;
+    }
+
+    #[inline]
+    pub fn data(&self) -> & DataType {
+        return &self.data;
+    }
+
+    #[inline]
     pub fn is_instance_of(&self, class:Rc<RefCell<Class>>) -> bool {
         return (*class).borrow().is_assignable_from(self.class.as_ref().borrow().borrow());
     }

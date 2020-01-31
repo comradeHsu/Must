@@ -464,6 +464,10 @@ impl Class {
         return string;
     }
 
+    pub fn is_primitive(&self) -> bool {
+        let primitive = PrimitiveTypes::instance().unwrap().primitive_types().get(self.name());
+        return primitive.is_some();
+    }
 
 
     ///about array's class

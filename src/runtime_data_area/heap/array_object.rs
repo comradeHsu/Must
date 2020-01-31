@@ -142,4 +142,25 @@ impl Object {
             _ => panic!("The object isn't array")
         }
     }
+
+    pub fn array_copy(src:Rc<RefCell<Object>>,dst:Rc<RefCell<Object>>,src_pos:usize,dst_pos:usize,
+                      length:usize) {
+        let mut src_borrow = (*src).borrow();
+        let mut dst_borrow = (*dst).borrow_mut();
+        match (src_borrow.data(), dst_borrow.mut_data()){
+            (Bytes(s),Bytes(d) )=> {
+                let slice = &s[src_pos..(src_pos+length)];
+                let dlice = &mut d[dst_pos..(dst_pos+length)];
+                dlice.copy_from_slice(slice);
+            },
+            (Shorts(s),Shorts(d)) => {},
+            (Ints(s),Ints(d)) => {},
+            (Longs(s),Longs(d)) => {},
+            (Chars(s),Chars(d)) => {},
+            (Floats(s),Floats(d)) => {},
+            (Doubles(s),Doubles(d)) => {},
+            (References(s),References(d)) => {},
+            _ => panic!("The object isn't array")
+        }
+    }
 }
