@@ -48,6 +48,15 @@ impl Object {
     }
 
     #[inline]
+    pub fn fields_immutable(&self) -> &Slots {
+        let fields = &self.data;
+        match fields {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array")
+        }
+    }
+
+    #[inline]
     pub fn mut_data(&mut self) -> &mut DataType {
         return &mut self.data;
     }

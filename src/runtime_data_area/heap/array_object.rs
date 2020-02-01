@@ -145,21 +145,86 @@ impl Object {
 
     pub fn array_copy(src:Rc<RefCell<Object>>,dst:Rc<RefCell<Object>>,src_pos:usize,dst_pos:usize,
                       length:usize) {
+        if src == dst {
+            ArrayObject::array_copy_from_same_object(src,src_pos,dst_pos,length);
+            return;
+        }
         let mut src_borrow = (*src).borrow();
         let mut dst_borrow = (*dst).borrow_mut();
         match (src_borrow.data(), dst_borrow.mut_data()){
             (Bytes(s),Bytes(d) )=> {
-                let slice = &s[src_pos..(src_pos+length)];
-                let dlice = &mut d[dst_pos..(dst_pos+length)];
-                dlice.copy_from_slice(slice);
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
             },
-            (Shorts(s),Shorts(d)) => {},
-            (Ints(s),Ints(d)) => {},
-            (Longs(s),Longs(d)) => {},
-            (Chars(s),Chars(d)) => {},
-            (Floats(s),Floats(d)) => {},
-            (Doubles(s),Doubles(d)) => {},
-            (References(s),References(d)) => {},
+            (Shorts(s),Shorts(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (Ints(s),Ints(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (Longs(s),Longs(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (Chars(s),Chars(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (Floats(s),Floats(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (Doubles(s),Doubles(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.copy_from_slice(s_slice);
+            },
+            (References(s),References(d)) => {
+                let s_slice = &s[src_pos..(src_pos+length)];
+                let d_slice = &mut d[dst_pos..(dst_pos+length)];
+                d_slice.clone_from_slice(s_slice);
+            },
+            _ => panic!("The object isn't array")
+        }
+    }
+
+    fn array_copy_from_same_object(object:Rc<RefCell<Object>>,src_pos:usize,dst_pos:usize, length:usize) {
+        let mut dst_borrow = (*object).borrow_mut();
+        match dst_borrow.mut_data() {
+            Bytes(s)=> {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Shorts(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Ints(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Longs(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Chars(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Floats(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            Doubles(s) => {
+                s.copy_within(src_pos..(src_pos+length),dst_pos);
+            },
+            References(s) => {
+                for i in 0..length {
+                    s[dst_pos+i] = s[src_pos+i].clone();
+                }
+            },
             _ => panic!("The object isn't array")
         }
     }

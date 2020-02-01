@@ -5,7 +5,7 @@ use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::object::DataType::Chars;
-use crate::utils::boxed;
+use crate::utils::{boxed, java_str_to_rust_str};
 
 pub struct StringPool {
     pool:HashMap<String,Rc<RefCell<Object>>>
@@ -45,5 +45,17 @@ impl StringPool {
         let target = boxed(java_string);
         StringPool::mut_instance().pool.insert(string,target.clone());
         return target;
+    }
+
+    ///java sdk function
+    /// string.intern
+    pub fn intern_string(string:Rc<RefCell<Object>>) -> Rc<RefCell<Object>> {
+        let rust_str = java_str_to_rust_str(string.clone());
+        let pool_string = StringPool::instance().pool.get(&rust_str);
+        if pool_string.is_some() {
+            return pool_string.unwrap().clone();
+        }
+        StringPool::mut_instance().pool.insert(rust_str,string.clone());
+        return string;
     }
 }
