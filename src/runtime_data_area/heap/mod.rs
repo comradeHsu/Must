@@ -17,3 +17,4 @@ pub mod class_loader;
 pub mod method_descriptor;
 mod class_name_helper;
 pub mod string_pool;
+mod exception_table;

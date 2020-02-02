@@ -47,4 +47,9 @@ impl Thread {
         return self.stack.is_empty();
     }
 
+    #[inline]
+    pub fn clear_stack(&mut self) {
+        self.stack.clear();
+    }
+
 }

@@ -48,4 +48,12 @@ impl Stack {
     pub fn is_empty(&self) -> bool {
         return self.size == 0;
     }
+
+    #[inline]
+    pub fn clear(&mut self) {
+        while !self.is_empty() {
+            self.pop()
+        }
+    }
+
 }

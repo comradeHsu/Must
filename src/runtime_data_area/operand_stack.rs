@@ -112,4 +112,10 @@ impl OperandStack {
         }
         return self.slots[self.size-1-index].reference.clone();
     }
+
+    #[inline]
+    pub fn clear(&mut self) {
+        self.size = 0;
+        self.slots.clear();
+    }
 }

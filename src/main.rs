@@ -15,6 +15,7 @@ use crate::interpreter::interpret;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use std::rc::Rc;
 use std::cell::RefCell;
+use chrono::Local;
 
 fn main() {
     let cmd = Cmd::parse_cmd();
@@ -31,12 +32,12 @@ fn main() {
 fn start_jvm(cmd: &Cmd) {
     let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
     let class_path = Rc::new(cp);
-    println!("init classPath");
+    println!("init classPath {:?}",Local::now());
     let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
-    println!("init class_loader");
+    println!("init class_loader {:?}",Local::now());
     let class_name = cmd.class.clone().replace('.',"/");
     let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
-    println!("init main_class");
+    println!("init main_class {:?}",Local::now());
     let main_method = (*main_class).borrow().get_main_method();
     if main_method.is_some() {
         interpret(main_method.unwrap(),&cmd.args);

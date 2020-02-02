@@ -5,6 +5,7 @@ pub mod system;
 mod float;
 mod double;
 mod string;
+mod throwable;
 
 pub fn init() {
     object::init();
@@ -13,4 +14,5 @@ pub fn init() {
     float::init();
     double::init();
     string::init();
+    throwable::init();
 }

@@ -7,7 +7,7 @@ use std::ops::Deref;
 use std::cell::RefCell;
 use std::borrow::Borrow;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct SymRef {
     constant_pool:Rc<RefCell<ConstantPool>>,
     class_name:String,

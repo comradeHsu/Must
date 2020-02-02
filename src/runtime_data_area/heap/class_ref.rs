@@ -5,7 +5,7 @@ use crate::class_file::constant_pool::ConstantClassInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct ClassRef {
     sym_ref:SymRef
 }
@@ -23,5 +23,10 @@ impl ClassRef {
     #[inline]
     pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
         self.sym_ref.set_constant_pool(pool);
+    }
+
+    #[inline]
+    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
+        return self.sym_ref.constant_pool();
     }
 }

@@ -13,3 +13,4 @@ pub mod invoke_interface;
 pub mod anew_array;
 pub mod array_length;
 pub mod multi_anew_array;
+pub mod athrow;

@@ -3,7 +3,7 @@ pub mod class_file;
 pub mod member_info;
 pub mod constant_pool;
 mod attribute_info;
-mod code_attribute;
+pub mod code_attribute;
 mod unparsed_attribute;
 mod makers_attribute;
 mod source_file_attribute;

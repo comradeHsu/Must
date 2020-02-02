@@ -5,6 +5,7 @@ use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method_descriptor::MethodDescriptorParser;
 use crate::runtime_data_area::heap::access_flags::NATIVE;
+use crate::runtime_data_area::heap::exception_table::ExceptionTable;
 
 #[derive(Debug)]
 pub struct Method {
@@ -12,7 +13,8 @@ pub struct Method {
     max_stack:usize,
     max_locals:usize,
     code:Vec<u8>,
-    arg_slot_count:usize
+    arg_slot_count:usize,
+    exception_table:ExceptionTable
 }
 
 impl Method {
@@ -24,7 +26,8 @@ impl Method {
             max_stack: 0, 
             max_locals: 0, 
             code: vec![],
-            arg_slot_count: 0
+            arg_slot_count: 0,
+            exception_table: ExceptionTable::none()
         };
     }
 
@@ -57,6 +60,8 @@ impl Method {
                 self.max_locals = attr.max_locals() as usize;
                 self.max_stack = attr.max_stack() as usize;
                 self.code = attr.code().clone();
+                self.exception_table = ExceptionTable::new(attr.exception_table(),
+                                                        (*self.class()).borrow().constant_pool())
             },
             None => {}
         }
@@ -88,6 +93,14 @@ impl Method {
             'L' | '[' => self.code = vec![0xfe, 0xb0], // areturn
             _ => self.code = vec![0xfe, 0xac] // ireturn
         }
+    }
+
+    pub fn find_exception_handler(&self, class:Rc<RefCell<Class>>, pc:i32) -> i32 {
+        let handler = self.exception_table.find_exception_handler(class, pc);
+        if handler.is_some() {
+            return handler.unwrap().handler_pc();
+        }
+        return -1;
     }
 
     #[inline]
