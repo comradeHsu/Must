@@ -74,11 +74,8 @@ fn ldc(frame: &mut Frame, index:usize) {
 //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
     let cp = (*class).borrow().constant_pool();
-    let borrow_cp = cp.borrow();
-    let constant = borrow_cp.get_constant_immutable(index);
     let mut borrow_cp = cp.borrow_mut();
     let constant = borrow_cp.get_constant(index);
-    println!("constant:{:?}",constant);
     match constant {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),

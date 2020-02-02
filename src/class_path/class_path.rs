@@ -113,13 +113,11 @@ impl Entry for ClassPath{
         let boot_read_rs = self.boot_class_path.as_ref()
             .unwrap().read_class(&class);
         if boot_read_rs.is_ok() {
-            println!("boot:\n");
             return boot_read_rs;
         }
         let ext_read_rs = self.ext_class_path.as_ref()
             .unwrap().read_class(&class);
         if ext_read_rs.is_ok() {
-            println!("ext:\n");
             return boot_read_rs;
         }
         return self.user_class_path.as_ref().unwrap().read_class(&class);
