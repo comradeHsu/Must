@@ -22,38 +22,29 @@ impl Slots {
     }
 
     pub fn set_int(&mut self,index:usize,val:i32) {
-        self.slots[index].num = Some(val);
+        self.slots[index].num = val;
     }
 
     pub fn get_int(&self,index:usize) -> i32{
-//        if self.slots[index].num.is_none() {
-//            panic!("slot is reference");
-//        }
-        return self.slots[index].num.unwrap_or_else(||{0});
+        return self.slots[index].num;
     }
 
     pub fn set_float(&mut self,index:usize,val:f32) {
-        self.slots[index].num = Some(f32_to_i32(val));
+        self.slots[index].num = f32_to_i32(val);
     }
 
     pub fn get_float(&self,index:usize) -> f32{
-        if self.slots[index].num.is_none() {
-            panic!("slot is reference");
-        }
-        return i32_to_f32(self.slots[index].num.unwrap());
+        return i32_to_f32(self.slots[index].num);
     }
 
     pub fn set_long(&mut self,index:usize,val:i64) {
-        self.slots[index].num = Some(i64_back_bytes_to_i32(val));
-        self.slots[index+1].num = Some((val >> 32) as i32);
+        self.slots[index].num = i64_back_bytes_to_i32(val);
+        self.slots[index+1].num = (val >> 32) as i32;
     }
 
     pub fn get_long(&self,index:usize) -> i64 {
-        if self.slots[index].num.is_none() || self.slots[index+1].num.is_none(){
-            panic!("slot is reference");
-        }
-        let low = self.slots[index].num.unwrap() as i64;
-        let high = self.slots[index+1].num.unwrap() as i64;
+        let low = self.slots[index].num as i64;
+        let high = self.slots[index+1].num as i64;
         return (high << 32) | low;
     }
 
