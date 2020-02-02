@@ -27,13 +27,14 @@ impl Instruction for InvokeInterface {
     fn execute(&mut self, frame: &mut Frame) {
         let current_class = frame.method().class();
         let cp = (*current_class).borrow().constant_pool();
+        let pool_class = (*cp).borrow().class();
         let mut borrow_cp = (*cp).borrow_mut();
         let constant = borrow_cp.get_constant(self.index);
         let method_ref = match constant {
             InterfaceMethodReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let resolved_method = method_ref.resolved_interface_method().unwrap();
+        let resolved_method = method_ref.resolved_interface_method(pool_class.clone()).unwrap();
         if resolved_method.is_static() || resolved_method.is_private() {
             panic!("java.lang.IncompatibleClassChangeError")
         }
@@ -45,7 +46,7 @@ impl Instruction for InvokeInterface {
             panic!("java.lang.NullPointerException") // todo
         }
         let object_class = (*object.unwrap()).borrow().class();
-        let interface = method_ref.resolved_class(current_class.clone());
+        let interface = method_ref.resolved_class(pool_class.clone());
         if !(*object_class).borrow().is_implements((*interface).borrow().deref()) {
             panic!("java.lang.IncompatibleClassChangeError")
         }

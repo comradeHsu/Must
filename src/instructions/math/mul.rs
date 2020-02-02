@@ -64,10 +64,10 @@ impl Instruction for IMul {
 
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int();
-        let v1 = stack.pop_int();
+        let v2 = stack.pop_int() as i64;
+        let v1 = stack.pop_int() as i64;
         let rs = v1 * v2;
-        stack.push_int(rs);
+        stack.push_int(rs as i32);
     }
 }
 

@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
     pub data:DataType,
@@ -100,7 +100,7 @@ impl PartialEq for Object {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum DataType {
     StandardObject(Option<Slots>),
     Bytes(Vec<i8>),

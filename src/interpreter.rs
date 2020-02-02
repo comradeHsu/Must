@@ -15,7 +15,7 @@ use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::utils::boxed;
-use crate::native::java::init;
+use crate::native::init;
 
 pub fn interpret(method:Rc<Method>,args:&Vec<String>) {
 

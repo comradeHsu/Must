@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Slots {
     slots:Vec<Slot>
 }

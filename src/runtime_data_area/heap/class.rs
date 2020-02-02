@@ -243,21 +243,45 @@ impl Class {
 
     // self implements interface
     pub fn is_implements(&self, interface: &Self) -> bool {
+        let cur_interfaces = self.interfaces.as_ref();
+        if cur_interfaces.is_some() {
+            for i in cur_interfaces.unwrap() {
+                let interface_class = (*i).borrow();
+                if interface_class.deref() == interface || interface_class.is_sub_interface_of(interface){
+                    return true;
+                }
+            }
+        }
         let mut super_class = self.super_class.clone();
         while super_class.is_some() {
             let rc = super_class.unwrap();
             let ref_class = (*rc).borrow();
-            let interfaces = ref_class.interfaces.as_ref().unwrap();
-            for i in interfaces {
-                let interface_class = (*i).borrow();
-                if interface_class.deref() == interface || interface_class.is_sub_interface_of(interface){
-                    return true;
+            let interfaces = ref_class.interfaces.as_ref();
+            if interfaces.is_some() {
+                for i in interfaces.unwrap() {
+                    let interface_class = (*i).borrow();
+                    if interface_class.deref() == interface || interface_class.is_sub_interface_of(interface){
+                        return true;
+                    }
                 }
             }
             super_class = ref_class.super_class.clone();
         }
         return false
     }
+
+//    #[inline]
+//    fn current_implement(interfaces:Option<&Interfaces>, interface: &Self) -> bool {
+//        if interfaces.is_some() {
+//            for i in interfaces.unwrap() {
+//                let interface_class = (*i).borrow();
+//                if interface_class.deref() == interface || interface_class.is_sub_interface_of(interface) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     ///
     pub fn is_sub_interface_of(&self, other:&Self) -> bool {
@@ -307,6 +331,19 @@ impl Class {
             for field in (*class).borrow().fields() {
                 let borrow = (**field).borrow();
                 if borrow.parent().is_static() == is_static && borrow.name() == name && borrow.descriptor() == descriptor {
+                    return Some(field.clone());
+                }
+            }
+            class_ptr = (*class).borrow().super_class();
+        }
+        return None;
+    }
+
+    pub fn get_method(mut class_ptr:Option<Rc<RefCell<Class>>>,name:&str, descriptor:&str, is_static:bool) -> Option<Rc<Method>> {
+        while class_ptr.is_some() {
+            let class = class_ptr.unwrap();
+            for field in (*class).borrow().methods() {
+                if field.is_static() == is_static && field.name() == name && field.descriptor() == descriptor {
                     return Some(field.clone());
                 }
             }
@@ -458,6 +495,10 @@ impl Class {
         return None;
     }
 
+    pub fn get_instance_method(class:Rc<RefCell<Class>>,name:&str,desc:&str) -> Option<Rc<Method>> {
+        return Class::get_method(Some(class),name, desc, false)
+    }
+
     #[inline]
     pub fn java_name(&self) -> String {
         let string = self.name.replace('/',".");
@@ -467,6 +508,20 @@ impl Class {
     pub fn is_primitive(&self) -> bool {
         let primitive = PrimitiveTypes::instance().unwrap().primitive_types().get(self.name());
         return primitive.is_some();
+    }
+
+    pub fn set_ref_var(class:Rc<RefCell<Self>>, name:&str, descriptor:&str, reference:Rc<RefCell<Object>>) {
+        let field = Class::get_field(Some(class.clone()),name,descriptor,true);
+        let mut borrow = (*class).borrow_mut();
+        let slots = borrow.mut_static_vars().unwrap();
+        slots.set_ref((*field.unwrap()).borrow().slot_id(),Some(reference));
+    }
+
+    pub fn get_ref_var(class:Rc<RefCell<Self>>, name:&str, descriptor:&str) -> Option<Rc<RefCell<Object>>> {
+        let field = Class::get_field(Some(class.clone()),name,descriptor,true);
+        let borrow = (*class).borrow();
+        let slots = borrow.static_vars.as_ref().unwrap();
+        return slots.get_ref((*field.unwrap()).borrow().slot_id());
     }
 
 

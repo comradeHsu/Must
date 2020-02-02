@@ -87,7 +87,7 @@ mod tests{
             verbose_class: false,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.StringTest".to_string(),
+            class: "java.BoxTest".to_string(),
             args: vec![]
         };
         let vec = "ha哈哈";
@@ -150,6 +150,17 @@ mod tests{
         let start = SystemTime::now();
         dfs(1,0,0,0,0);
         let end = SystemTime::now();
-        println!("{:?}: {:?}", start, end);
+        let ptr = &end as *const SystemTime;
+        let i = 99;
+        let c = 99;
+        println!("{:?}: {:?},{}", start, end,ptr as usize);
+        let p = &i as *const i32;
+        let add = p as usize;
+        let t = add as *const i32;
+        println!("{}: {}", add, unsafe{*t});
+        let p = &c as *const i32;
+        let add = p as usize;
+        let t = add as *const i32;
+        println!("{}: {}", add, unsafe{*t});
     }
 }

@@ -59,7 +59,8 @@ impl PrimitiveTypes {
         }
         if descriptor.starts_with('L') { // object
             let (_,desc) = descriptor.split_at(1);
-            return desc.to_string();
+            let (target,_) = desc.split_at(desc.len()-1);
+            return target.to_string();
         }
 
         let data = &self.data;
