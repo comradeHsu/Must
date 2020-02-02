@@ -193,8 +193,8 @@ impl ConstantInfoEnum {
             MethodRef(method_ref) => method_ref.read_info(reader),
             InterfaceMethodRef(interface) => interface.read_info(reader),
             NameAndType(name_and_type) => name_and_type.read_info(reader),
-            MethodHandle(methodHandle) => methodHandle.read_info(reader),
-            MethodType(methodType) => methodType.read_info(reader),
+            MethodHandle(method_handle) => method_handle.read_info(reader),
+            MethodType(method_type) => method_type.read_info(reader),
             InvokeDynamic(invoke) => invoke.read_info(reader),
             _ => {}
         }
