@@ -64,6 +64,7 @@ use crate::instructions::references::new_array::NewArray;
 use crate::instructions::references::anew_array::ANewArray;
 use crate::instructions::references::array_length::ArrayLength;
 use crate::instructions::references::multi_anew_array::MultiANewArray;
+use crate::instructions::reserved::invoke_native::InvokeNative;
 
 pub mod base;
 mod constants;
@@ -76,6 +77,7 @@ mod comparisons;
 mod control;
 mod extended;
 mod references;
+mod reserved;
 
 pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
     let inst:Box<dyn Instruction> = match opcode {
@@ -280,6 +282,7 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xc6 => Box::new(IfNull::new()),
         0xc7 => Box::new(IfNonNull::new()),
         0xc8 => Box::new(GotoW::new()),
+        0xfe => Box::new(InvokeNative::new()),
         _c => {
             println!("opcode:{}",_c);
             panic!("instruction error")

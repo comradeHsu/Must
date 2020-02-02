@@ -15,6 +15,7 @@ use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::utils::boxed;
+use crate::native::init;
 
 pub fn interpret(method:Rc<Method>,args:&Vec<String>) {
 
@@ -28,6 +29,7 @@ pub fn interpret(method:Rc<Method>,args:&Vec<String>) {
 
 pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
     let mut reader = BytecodeReader::new();
+    init();
     println!("start {:?}",Local::now());
     loop {
 //        let mut borrow_thread = (*thread).borrow_mut();
@@ -40,6 +42,7 @@ pub fn circulate(mut thread:Rc<RefCell<Thread>>) {
         for c in bytecode {
             codes.push(*c);
         }
+//        println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(codes, pc);
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);

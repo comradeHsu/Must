@@ -91,7 +91,7 @@ impl Instruction for LShl {
 
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_long();
+        let v2 = stack.pop_int() as i64;
         let v1 = stack.pop_long();
         let rs = v1 << v2;
         stack.push_long(rs);
@@ -115,7 +115,7 @@ impl Instruction for LShr {
 
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_long();
+        let v2 = stack.pop_int() as i64;
         let v1 = stack.pop_long();
         let rs = v1 >> v2;
         stack.push_long(rs);
@@ -139,7 +139,7 @@ impl Instruction for LuShr {
 
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_long() as u64;
+        let v2 = stack.pop_int() as u64;
         let v1 = stack.pop_long() as u64;
         let rs = v1 >> v2;
         stack.push_long(rs as i64);

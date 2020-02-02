@@ -1,7 +1,7 @@
 use crate::instructions::base::instruction::{LocalVarsInstruction, ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::{Integer, Float, Long, Double, Str};
+use crate::runtime_data_area::heap::constant_pool::Constant::{Integer, Float, Long, Double, Str, ClassReference};
 use crate::runtime_data_area::heap::string_pool::StringPool;
 
 pub struct LDC(LocalVarsInstruction);
@@ -76,13 +76,22 @@ fn ldc(frame: &mut Frame, index:usize) {
     let cp = (*class).borrow().constant_pool();
     let borrow_cp = cp.borrow();
     let constant = borrow_cp.get_constant_immutable(index);
+    let mut borrow_cp = cp.borrow_mut();
+    let constant = borrow_cp.get_constant(index);
+    println!("constant:{:?}",constant);
     match constant {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),
         Str(v) => {
             let string = StringPool::java_string((*class).borrow().loader(),v.clone());
             frame.operand_stack().expect("stack is none").push_ref(Some(string))
-        }
+        },
+        ClassReference(v) => {
+            let class = v.resolved_class(class);
+            let borrow = (*class).borrow();
+            let obj = borrow.java_class();
+            frame.operand_stack().expect("stack is none").push_ref(Some(obj.unwrap().clone()));
+        },
         _ => panic!("todo: ldc!")
     }
 }

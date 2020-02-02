@@ -31,15 +31,24 @@ impl Method {
     pub fn new_methods(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Rc<Method>> {
         let mut methods = Vec::with_capacity(infos.len());
         for info in infos {
-            let mut method = Method::new();
-            method.class_member.set_class(class.clone());
-            method.class_member.copy_member_info(info);
-            method.copy_attributes(info);
-            method.calc_arg_slot_count();
-            methods.push(Rc::new(method));
+            methods.push(Method::new_method(class.clone(),info));
         }
         return methods;
     }
+
+    fn new_method(class:Rc<RefCell<Class>>,info:&MemberInfo) -> Rc<Method> {
+        let mut method = Method::new();
+        method.class_member.set_class(class.clone());
+        method.class_member.copy_member_info(info);
+        method.copy_attributes(info);
+        let md = MethodDescriptorParser::parse_method_descriptor(method.descriptor());
+        method.calc_arg_slot_count(md.parameter_types());
+        if method.is_native() {
+            method.inject_code_attribute(md.return_type());
+        }
+        return Rc::new(method);
+    }
+
     /// clone cast,waiting improve
     pub fn copy_attributes(&mut self,info:&MemberInfo) {
         let code = info.code_attributes();
@@ -53,9 +62,9 @@ impl Method {
         }
     }
 
-    fn calc_arg_slot_count(&mut self) {
-        let parsed_desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
-        for parameter_type in parsed_desc.parameter_types() {
+    fn calc_arg_slot_count(&mut self,parameter_types:&Vec<String>) {
+//        let parsed_desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
+        for parameter_type in parameter_types {
             self.arg_slot_count += 1;
             if parameter_type.as_str() == "J" || parameter_type.as_str() == "D" {
                 self.arg_slot_count += 1;
@@ -63,6 +72,21 @@ impl Method {
         }
         if !self.is_static() {
             self.arg_slot_count += 1;
+        }
+    }
+
+    /// construct native code inject to operand stack
+    fn inject_code_attribute(&mut self, return_type:&String) {
+        self.max_stack = 4;
+        self.max_locals = self.arg_slot_count;
+        let first = return_type.chars().next().unwrap();
+        match first {
+            'V' => self.code = vec![0xfe, 0xb1], // return
+            'D' => self.code = vec![0xfe, 0xaf], // dreturn
+            'F' => self.code = vec![0xfe, 0xae], // freturn
+            'J' => self.code = vec![0xfe, 0xad], // lreturn
+            'L' | '[' => self.code = vec![0xfe, 0xb0], // areturn
+            _ => self.code = vec![0xfe, 0xac] // ireturn
         }
     }
 

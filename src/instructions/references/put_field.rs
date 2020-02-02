@@ -34,7 +34,7 @@ impl Instruction for PutField {
             panic!("java.lang.IncompatibleClassChangeError");
         }
         if field.parent().is_final() {
-            if current_class != class || current_method.name() != "<clinit>"{
+            if current_class != class || current_method.name() != "<init>"{
                 panic!("java.lang.IllegalAccessError");
             }
         }

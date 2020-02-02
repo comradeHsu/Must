@@ -6,10 +6,11 @@ use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
-    pub data:DataType
+    pub data:DataType,
+    pub meta:Option<Rc<RefCell<Class>>>
 }
 
 impl Object {
@@ -17,7 +18,8 @@ impl Object {
         let count = (*class).borrow().instance_slot_count();
         return Object{
             class: class.clone(),
-            data: StandardObject(Some(Slots::with_capacity(count as usize)))
+            data: StandardObject(Some(Slots::with_capacity(count as usize))),
+            meta: None
         };
     }
 
@@ -25,6 +27,17 @@ impl Object {
     pub fn class(&self) -> Rc<RefCell<Class>> {
         return self.class.clone();
     }
+
+    #[inline]
+    pub fn meta(&self) -> Option<Rc<RefCell<Class>>> {
+        return self.meta.clone();
+    }
+
+    #[inline]
+    pub fn set_meta(&mut self,meta:Rc<RefCell<Class>>) {
+        self.meta = Some(meta);
+    }
+
     #[inline]
     pub fn fields(&mut self) -> &mut Slots {
         let fields = &mut self.data;
@@ -32,6 +45,25 @@ impl Object {
             StandardObject(data) => data.as_mut().unwrap(),
             _ => panic!("The Object is array")
         }
+    }
+
+    #[inline]
+    pub fn fields_immutable(&self) -> &Slots {
+        let fields = &self.data;
+        match fields {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array")
+        }
+    }
+
+    #[inline]
+    pub fn mut_data(&mut self) -> &mut DataType {
+        return &mut self.data;
+    }
+
+    #[inline]
+    pub fn data(&self) -> & DataType {
+        return &self.data;
     }
 
     #[inline]
@@ -68,7 +100,7 @@ impl PartialEq for Object {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum DataType {
     StandardObject(Option<Slots>),
     Bytes(Vec<i8>),

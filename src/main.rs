@@ -5,6 +5,7 @@ mod runtime_data_area;
 mod utils;
 mod instructions;
 mod interpreter;
+mod native;
 
 use crate::cmd::Cmd;
 use crate::class_path::class_path::{ClassPath, Entry};
@@ -31,7 +32,7 @@ fn start_jvm(cmd: &Cmd) {
     let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
     let class_path = Rc::new(cp);
     println!("init classPath");
-    let class_loader = Rc::new(RefCell::new(ClassLoader::new(class_path,cmd.verbose_class)));
+    let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
     println!("init class_loader");
     let class_name = cmd.class.clone().replace('.',"/");
     let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -83,10 +84,10 @@ mod tests{
         let cmd = Cmd{
             help_flag: false,
             version_flag: false,
-            verbose_class: true,
+            verbose_class: false,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.BubbleSortTest".to_string(),
+            class: "java.BoxTest".to_string(),
             args: vec![]
         };
         let vec = "ha哈哈";
@@ -94,8 +95,7 @@ mod tests{
         println!("vec {:?}",s);
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(
-            ClassLoader::new(class_path,cmd.verbose_class)));
+        let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
         println!("init class_loader");
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
@@ -120,8 +120,7 @@ mod tests{
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);
-        let class_loader = Rc::new(RefCell::new(
-            ClassLoader::new(class_path,cmd.verbose_class)));
+        let class_loader = ClassLoader::new(class_path,cmd.verbose_class);
         let class_name = cmd.class.clone().replace('.',"/");
         let main_class = ClassLoader::load_class(class_loader,class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
@@ -151,6 +150,17 @@ mod tests{
         let start = SystemTime::now();
         dfs(1,0,0,0,0);
         let end = SystemTime::now();
-        println!("{:?}: {:?}", start, end);
+        let ptr = &end as *const SystemTime;
+        let i = 99;
+        let c = 99;
+        println!("{:?}: {:?},{}", start, end,ptr as usize);
+        let p = &i as *const i32;
+        let add = p as usize;
+        let t = add as *const i32;
+        println!("{}: {}", add, unsafe{*t});
+        let p = &c as *const i32;
+        let add = p as usize;
+        let t = add as *const i32;
+        println!("{}: {}", add, unsafe{*t});
     }
 }

@@ -24,18 +24,17 @@ impl InterfaceMethodRef {
         return field_ref;
     }
 
-    pub fn resolved_interface_method(&mut self) -> Option<Rc<Method>> {
+    pub fn resolved_interface_method(&mut self,pool_class:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
         if self.method.is_none() {
-            self.resolved_interface_method_ref();
+            self.resolved_interface_method_ref(pool_class);
         }
         return self.method.clone();
     }
 
-    pub fn resolved_interface_method_ref(&mut self) {
+    pub fn resolved_interface_method_ref(&mut self,pool_class:Rc<RefCell<Class>>) {
         let pool = self.member_ref.constant_pool();
-        let c = (*pool).borrow().class();
-        let class = self.member_ref.resolved_class(c);
-        if (*class).borrow().is_interface() {
+        let class = self.member_ref.resolved_class(pool_class);
+        if !(*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
         let method =
@@ -44,7 +43,7 @@ impl InterfaceMethodRef {
             panic!("java.lang.NoSuchMethodError");
         }
         let point = method.clone().unwrap();
-        if (*point).is_accessible_to((*class).borrow().deref()) {
+        if !(*point).is_accessible_to((*class).borrow().deref()) {
             panic!("java.lang.IllegalAccessError");
         }
         self.method = method;
@@ -79,7 +78,7 @@ impl InterfaceMethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        return self.member_ref.resolved_class(class);
+    pub fn resolved_class(&mut self,pool_class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class(pool_class);
     }
 }

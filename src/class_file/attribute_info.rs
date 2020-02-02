@@ -9,7 +9,6 @@ use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 use crate::class_file::local_variable_table_attribute::LocalVariableTableAttribute;
 use crate::class_file::source_file_attribute::SourceFileAttribute;
 use crate::class_file::unparsed_attribute::UnparsedAttribute;
-use crate::class_file::member_info::display_16;
 use crate::class_file::stack_map_table_attribute::StackMapAttribute;
 use crate::class_file::signature_attribute::SignatureAttribute;
 use crate::class_file::local_variable_type_table_attribute::LocalVariableTypeTableAttribute;

@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Slots {
     slots:Vec<Slot>
 }
@@ -26,10 +26,10 @@ impl Slots {
     }
 
     pub fn get_int(&self,index:usize) -> i32{
-        if self.slots[index].num.is_none() {
-            panic!("slot is reference");
-        }
-        return self.slots[index].num.unwrap();
+//        if self.slots[index].num.is_none() {
+//            panic!("slot is reference");
+//        }
+        return self.slots[index].num.unwrap_or_else(||{0});
     }
 
     pub fn set_float(&mut self,index:usize,val:f32) {

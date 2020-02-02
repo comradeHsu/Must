@@ -32,15 +32,18 @@ impl Instruction for GetField {
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
+
         let stack = frame.operand_stack().expect("stack is none");
         let reference = stack.pop_ref();
         if reference.is_none() {
             panic!("java.lang.NullPointerException");
         }
+
+        let reference = reference.unwrap();
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
-        let mut borrow_class = (*class).borrow_mut();
-        let slots = borrow_class.mut_static_vars().expect("slots is none");
+        let borrow_object = (*reference).borrow();
+        let slots = borrow_object.fields_immutable();
         let first_char = desc.chars().next().unwrap();
         match first_char {
             'Z'|'B'|'C'|'S'|'I' => stack.push_int(slots.get_int(slot_id)),
