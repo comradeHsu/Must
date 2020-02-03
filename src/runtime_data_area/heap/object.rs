@@ -5,12 +5,14 @@ use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
+use crate::native::java::lang::throwable::StackTraceElement;
 
 #[derive(Debug,Clone)]
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
     pub data:DataType,
-    pub meta:Option<Rc<RefCell<Class>>>
+    pub meta:Option<Rc<RefCell<Class>>>,
+    pub trace:Option<Vec<StackTraceElement>>
 }
 
 impl Object {
@@ -19,7 +21,8 @@ impl Object {
         return Object{
             class: class.clone(),
             data: StandardObject(Some(Slots::with_capacity(count as usize))),
-            meta: None
+            meta: None,
+            trace: None
         };
     }
 
@@ -36,6 +39,16 @@ impl Object {
     #[inline]
     pub fn set_meta(&mut self,meta:Rc<RefCell<Class>>) {
         self.meta = Some(meta);
+    }
+
+    #[inline]
+    pub fn trace(&self) -> Option<&Vec<StackTraceElement>> {
+        return self.trace.as_ref();
+    }
+
+    #[inline]
+    pub fn set_trace(&mut self,eles:Vec<StackTraceElement>) {
+        self.trace = Some(eles);
     }
 
     #[inline]

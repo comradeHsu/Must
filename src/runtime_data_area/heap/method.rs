@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use crate::runtime_data_area::heap::method_descriptor::MethodDescriptorParser;
 use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::exception_table::ExceptionTable;
+use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 
 #[derive(Debug)]
 pub struct Method {
@@ -14,7 +15,8 @@ pub struct Method {
     max_locals:usize,
     code:Vec<u8>,
     arg_slot_count:usize,
-    exception_table:ExceptionTable
+    exception_table:ExceptionTable,
+    line_number_table:Option<LineNumberTableAttribute>
 }
 
 impl Method {
@@ -27,7 +29,8 @@ impl Method {
             max_locals: 0, 
             code: vec![],
             arg_slot_count: 0,
-            exception_table: ExceptionTable::none()
+            exception_table: ExceptionTable::none(),
+            line_number_table: None
         };
     }
 
@@ -60,8 +63,9 @@ impl Method {
                 self.max_locals = attr.max_locals() as usize;
                 self.max_stack = attr.max_stack() as usize;
                 self.code = attr.code().clone();
+                self.line_number_table = attr.line_number_table_attribute();
                 self.exception_table = ExceptionTable::new(attr.exception_table(),
-                                                        (*self.class()).borrow().constant_pool())
+                                                        (*self.class()).borrow().constant_pool());
             },
             None => {}
         }
@@ -172,4 +176,15 @@ impl Method {
     pub fn is_native(&self) -> bool {
         return 0 != self.class_member.access_flags() & NATIVE;
     }
+
+    pub fn get_line_number(&self, pc:i32) -> i32 {
+        if self.is_native() {
+            return -2;
+        }
+        if self.line_number_table.is_none() {
+            return -1;
+        }
+        return self.line_number_table.as_ref().unwrap().get_line_number(pc as u16);
+    }
+
 }

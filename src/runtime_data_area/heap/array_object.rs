@@ -13,7 +13,8 @@ impl Object {
         return Object{
             class,
             data,
-            meta: None
+            meta: None,
+            trace: None
         };
     }
 

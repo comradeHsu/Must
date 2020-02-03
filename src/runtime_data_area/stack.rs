@@ -52,8 +52,13 @@ impl Stack {
     #[inline]
     pub fn clear(&mut self) {
         while !self.is_empty() {
-            self.pop()
+            self.pop();
         }
+    }
+
+    #[inline]
+    pub fn get_frames(&self) -> &VecDeque<Rc<RefCell<Frame>>> {
+        return &self.frames;
     }
 
 }

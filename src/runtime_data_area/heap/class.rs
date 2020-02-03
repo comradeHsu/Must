@@ -34,7 +34,8 @@ pub struct Class {
     static_slot_count:u32,
     static_vars:Option<Slots>,
     initialized:bool,
-    java_class:Option<Rc<RefCell<Object>>>
+    java_class:Option<Rc<RefCell<Object>>>,
+    source_file:Option<String>
 }
 
 impl Class {
@@ -56,7 +57,8 @@ impl Class {
             static_slot_count: 0,
             static_vars: None,
             initialized: false,
-            java_class: None
+            java_class: None,
+            source_file: None
         };
     }
 
@@ -78,7 +80,8 @@ impl Class {
             static_slot_count: 0,
             static_vars: None,
             initialized: false,
-            java_class: None
+            java_class: None,
+            source_file: Self::get_source_file(&class_file)
         };
 //        println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
@@ -86,6 +89,14 @@ impl Class {
         (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(),class_file.fields());
         return point;
+    }
+
+    fn get_source_file(class_file:&ClassFile) -> Option<String> {
+        let attr = class_file.source_file_attribute();
+        if attr.is_some() {
+            return Some(attr.unwrap().file_name());
+        }
+        return None;
     }
 
     #[inline]
@@ -110,7 +121,8 @@ impl Class {
             static_slot_count: 0,
             static_vars: None,
             initialized: true,
-            java_class: None
+            java_class: None,
+            source_file: None
         };
         return class;
     }
@@ -132,7 +144,8 @@ impl Class {
             static_slot_count: 0,
             static_vars: None,
             initialized: true,
-            java_class: None
+            java_class: None,
+            source_file: None
         };
     }
 
@@ -285,11 +298,13 @@ impl Class {
 
     ///
     pub fn is_sub_interface_of(&self, other:&Self) -> bool {
-        let interfaces = self.interfaces.as_ref().unwrap();
-        for interface in interfaces {
-            let interface = interface.clone();
-            if (*interface).borrow().deref() == other || (*interface).borrow().is_sub_interface_of(other){
-                return true;
+        let interfaces = self.interfaces.as_ref();
+        if interfaces.is_some() {
+            for interface in interfaces.unwrap() {
+                let interface = interface.clone();
+                if (*interface).borrow().deref() == other || (*interface).borrow().is_sub_interface_of(other) {
+                    return true;
+                }
             }
         }
         return false
@@ -522,6 +537,14 @@ impl Class {
         let borrow = (*class).borrow();
         let slots = borrow.static_vars.as_ref().unwrap();
         return slots.get_ref((*field.unwrap()).borrow().slot_id());
+    }
+
+    #[inline]
+    pub fn source_file(&self) -> String {
+        if self.source_file.is_none() {
+            return "Unknown".to_string();
+        }
+        return self.source_file.clone().unwrap();
     }
 
 

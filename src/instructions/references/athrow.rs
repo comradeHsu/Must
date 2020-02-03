@@ -15,7 +15,7 @@ impl AThrow {
         return AThrow(NoOperandsInstruction::new());
     }
 
-    fn find_and_goto_exception_handler(thread:Rc<RefCell<Thread>>, object:Rc<RefCell<Object>>) -> bool {
+    fn find_and_goto_exception_handler(frame: &mut Frame, object:Rc<RefCell<Object>>) -> bool {
         ///
         fn get_handler_pc(frame:Rc<RefCell<Frame>>,object:Rc<RefCell<Object>>) -> i32 {
             let pc = (*frame).borrow().next_pc() - 1;
@@ -23,6 +23,16 @@ impl AThrow {
             return borrow_frame.method().find_exception_handler((*object).borrow().class(),pc);
         }
 
+        let thread = frame.thread();
+        let pc = frame.method().find_exception_handler((*object).borrow().class(),frame.next_pc()-1);
+        if pc > 0 {
+            let stack = frame.operand_stack().expect("stack is none");
+            stack.clear();
+            stack.push_ref(Some(object.clone()));
+            frame.set_next_pc(pc);
+            return true;
+        }
+        (*thread).borrow_mut().pop_frame();
         loop {
             let frame = (*thread).borrow().current_frame();
             let handler_pc = get_handler_pc(frame.clone(),object.clone());
@@ -46,12 +56,10 @@ impl AThrow {
         (*thread).borrow_mut().clear_stack();
         let java_msg = (*object).borrow().get_ref_var("detailMessage", "Ljava/lang/String;");
         let rust_msg = java_str_to_rust_str(java_msg.unwrap());
-        stes := reflect.ValueOf(ex.Extra());
-        for i := 0; i < stes.Len(); i++ {
-            ste := stes.Index(i).Interface().(interface {
-                String() string
-            })
-            println("\tat " + ste.String())
+        let bor_obj = (*object).borrow();
+        let stes = bor_obj.trace().expect("The exception object hasn't trace");
+        for ste in stes {
+            println!("\tat {}" ,ste.to_string());
         }
     }
 }
@@ -67,8 +75,9 @@ impl Instruction for AThrow {
             panic!("java.lang.NullPointerException");
         }
         let thread = frame.thread();
-        if !Self::find_and_goto_exception_handler(thread, ex.unwrap()) {
-
+        let object = ex.unwrap();
+        if !Self::find_and_goto_exception_handler(frame, object.clone()) {
+            Self::handle_uncaught_exception(thread,object);
         }
     }
 }

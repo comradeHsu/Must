@@ -6,6 +6,8 @@ use std::vec::Vec;
 use std::rc::Rc;
 use std::cell::{RefCell, Ref};
 use std::borrow::Borrow;
+use crate::class_file::attribute_info::Attribute::SourceFile;
+use crate::class_file::source_file_attribute::SourceFileAttribute;
 
 pub struct ClassFile {
     minor_version:u16,
@@ -118,6 +120,16 @@ impl ClassFile {
             interface_names.push((*self.constant_pool).borrow().get_class_name(*index as usize).to_string());
         }
         return interface_names;
+    }
+
+    pub fn source_file_attribute(&self) -> Option<&SourceFileAttribute> {
+        for attr in &self.attributes {
+            match attr {
+                SourceFile(r) => return Some(r),
+                _ => {}
+            }
+        }
+        return None;
     }
 
     pub fn display(&self) {

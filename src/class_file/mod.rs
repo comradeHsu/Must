@@ -9,7 +9,7 @@ mod makers_attribute;
 mod source_file_attribute;
 mod constant_value_attribute;
 mod exceptions_attribute;
-mod line_number_table_attribute;
+pub mod line_number_table_attribute;
 mod local_variable_table_attribute;
 mod bootstrap_methods_attribute;
 mod enclosing_method_attribute;

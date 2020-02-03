@@ -7,6 +7,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::runtime_data_area::heap::class::Class;
 use std::ops::Deref;
 
+#[derive(Debug)]
 pub struct ExceptionTable {
     table:Vec<ExceptionHandler>
 }
@@ -34,7 +35,8 @@ impl ExceptionTable {
         if index == 0 {
             return None;
         }
-        let constant = (*pool).borrow().get_constant_immutable(index);
+        let pool_borrow = (*pool).borrow();
+        let constant = pool_borrow.get_constant_immutable(index);
         let class_ref = match constant {
             ClassReference(r) => r.clone(),
             _ => panic!("this constant isn't ClassReference")
@@ -48,7 +50,7 @@ impl ExceptionTable {
                 if handler.catch_type.is_none() {
                     return Some(handler);
                 }
-                let mut class_ref = handler.catch_type.unwrap();
+                let mut class_ref = handler.catch_type.clone().unwrap();
                 let pool = class_ref.constant_pool();
                 let pool_class = (*pool).borrow().class();
                 let catch_class = class_ref.resolved_class(pool_class);
@@ -61,7 +63,8 @@ impl ExceptionTable {
     }
 }
 
-struct ExceptionHandler {
+#[derive(Debug)]
+pub struct ExceptionHandler {
     start_pc:i32,
     end_pc:i32,
     handler_pc:i32,

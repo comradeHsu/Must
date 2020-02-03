@@ -3,6 +3,7 @@ use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribut
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
 use std::cell::RefCell;
+use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 
 pub struct CodeAttribute {
     cp:Rc<RefCell<ConstantPool>>,
@@ -54,6 +55,16 @@ impl CodeAttribute {
     #[inline]
     pub fn exception_table(&self) -> &Vec<ExceptionTableEntry> {
         return &self.exception_table;
+    }
+
+    pub fn line_number_table_attribute(&self) -> Option<LineNumberTableAttribute> {
+        for attribute in &self.attributes {
+            match attribute {
+                Attribute::LineNumberTable(attr) => return Some(attr.unsafe_copy()),
+                _ => {}
+            }
+        }
+        return None;
     }
 
     pub fn display(&self) {

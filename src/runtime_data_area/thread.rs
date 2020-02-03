@@ -3,6 +3,7 @@ use crate::runtime_data_area::frame::Frame;
 use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::method::Method;
+use std::collections::VecDeque;
 
 pub struct Thread {
     pc:i32,
@@ -50,6 +51,11 @@ impl Thread {
     #[inline]
     pub fn clear_stack(&mut self) {
         self.stack.clear();
+    }
+
+    #[inline]
+    pub fn get_frames(&self) -> &VecDeque<Rc<RefCell<Frame>>>{
+        return self.stack.get_frames();
     }
 
 }

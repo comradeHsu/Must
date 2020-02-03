@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
+use std::ptr;
 
 pub mod numbers;
 
