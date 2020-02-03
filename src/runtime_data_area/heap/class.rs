@@ -525,11 +525,11 @@ impl Class {
         return primitive.is_some();
     }
 
-    pub fn set_ref_var(class:Rc<RefCell<Self>>, name:&str, descriptor:&str, reference:Rc<RefCell<Object>>) {
+    pub fn set_ref_var(class:Rc<RefCell<Self>>, name:&str, descriptor:&str, reference:Option<Rc<RefCell<Object>>>) {
         let field = Class::get_field(Some(class.clone()),name,descriptor,true);
         let mut borrow = (*class).borrow_mut();
         let slots = borrow.mut_static_vars().unwrap();
-        slots.set_ref((*field.unwrap()).borrow().slot_id(),Some(reference));
+        slots.set_ref((*field.unwrap()).borrow().slot_id(),reference);
     }
 
     pub fn get_ref_var(class:Rc<RefCell<Self>>, name:&str, descriptor:&str) -> Option<Rc<RefCell<Object>>> {

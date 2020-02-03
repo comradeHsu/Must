@@ -60,10 +60,10 @@ impl Instruction for InvokeVirtual {
         let object = frame.operand_stack().expect("stack is none")
             .get_ref_from_top(resolved_method.arg_slot_count()-1);
         if object.is_none() {
-            if method_ref.name() == "println" {
-                InvokeVirtual::hack_println(frame,method_ref.descriptor());
-                return;
-            }
+//            if method_ref.name() == "println" {
+//                InvokeVirtual::hack_println(frame,method_ref.descriptor());
+//                return;
+//            }
             panic!("java.lang.NullPointerException");
         }
         let obj_class = (*object.unwrap()).borrow().class();
