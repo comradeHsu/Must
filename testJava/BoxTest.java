@@ -1,4 +1,4 @@
-package java;
+package testJava;
 
 import java.util.*;
 
@@ -8,6 +8,7 @@ public class BoxTest {
         list.add(1);
         list.add(2);
         list.add(3);
+        list.getClass().getAnnotations();
         System.out.println(list.toString());
         for (int x : list) {
             System.out.println(x);

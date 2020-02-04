@@ -6,6 +6,8 @@ use crate::native::registry::Registry;
 pub fn init() {
     Registry::register("java/io/FileOutputStream", "writeBytes",
                        "(IZ)", write_bytes);
+    Registry::register("java/io/FileOutputStream", "initIDs",
+                       "()V", init_ids);
 }
 
 pub fn write_bytes(frame:&mut Frame) {
@@ -26,4 +28,8 @@ fn byte_change(java_bytes:&Vec<i8>) -> Vec<u8> {
         vec.push(*java_byte as u8);
     }
     return vec;
+}
+
+pub fn init_ids(frame:&mut Frame) {
+
 }

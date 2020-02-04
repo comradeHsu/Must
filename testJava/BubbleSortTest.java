@@ -1,4 +1,13 @@
-package java;
+package testJava;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+
+@Cell
 public class BubbleSortTest {
     public static void main(String[] args) {
         for (String arg: args) {
@@ -49,4 +58,10 @@ public class BubbleSortTest {
             System.out.println(i);
         }
     }
+}
+
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@interface Cell {
+
 }

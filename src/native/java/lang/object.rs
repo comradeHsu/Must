@@ -55,17 +55,24 @@ mod object {
     use std::rc::Rc;
     use std::cell::RefCell;
     use std::ops::Deref;
+    use crate::runtime_data_area::heap::object::DataType::Ints;
 
     #[test]
     fn test_rc_ptr() {
-        let object = Object::new(boxed(Class::none()));
+        let mut object = Object::new(boxed(Class::none()));
+        object.data = Ints(vec![1,2,3]);
         let ptr = boxed(object);
         let p = &ptr as *const Rc<RefCell<Object>>;
         println!("rc ptr:{}",p as usize);
         let ptr = (*ptr).borrow();
+        let first = match ptr.data() {
+            Ints(data) => data.get(0).unwrap(),
+            _ => panic!("error")
+        };
+        let first_ptr = first as *const i32;
         let ptr = ptr.deref() as *const Object;
         let hash = ptr as usize;
-        println!("object ptr:{}",hash);
+        println!("object ptr:{}, first element ptr:{}",hash,first_ptr as usize);
         let i = 99;
         let p = &i as *const i32;
         let add = p as usize;

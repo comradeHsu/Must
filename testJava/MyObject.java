@@ -1,4 +1,4 @@
-package java;
+package testJava;
 public class MyObject {
     public static int staticVar;
     public int instanceVar;

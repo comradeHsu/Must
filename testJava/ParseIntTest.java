@@ -1,4 +1,4 @@
-package java;
+package testJava;
 
 public class ParseIntTest {
     public static void main(String[] args) {

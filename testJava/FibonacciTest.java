@@ -1,4 +1,4 @@
-package java;
+package testJava;
 public class FibonacciTest {
 
     public static void main(String[] args) {

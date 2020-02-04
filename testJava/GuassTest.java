@@ -1,4 +1,4 @@
-package java;
+package testJava;
 public class GuassTest {
     public static void main(String[] args) {
         int sum = 0;

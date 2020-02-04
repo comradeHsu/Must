@@ -1,4 +1,4 @@
-package java;
+package testJava;
 public class StringTest {
     public static void main(String[] args) {
         String s1 = "abc1";
