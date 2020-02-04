@@ -22,7 +22,6 @@ impl ConstantPool {
 
     pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<RefCell<ConstantPool>> {
         let cp_count = reader.read_u16();
-        println!("pool count:{}",cp_count);
         let mut cp = Rc::new(RefCell::new(ConstantPool::new()));
         let mut vec: Vec<ConstantInfoEnum> = Vec::new();
         let mut i = 1;
@@ -33,14 +32,12 @@ impl ConstantPool {
                     i = i + 2;
                     vec.push(constant_info);
                     vec.push(None);
-                    println!("Long");
                     continue;
                 },
                 Double(info) => {
                     i = i + 2;
                     vec.push(constant_info);
                     vec.push(None);
-                    println!("Double");
                     continue;
                 },
                 _ => {}
@@ -193,8 +190,8 @@ impl ConstantInfoEnum {
             MethodRef(method_ref) => method_ref.read_info(reader),
             InterfaceMethodRef(interface) => interface.read_info(reader),
             NameAndType(name_and_type) => name_and_type.read_info(reader),
-            MethodHandle(methodHandle) => methodHandle.read_info(reader),
-            MethodType(methodType) => methodType.read_info(reader),
+            MethodHandle(method_handle) => method_handle.read_info(reader),
+            MethodType(method_type) => method_type.read_info(reader),
             InvokeDynamic(invoke) => invoke.read_info(reader),
             _ => {}
         }
@@ -332,7 +329,6 @@ impl ConstantDoubleInfo{
         let byte = reader.read_u64();
 
         self.val = f64::from_bits(byte);
-        println!("double:{}",self.val);
     }
 }
 

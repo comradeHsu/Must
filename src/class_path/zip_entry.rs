@@ -3,12 +3,16 @@ use crate::class_path::class_path::{Entry, FindClassError};
 use std::fs::File;
 use zip::read::ZipFile;
 use podio::ReadPodExt;
+use std::rc::Rc;
+use std::cell::RefCell;
+use zip::ZipArchive;
+use std::collections::HashMap;
+use crate::utils::boxed;
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct ZipEntry {
-
-    abs_path:String
-
+    abs_path:String,
+    file_cache:FileCache
 }
 
 impl ZipEntry {
@@ -17,33 +21,59 @@ impl ZipEntry {
         if !path.exists() {
             panic!("error")
         }
+        let zip_file = File::open(path).unwrap();
+        let mut zip = zip::ZipArchive::new(zip_file).unwrap();
+        let mut size_map = HashMap::new();
+        for i in 0..zip.len() {
+            let mut file:ZipFile = zip.by_index(i).unwrap();
+            size_map.insert(file.name().to_string(),i);
+        }
+        let cache = FileCache::new(zip,size_map);
         return ZipEntry{
-            abs_path: String::from(class_path)
+            abs_path: String::from(class_path),
+            file_cache: cache
         };
     }
 }
 
 impl Entry for ZipEntry {
     fn read_class(&self, class_name: &str) -> Result<(Vec<u8>,Box<dyn Entry>),FindClassError> {
-        let path = Path::new(&self.abs_path);
-        let zip_file = File::open(path).unwrap();
-        let mut zip = zip::ZipArchive::new(zip_file).unwrap();
-        let mut bytes = Vec::new();
-        for i in 0..zip.len() {
-            let mut file:ZipFile = zip.by_index(i).unwrap();
-            if file.name() == class_name {
-                println!("file_name:{}\n",class_name);
-                bytes = file.read_exact(file.size() as usize).unwrap();
-                return Ok((bytes,Box::new(ZipEntry{
-                    abs_path: self.abs_path.to_string()
-                })));
-            }
+        let index = self.file_cache.get(class_name);
+        if index.is_some() {
+            let size = *index.unwrap();
+            let zip_file = self.file_cache.file.clone();
+            let mut borrow = (*zip_file).borrow_mut();
+            let mut file:ZipFile = borrow.by_index(size).unwrap();
+            let bytes = file.read_exact(file.size() as usize).unwrap();
+            return Ok((
+                bytes,
+                Box::new(self.clone())
+            ));
         }
         return Err(FindClassError("don't find class".to_string()));
     }
 
     fn to_string(&self) -> String {
         return String::from(&self.abs_path);
+    }
+}
+
+#[derive(Clone)]
+struct FileCache {
+    file:Rc<RefCell<ZipArchive<File>>>,
+    index_table:Rc<HashMap<String,usize>>
+}
+
+impl FileCache {
+    pub fn new(zip:ZipArchive<File>,map:HashMap<String,usize>) -> FileCache {
+        return FileCache{ 
+            file: boxed(zip), 
+            index_table: Rc::new(map)
+        };
+    }
+    
+    pub fn get(&self,key:&str) -> Option<&usize> {
+        return self.index_table.get(key);
     }
 }
 
