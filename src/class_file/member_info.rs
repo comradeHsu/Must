@@ -54,6 +54,10 @@ impl MemberInfo {
         return borrow.get_utf8(self.descriptor_index as usize).to_owned();
     }
 
+    pub fn attributes(&self) -> &Vec<Attribute> {
+        return &self.attributes;
+    }
+
     pub fn code_attributes(&self) -> Option<&CodeAttribute>{
         for i in 0..self.attributes.len() {
             let attribute = &self.attributes[i];

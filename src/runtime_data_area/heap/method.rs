@@ -7,6 +7,8 @@ use crate::runtime_data_area::heap::method_descriptor::MethodDescriptorParser;
 use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::exception_table::ExceptionTable;
 use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::class_file::attribute_info::Attribute::{Code, RuntimeVisibleAnnotations};
 
 #[derive(Debug)]
 pub struct Method {
@@ -16,7 +18,8 @@ pub struct Method {
     code:Vec<u8>,
     arg_slot_count:usize,
     exception_table:ExceptionTable,
-    line_number_table:Option<LineNumberTableAttribute>
+    line_number_table:Option<LineNumberTableAttribute>,
+    annotations:Option<Vec<AnnotationAttribute>>
 }
 
 impl Method {
@@ -30,7 +33,8 @@ impl Method {
             code: vec![],
             arg_slot_count: 0,
             exception_table: ExceptionTable::none(),
-            line_number_table: None
+            line_number_table: None,
+            annotations: None
         };
     }
 
@@ -57,17 +61,23 @@ impl Method {
 
     /// clone cast,waiting improve
     pub fn copy_attributes(&mut self,info:&MemberInfo) {
-        let code = info.code_attributes();
-        match code {
-            Some(attr) => {
-                self.max_locals = attr.max_locals() as usize;
-                self.max_stack = attr.max_stack() as usize;
-                self.code = attr.code().clone();
-                self.line_number_table = attr.line_number_table_attribute();
-                self.exception_table = ExceptionTable::new(attr.exception_table(),
-                                                        (*self.class()).borrow().constant_pool());
-            },
-            None => {}
+        let attributes = info.attributes();
+        for attribute in attributes {
+            match attribute {
+                Code(attr) => {
+                    self.max_locals = attr.max_locals() as usize;
+                    self.max_stack = attr.max_stack() as usize;
+                    self.code = attr.code().clone();
+                    self.line_number_table = attr.line_number_table_attribute();
+                    self.exception_table = ExceptionTable::new(attr.exception_table(),
+                                                            (*self.class()).borrow().constant_pool());
+                },
+                RuntimeVisibleAnnotations(attr) => {
+                    let clone = attr.annotations().to_vec();
+                    self.annotations = Some(clone)
+                }
+                _ => {}
+            }
         }
     }
 

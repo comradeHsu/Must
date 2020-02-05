@@ -6,6 +6,7 @@ mod float;
 mod double;
 mod string;
 pub mod throwable;
+mod thread;
 
 pub fn init() {
     object::init();
@@ -15,4 +16,5 @@ pub fn init() {
     double::init();
     string::init();
     throwable::init();
+    thread::init();
 }

@@ -16,6 +16,7 @@ use crate::class_file::attribute_info::Attribute::*;
 use crate::class_file::inner_classes_attribute::InnerClassesAttribute;
 use crate::class_file::enclosing_method_attribute::EnclosingMethodAttribute;
 use std::cell::RefCell;
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationsAttribute;
 
 pub trait AttributeInfo {
 
@@ -56,6 +57,7 @@ pub fn new(attr_name:&str,attr_len:u32,cp:Rc<RefCell<ConstantPool>>) -> Attribut
         "SourceFile" => SourceFile(SourceFileAttribute::with_cp(cp)),
         "Synthetic" => Synthetic(SyntheticAttribute::new()),
 //        "StackMapTable" => StackMap(StackMapAttribute::new(attr_len)),
+        "RuntimeVisibleAnnotations" => RuntimeVisibleAnnotations(AnnotationsAttribute::with_cp(cp)),
         _ => Unparsed(UnparsedAttribute::new(attr_len))
     };
     return info;
@@ -75,7 +77,8 @@ pub enum Attribute {
     Exceptions(ExceptionsAttribute),
     EnclosingMethod(EnclosingMethodAttribute),
     ConstantValue(ConstantValueAttribute),
-    Code(CodeAttribute)
+    Code(CodeAttribute),
+    RuntimeVisibleAnnotations(AnnotationsAttribute)
 }
 
 impl Attribute {
@@ -95,7 +98,8 @@ impl Attribute {
             Signature(attr) => attr.read_info(reader),
             StackMap(attr) => attr.read_info(reader),
             SourceFile(attr) => attr.read_info(reader),
-            Unparsed(attr) => attr.read_info(reader)
+            Unparsed(attr) => attr.read_info(reader),
+            RuntimeVisibleAnnotations(attr) => attr.read_info(reader)
         }
     }
 }

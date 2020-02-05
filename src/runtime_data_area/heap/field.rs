@@ -3,12 +3,15 @@ use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 
 #[derive(Debug)]
 pub struct Field {
     class_member:ClassMember,
     const_value_index:usize,
-    slot_id:usize
+    slot_id:usize,
+    annotations:Option<Vec<AnnotationAttribute>>
 }
 
 impl Field {
@@ -17,7 +20,8 @@ impl Field {
         return Field{
             class_member: ClassMember::new(),
             const_value_index: 0,
-            slot_id: 0
+            slot_id: 0,
+            annotations: None
         };
     }
 
@@ -28,6 +32,7 @@ impl Field {
             field.class_member.set_class(class.clone());
             field.class_member.copy_member_info(info);
             field.copy_const_attribute(info);
+            field.copy_annotations(info);
             fields.push(Rc::new(RefCell::new(field)));
         }
         return fields;
@@ -37,6 +42,20 @@ impl Field {
         let const_attr = info.constant_value_attr();
         if const_attr.is_some() {
             self.const_value_index = const_attr.unwrap().value_index() as usize;
+        }
+    }
+
+    ///copy annotations info
+    fn copy_annotations(&mut self,info:&MemberInfo) {
+        let attributes = info.attributes();
+        for attribute in attributes {
+            match attribute {
+                RuntimeVisibleAnnotations(attr) => {
+                    let clone = attr.annotations().to_vec();
+                    self.annotations = Some(clone)
+                }
+                _ => {}
+            }
         }
     }
 

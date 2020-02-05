@@ -196,6 +196,42 @@ impl ConstantInfoEnum {
             _ => {}
         }
     }
+
+    pub fn integer(&self) -> i32 {
+        match self {
+            Integer(integer) => integer.val,
+            _ => panic!("ConstantInfoEnum type error!")
+        }
+    }
+
+    pub fn long(&self) -> i64 {
+        match self {
+            Long(long) => long.val,
+            _ => panic!("ConstantInfoEnum type error!")
+        }
+    }
+
+    pub fn float(&self) -> f32 {
+        match self {
+            Float(float) => float.val,
+            _ => panic!("ConstantInfoEnum type error!")
+        }
+    }
+
+    pub fn double(&self) -> f64 {
+        match self {
+            Double(double) => double.val,
+            _ => panic!("ConstantInfoEnum type error!")
+        }
+    }
+
+    pub fn string(&self) -> String {
+        match self {
+            Utf8(utf) => utf.val.clone(),
+            Str(utf) => utf.string(),
+            _ => panic!("ConstantInfoEnum type error!")
+        }
+    }
 }
 
 pub trait ConstantInfo {

@@ -15,6 +15,9 @@ use std::ops::Deref;
 use crate::runtime_data_area::heap::array_object::ArrayObject;
 use crate::runtime_data_area::heap::object::DataType::{Bytes, Chars, Shorts, Ints, Longs, Floats, Doubles, References};
 use crate::runtime_data_area::heap::class_name_helper::{PrimitiveTypes};
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::class_file::member_info::MemberInfo;
+use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -35,7 +38,8 @@ pub struct Class {
     static_vars:Option<Slots>,
     initialized:bool,
     java_class:Option<Rc<RefCell<Object>>>,
-    source_file:Option<String>
+    source_file:Option<String>,
+    annotations:Option<Vec<AnnotationAttribute>>
 }
 
 impl Class {
@@ -58,7 +62,8 @@ impl Class {
             static_vars: None,
             initialized: false,
             java_class: None,
-            source_file: None
+            source_file: None,
+            annotations: None
         };
     }
 
@@ -81,7 +86,8 @@ impl Class {
             static_vars: None,
             initialized: false,
             java_class: None,
-            source_file: Self::get_source_file(&class_file)
+            source_file: Self::get_source_file(&class_file),
+            annotations: Class::copy_annotations(&class_file)
         };
 //        println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
@@ -95,6 +101,21 @@ impl Class {
         let attr = class_file.source_file_attribute();
         if attr.is_some() {
             return Some(attr.unwrap().file_name());
+        }
+        return None;
+    }
+
+    ///copy annotations info for class
+    fn copy_annotations(class:&ClassFile) -> Option<Vec<AnnotationAttribute>>{
+        let attributes = class.attributes();
+        for attribute in attributes {
+            match attribute {
+                RuntimeVisibleAnnotations(attr) => {
+                    let clone = attr.annotations().to_vec();
+                    return Some(clone);
+                }
+                _ => {}
+            }
         }
         return None;
     }
@@ -122,7 +143,8 @@ impl Class {
             static_vars: None,
             initialized: true,
             java_class: None,
-            source_file: None
+            source_file: None,
+            annotations: None
         };
         return class;
     }
@@ -145,7 +167,8 @@ impl Class {
             static_vars: None,
             initialized: true,
             java_class: None,
-            source_file: None
+            source_file: None,
+            annotations: None
         };
     }
 

@@ -37,3 +37,12 @@ pub fn desired_assertion_status0(frame:&mut Frame) {
     frame.operand_stack().expect("stack null").push_int(0);
 }
 
+pub fn for_name0(frame:&mut Frame) {
+    let this = frame.local_vars().expect("vars is none")
+        .get_this().unwrap();
+    let class = (*this).borrow().meta().unwrap();
+    let name = (*class).borrow().java_name();
+    let name_obj = StringPool::java_string((*class).borrow().loader(),name);
+    frame.operand_stack().expect("stack null").push_ref(Some(name_obj));
+}
+

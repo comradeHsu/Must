@@ -132,6 +132,11 @@ impl ClassFile {
         return None;
     }
 
+    #[inline]
+    pub fn attributes(&self) -> &Vec<Attribute> {
+        return self.attributes.as_ref();
+    }
+
     pub fn display(&self) {
         println!("ClassFile:");
         println!("  minor_version:{}",self.minor_version);

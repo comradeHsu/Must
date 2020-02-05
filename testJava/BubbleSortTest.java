@@ -9,6 +9,11 @@ import java.lang.annotation.Target;
 
 @Cell
 public class BubbleSortTest {
+
+    @Lua(bit = 100,name = {})
+    private int init;
+
+    private Color color = Color.BLUE;
     public static void main(String[] args) {
         for (String arg: args) {
             System.out.println(arg);
@@ -58,10 +63,54 @@ public class BubbleSortTest {
             System.out.println(i);
         }
     }
+
+    @Cell
+    @Lua(name={"test","lua"},value = 99,code = "hahaha",type = ElementType.METHOD,ints = {0,1,2})
+    public void test() {
+        System.out.println(99);
+    }
 }
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @interface Cell {
 
+}
+
+@Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@interface Lua {
+
+    String[] name() default {};
+
+    int value() default -1;
+
+    boolean bool() default false;
+
+    byte bit() default 1;
+
+    char charCode() default 'L';
+
+    short shot() default 9;
+
+    long longSet() default 100;
+
+    float floaty() default 0.0f;
+
+    double doubley() default 1.0;
+
+    String code() default "code";
+
+    ElementType type() default ElementType.FIELD;
+
+    int[] ints() default {};
+
+    Class cla() default Void.class;
+}
+
+enum Color {
+    BLUE,
+    RED,
+    BLACK,
+    YELLOW
 }
