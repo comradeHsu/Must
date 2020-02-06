@@ -77,7 +77,7 @@ mod conversions;
 mod comparisons;
 mod control;
 mod extended;
-mod references;
+pub mod references;
 mod reserved;
 
 pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {

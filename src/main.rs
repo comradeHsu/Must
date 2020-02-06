@@ -37,7 +37,7 @@ mod tests{
             verbose_class: false,
             cp_option: "D:/workspace/rust-jvm".to_string(),
             x_jre_option: "".to_string(),
-            class: "java.ParseIntTest".to_string(),
+            class: "testJava.BubbleSortTest".to_string(),
             args: vec![]
         };
         let vec = "ha哈哈";

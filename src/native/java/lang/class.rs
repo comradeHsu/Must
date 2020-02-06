@@ -11,6 +11,8 @@ pub fn init() {
                        "()Ljava/lang/String;", get_name0);
     Registry::register("java/lang/Class", "desiredAssertionStatus0",
                        "(Ljava/lang/Class;)Z", desired_assertion_status0);
+    Registry::register("java/lang/Class", "forName0",
+                       "(Ljava/lang/String;ZLjava/lang/ClassLoader;Ljava/lang/Class;)Ljava/lang/Class;", for_name0);
 }
 
 pub fn get_primitive_class(frame:&mut Frame) {
@@ -38,11 +40,13 @@ pub fn desired_assertion_status0(frame:&mut Frame) {
 }
 
 pub fn for_name0(frame:&mut Frame) {
-    let this = frame.local_vars().expect("vars is none")
+    let name = frame.local_vars().expect("vars is none")
         .get_this().unwrap();
-    let class = (*this).borrow().meta().unwrap();
-    let name = (*class).borrow().java_name();
-    let name_obj = StringPool::java_string((*class).borrow().loader(),name);
-    frame.operand_stack().expect("stack null").push_ref(Some(name_obj));
+    let rust_name = java_str_to_rust_str(name).replace('.',"/");
+    let class = frame.method().class();
+    let loader = (*class).borrow().loader();
+    let class = ClassLoader::load_class(loader,rust_name.as_str());
+    let java_class = (*class).borrow().java_class().unwrap().clone();
+    frame.operand_stack().expect("stack null").push_ref(Some(java_class));
 }
 

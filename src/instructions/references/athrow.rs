@@ -34,6 +34,9 @@ impl AThrow {
         }
         (*thread).borrow_mut().pop_frame();
         loop {
+            if (*thread).borrow().is_stack_empty() {
+                break;
+            }
             let frame = (*thread).borrow().current_frame();
             let handler_pc = get_handler_pc(frame.clone(),object.clone());
             if handler_pc > 0 {
@@ -45,9 +48,6 @@ impl AThrow {
                 return true;
             }
             (*thread).borrow_mut().pop_frame();
-            if (*thread).borrow().is_stack_empty() {
-                break;
-            }
         }
         return false;
     }
@@ -55,9 +55,20 @@ impl AThrow {
     fn handle_uncaught_exception(thread:Rc<RefCell<Thread>>, object:Rc<RefCell<Object>>) {
         (*thread).borrow_mut().clear_stack();
         let java_msg = (*object).borrow().get_ref_var("detailMessage", "Ljava/lang/String;");
-        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
+//        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
         let bor_obj = (*object).borrow();
         let stes = bor_obj.trace().expect("The exception object hasn't trace");
+        let ex_class = bor_obj.class();
+
+        let detail_message = bor_obj.get_ref_var("detailMessage","Ljava/lang/String;")
+            .map_or("".to_string(),|v| java_str_to_rust_str(v));
+        let cause = bor_obj.get_ref_var("cause","Ljava/lang/Throwable;")
+            .map_or("null".to_string(),|v| {
+                return (*v).borrow().get_ref_var("detailMessage","Ljava/lang/String;")
+                    .map_or("".to_string(),|v| java_str_to_rust_str(v));
+            });
+
+        println!("\t{},{},cause:{}" ,(*ex_class).borrow().java_name(),detail_message,cause);
         for ste in stes {
             println!("\tat {}" ,ste.to_string());
         }
@@ -76,6 +87,10 @@ impl Instruction for AThrow {
         }
         let thread = frame.thread();
         let object = ex.unwrap();
+
+//        let meta = (*object).borrow().meta();
+//        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
+
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(thread,object);
         }

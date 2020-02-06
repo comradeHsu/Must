@@ -14,7 +14,7 @@ impl DirEntry {
     pub fn new(class_path: &String) -> DirEntry {
         let path = Path::new(class_path);
         if !path.exists() {
-            panic!("error")
+            panic!("Path not exist!")
         }
         return DirEntry{
             abs_dir: String::from(class_path)

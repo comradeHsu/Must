@@ -23,7 +23,7 @@ impl ZipEntry {
         }
         let zip_file = File::open(path).unwrap();
         let mut zip = zip::ZipArchive::new(zip_file).unwrap();
-        let mut size_map = HashMap::new();
+        let mut size_map = HashMap::with_capacity(zip.len());
         for i in 0..zip.len() {
             let mut file:ZipFile = zip.by_index(i).unwrap();
             size_map.insert(file.name().to_string(),i);

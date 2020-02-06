@@ -5,6 +5,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
 use std::ops::Deref;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 use crate::instructions::base::method_invoke_logic::invoke_method;
+use crate::jvm::Jvm;
 
 pub struct InvokeVirtual(ConstantPoolInstruction);
 
@@ -64,7 +65,9 @@ impl Instruction for InvokeVirtual {
 //                InvokeVirtual::hack_println(frame,method_ref.descriptor());
 //                return;
 //            }
-            panic!("java.lang.NullPointerException");
+            Jvm::throw_exception(frame,"java.lang.NullPointerException",None);
+//            panic!("java.lang.NullPointerException");
+            return;
         }
         let obj_class = (*object.unwrap()).borrow().class();
         let resolved_method_class = resolved_method.class();

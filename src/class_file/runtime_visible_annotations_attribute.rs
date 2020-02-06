@@ -82,6 +82,11 @@ impl AnnotationAttribute {
             element_value_pairs
         };
     }
+
+    #[inline]
+    pub fn name(&self) -> &str {
+        return &self.type_name.as_str();
+    }
 }
 
 impl ElementValuePair {
@@ -90,25 +95,65 @@ impl ElementValuePair {
         let tag = reader.read_char();
         let pool = (*cp).borrow();
         let element_name = pool.get_constant_info(element_name_index);
-        let const_value_index = reader.read_u16() as usize;
-        let constant = pool.get_constant_info(const_value_index);
         let value = match tag {
             '[' => ArrayValue(ElementValue::array_value(reader,cp.clone())),
-            's' => StringConstValue(constant.string()),
-            'c' => ClassConstValue(constant.string()),
+            's' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                StringConstValue(constant.string())
+            },
+            'c' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                ClassConstValue(constant.string())
+            },
             'e' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
                 let const_name_index = reader.read_u16() as usize;
                 let constant_name = pool.get_constant_info(const_name_index);
                 EnumConstValue(constant.string(),constant_name.string())
             },
-            'Z' => BoolConstValue(integer_to_bool(constant.integer())),
-            'B' => ByteConstValue(constant.integer() as i8),
-            'S' => ShortConstValue(constant.integer() as i16),
-            'I' => IntConstValue(constant.integer()),
-            'J' => LongConstValue(constant.long()),
-            'F' => FloatConstValue(constant.float()),
-            'D' => DoubleConstValue(constant.double()),
-            'C' => CharConstValue(constant.integer() as u8 as char),
+            'Z' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                BoolConstValue(integer_to_bool(constant.integer()))
+            },
+            'B' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                ByteConstValue(constant.integer() as i8)
+            },
+            'S' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                ShortConstValue(constant.integer() as i16)
+            },
+            'I' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                IntConstValue(constant.integer())
+            },
+            'J' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                LongConstValue(constant.long())
+            },
+            'F' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                FloatConstValue(constant.float())
+            },
+            'D' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                DoubleConstValue(constant.double())
+            },
+            'C' => {
+                let const_value_index = reader.read_u16() as usize;
+                let constant = pool.get_constant_info(const_value_index);
+                CharConstValue(constant.integer() as u8 as char)
+            },
             _ => panic!("The invalid annotation value tag!")
         };
         return ElementValuePair{

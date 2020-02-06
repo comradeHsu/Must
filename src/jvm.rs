@@ -10,6 +10,9 @@ use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::heap::object::Object;
 use crate::interpreter::interpret;
+use crate::runtime_data_area::frame::Frame;
+use crate::instructions::references::athrow::AThrow;
+use crate::instructions::base::instruction::Instruction;
 
 pub struct Jvm {
     cmd:Cmd,
@@ -32,6 +35,7 @@ impl Jvm {
 
     pub fn start(&self) {
         self.init_vm();
+        println!("init VM!");
         self.exec_main();
     }
 
@@ -71,5 +75,20 @@ impl Jvm {
             java_args[i] = Some(StringPool::java_string(self.class_loader.clone(),self.cmd.args[i].clone()));
         }
         return boxed(args_arr);
+    }
+
+    pub fn throw_exception(frame:&mut Frame,class_name:&str,msg:Option<&str>) {
+        let class = frame.method().class();
+        let class_loader = (*class).borrow().loader();
+        let class = ClassLoader::load_class(class_loader.clone(),
+                                            class_name.replace('.',"/").as_str());
+        let mut object = Class::new_object(&class);
+        if msg.is_some() {
+            object.set_ref_var("detailMessage","Ljava/lang/String;",
+                               StringPool::java_string(class_loader,msg.unwrap().to_string()));
+        }
+        frame.operand_stack().expect("stack is none").push_ref(Some(boxed(object)));
+        let mut athrow = AThrow::new();
+        athrow.execute(frame);
     }
 }

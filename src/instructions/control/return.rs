@@ -45,7 +45,7 @@ impl Instruction for AReturn {
         let return_value = frame.operand_stack().expect("stack is none")
             .pop_ref();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_ref(return_value);
+        borrow_invoke.operand_stack().expect("stack is none").push_ref(return_value.clone());
     }
 }
 

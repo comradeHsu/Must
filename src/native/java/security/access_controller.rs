@@ -8,6 +8,8 @@ pub fn init() {
                        "(Ljava/security/PrivilegedExceptionAction;)Ljava/lang/Object;", do_privileged);
     Registry::register("java/security/AccessController", "doPrivileged",
                        "(Ljava/security/PrivilegedAction;)Ljava/lang/Object;", do_privileged);
+    Registry::register("testJava/LambdaTest", "run",
+                       "(LtestJava/Action;)I", run);
 }
 
 pub fn do_privileged(frame:&mut Frame) {
@@ -17,6 +19,17 @@ pub fn do_privileged(frame:&mut Frame) {
     }
     let class = (*this.clone().unwrap()).borrow().class();
     let method = Class::get_instance_method(class,"run","()Ljava/lang/Object;").unwrap();
+    frame.operand_stack().expect("stack is none").push_ref(this);
+    invoke_method(frame,method);
+}
+
+pub fn run(frame:&mut Frame) {
+    let this = frame.local_vars().expect("vars is none").get_this();
+    if this.is_none() {
+        panic!("java.lang.NullPointerException");
+    }
+    let class = (*this.clone().unwrap()).borrow().class();
+    let method = Class::get_instance_method(class,"run","()I").unwrap();
     frame.operand_stack().expect("stack is none").push_ref(this);
     invoke_method(frame,method);
 }

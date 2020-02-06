@@ -197,4 +197,17 @@ impl Method {
         return self.line_number_table.as_ref().unwrap().get_line_number(pc as u16);
     }
 
+    pub fn has_annotation(&self,name:&str) -> bool {
+        if self.annotations.is_none() {
+            return false;
+        }
+        let annotations = self.annotations.as_ref().unwrap();
+        for annotation in annotations {
+            if annotation.name() == name {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
