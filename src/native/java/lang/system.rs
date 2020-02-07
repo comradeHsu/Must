@@ -90,7 +90,7 @@ pub fn init_properties(frame:&mut Frame) {
 //        ops.push_ref(props.clone());
 //        ops.push_ref(Some(jKey));
 //        ops.push_ref(Some(jVal));
-//        let shimFrame = rtda.NewShimFrame(thread, ops)
+//        let shimFrame = rtda.new_shim_frame(thread, ops)
 //        thread.PushFrame(shimFrame)
 //
 //        base.InvokeMethod(shimFrame, set_prop_method)

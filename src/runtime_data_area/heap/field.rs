@@ -5,6 +5,8 @@ use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
+use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
 
 #[derive(Debug)]
 pub struct Field {
@@ -100,4 +102,27 @@ impl Field {
         return self.class_member.is_accessible_to(class);
     }
 
+    #[inline]
+    pub fn is_public(&self) -> bool {
+        return self.class_member.is_public();
+    }
+
+    // reflection
+    pub fn r#type(&self) -> Rc<RefCell<Class>> {
+        let class_name = PrimitiveTypes::instance().unwrap().to_class_name(self.descriptor());
+        return ClassLoader::load_class(
+            (*self.parent().class()).borrow().loader(),
+            class_name.as_str()
+        );
+    }
+
+    #[inline]
+    pub fn access_flags(&self) -> u16{
+        return self.class_member.access_flags();
+    }
+
+    #[inline]
+    pub fn signature(&self) -> &str {
+        return self.class_member.signature()
+    }
 }

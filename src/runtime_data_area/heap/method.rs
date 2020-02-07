@@ -9,6 +9,8 @@ use crate::runtime_data_area::heap::exception_table::ExceptionTable;
 use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_file::attribute_info::Attribute::{Code, RuntimeVisibleAnnotations};
+use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
 
 #[derive(Debug)]
 pub struct Method {
@@ -208,6 +210,74 @@ impl Method {
             }
         }
         return false;
+    }
+
+    #[inline]
+    pub fn is_constructor(&self) -> bool {
+        return !self.is_static() && self.name() == "<init>";
+    }
+
+    #[inline]
+    pub fn is_clinit(&self) -> bool {
+        return self.is_static() && self.name() == "<clinit>"
+    }
+
+    #[inline]
+    pub fn access_flags(&self) -> u16{
+        return self.class_member.access_flags();
+    }
+
+    #[inline]
+    pub fn signature(&self) -> &str {
+        return self.class_member.signature()
+    }
+
+    // reflection
+    pub fn parameter_types(&self) -> Option<Vec<Rc<RefCell<Class>>>>{
+        if self.arg_slot_count == 0 {
+            return None;
+        }
+        let class_loader = (*self.class()).borrow().loader();
+        let desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
+        let paramTypes = desc.parameter_types();
+        let mut paramClasses = Vec::with_capacity(paramTypes.len());
+        for paramType in paramTypes {
+            let paramClassName = PrimitiveTypes::instance().unwrap().to_class_name(paramType.as_str());
+            paramClasses.push(ClassLoader::load_class(class_loader.clone(),paramClassName.as_str()));
+        }
+
+        return Some(paramClasses);
+    }
+
+    pub fn exception_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
+//        if self.exception_table.is_none() {
+//            return None
+//        }
+
+//        let exIndexTable = self.exception_table
+//        exClasses := make([]*Class, len(exIndexTable))
+//        cp := self.class.constantPool
+//
+//        for i, exIndex := range exIndexTable {
+//            classRef := cp.GetConstant(uint(exIndex)).(*ClassRef)
+//            exClasses[i] = classRef.ResolvedClass()
+//        }
+
+        return Some(Vec::new())
+    }
+
+    pub fn shim_return_method() -> Method {
+        let mut class = Class::none();
+        return Method{
+            class_member: ClassMember::shim(class),
+            max_stack: 0,
+            max_locals: 0,
+            code: vec![0xb1],
+            arg_slot_count: 0,
+            exception_table: ExceptionTable::none(),
+            line_number_table: None,
+            annotations: None
+        }
     }
 
 }

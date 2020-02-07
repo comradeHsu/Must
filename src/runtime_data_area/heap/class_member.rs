@@ -11,6 +11,7 @@ pub struct ClassMember {
     access_flags:u16,
     name:String,
     descriptor:String,
+    signature:String,
     class:Rc<RefCell<Class>>
 }
 
@@ -22,7 +23,19 @@ impl ClassMember {
             access_flags: 0,
             name: "".to_string(),
             descriptor: "".to_string(),
+            signature: "".to_string(),
             class: Rc::new(RefCell::new(Class::none()))
+        };
+    }
+
+    #[inline]
+    pub fn shim(class:Class) -> ClassMember {
+        return ClassMember{
+            access_flags: PUBLIC,
+            name: "<return>".to_string(),
+            descriptor: "".to_string(),
+            signature: "".to_string(),
+            class: Rc::new(RefCell::new(class))
         };
     }
 
@@ -106,5 +119,9 @@ impl ClassMember {
             return other.package_name() == class.package_name();
         }
         return class == other.deref();
+    }
+
+    pub fn signature(&self) -> &str {
+        return self.signature.as_str()
     }
 }

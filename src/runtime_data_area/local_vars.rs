@@ -20,6 +20,11 @@ impl LocalVars {
         return None;
     }
 
+    pub fn get_boolean(&self, index: usize) -> bool {
+        let slot = self.vars.get(index).expect("index is wrong");
+        return slot.get_num() == 1;
+    }
+
     pub fn set_int(&mut self, index: usize, val: i32) {
         let slot = self.vars.get_mut(index).expect("index is wrong");
         slot.set_num(val);

@@ -66,6 +66,7 @@ use crate::instructions::references::array_length::ArrayLength;
 use crate::instructions::references::multi_anew_array::MultiANewArray;
 use crate::instructions::reserved::invoke_native::InvokeNative;
 use crate::instructions::references::athrow::AThrow;
+use crate::instructions::references::monitor::{MonitorEnter, MonitorExit};
 
 pub mod base;
 mod constants;
@@ -276,8 +277,8 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xbf => Box::new(AThrow::new()),
         0xc0 => Box::new(CheckCast::new()),
         0xc1 => Box::new(InstanceOf::new()),
-//        0xc2 => {},
-//        0xc3 => {},
+        0xc2 => Box::new(MonitorEnter::new()),
+        0xc3 => Box::new(MonitorExit::new()),
         0xc4 => Box::new(Wide::new()),
         0xc5 => Box::new(MultiANewArray::new()),
         0xc6 => Box::new(IfNull::new()),

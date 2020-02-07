@@ -9,6 +9,11 @@ pub fn init() {
                        "(Ljava/lang/Class;)I", array_index_scale);
     Registry::register("sun/misc/Unsafe", "addressSize",
                        "()I", addressSize);
+    Registry::register("sun/misc/Unsafe", "objectFieldOffset",
+                       "(Ljava/lang/reflect/Field;)J", objectFieldOffset);
+    Registry::register("sun/misc/Unsafe","compareAndSwapObject",
+                       "(Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z",
+                       compareAndSwapObject);
 }
 
 pub fn array_base_offset(frame:&mut Frame) {
@@ -21,6 +26,45 @@ pub fn array_index_scale(frame:&mut Frame) {
 
 pub fn addressSize(frame:&mut Frame) {
     frame.operand_stack().expect("stack is none").push_int(size_of::<usize>() as i32);
+}
+
+// public native long objectFieldOffset(Field field);
+// (Ljava/lang/reflect/Field;)J
+pub fn objectFieldOffset(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let jField = vars.get_ref(1).unwrap();
+
+    let offset = (*jField).borrow().get_int_var("slot", "I");
+
+    let stack = frame.operand_stack().expect("stack is none");
+    stack.push_long(offset as i64);
+}
+
+// public final native boolean compareAndSwapObject(Object o, long offset, Object expected, Object x)
+// (Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z
+pub fn compareAndSwapObject(frame:&mut Frame) {
+//    vars := frame.LocalVars()
+//    obj := vars.GetRef(1)
+//    fields := obj.Data()
+//    offset := vars.GetLong(2)
+//    expected := vars.GetRef(4)
+//    newVal := vars.GetRef(5)
+//
+//    // todo
+//    if anys, ok := fields.(heap.Slots); ok {
+//    // object
+//        swapped := _casObj(obj, anys, offset, expected, newVal)
+//        frame.OperandStack().PushBoolean(swapped)
+//    } else if objs, ok := fields.([]*heap.Object); ok {
+//    // ref[]
+//        swapped := _casArr(objs, offset, expected, newVal)
+//        frame.OperandStack().PushBoolean(swapped)
+//    } else {
+//    // todo
+//        panic("todo: compareAndSwapObject!")
+//    }
+    let stack = frame.operand_stack().expect("stack is none");
+    stack.push_boolean(true);
 }
 
 #[cfg(test)]

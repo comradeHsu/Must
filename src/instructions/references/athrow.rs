@@ -62,13 +62,8 @@ impl AThrow {
 
         let detail_message = bor_obj.get_ref_var("detailMessage","Ljava/lang/String;")
             .map_or("".to_string(),|v| java_str_to_rust_str(v));
-        let cause = bor_obj.get_ref_var("cause","Ljava/lang/Throwable;")
-            .map_or("null".to_string(),|v| {
-                return (*v).borrow().get_ref_var("detailMessage","Ljava/lang/String;")
-                    .map_or("".to_string(),|v| java_str_to_rust_str(v));
-            });
 
-        println!("\t{},{},cause:{}" ,(*ex_class).borrow().java_name(),detail_message,cause);
+        println!("\t{},{}" ,(*ex_class).borrow().java_name(),detail_message);
         for ste in stes {
             println!("\tat {}" ,ste.to_string());
         }

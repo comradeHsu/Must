@@ -570,6 +570,41 @@ impl Class {
         return self.source_file.clone().unwrap();
     }
 
+    #[inline]
+    pub fn access_flags(&self) -> u16{
+        return self.access_flags;
+    }
+
+    #[inline]
+    pub fn get_constructor(class:Rc<RefCell<Class>>, descriptor:&str) -> Option<Rc<Method>> {
+        return Self::get_instance_method(class,"<init>", descriptor);
+    }
+
+    pub fn get_constructors(&self, public_only:bool) -> Vec<Rc<Method>> {
+        let mut constructors = Vec::with_capacity(self.methods.len());
+        for  method in &self.methods {
+            if method.is_constructor() {
+                if !public_only || method.is_public() {
+                    constructors.push(method.clone());
+                }
+            }
+        }
+        return constructors;
+    }
+
+    pub fn get_fields(&self, public_only:bool) -> Vec<Rc<RefCell<Field>>>{
+        if public_only {
+            let mut public_fields = Vec::with_capacity(self.fields.len());
+            for field in &self.fields {
+                if (*field).borrow().is_public() {
+                    public_fields.push(field.clone());
+                }
+            }
+            return public_fields
+        } else {
+            return self.fields.clone()
+        }
+    }
 
     ///about array's class
     /// like int[]

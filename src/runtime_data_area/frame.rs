@@ -80,6 +80,16 @@ impl Frame {
     pub fn boxed(data:Self) -> Rc<RefCell<Frame>> {
         return Rc::new(RefCell::new(data));
     }
+
+    pub fn new_shim_frame(thread:Rc<RefCell<Thread>>, ops:OperandStack) -> Frame {
+        return Frame{
+            local_vars: None,
+            thread,
+            method: Rc::new(Method::shim_return_method()),
+            operand_stack: Some(ops),
+            next_pc: 0
+        }
+    }
 }
 
 #[cfg(test)]

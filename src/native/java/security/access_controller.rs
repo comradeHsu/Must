@@ -10,6 +10,8 @@ pub fn init() {
                        "(Ljava/security/PrivilegedAction;)Ljava/lang/Object;", do_privileged);
     Registry::register("testJava/LambdaTest", "run",
                        "(LtestJava/Action;)I", run);
+    Registry::register("java/security/AccessController", "getStackAccessControlContext",
+                       "()Ljava/security/AccessControlContext;", get_stack_access_control_context);
 }
 
 pub fn do_privileged(frame:&mut Frame) {
@@ -32,4 +34,11 @@ pub fn run(frame:&mut Frame) {
     let method = Class::get_instance_method(class,"run","()I").unwrap();
     frame.operand_stack().expect("stack is none").push_ref(this);
     invoke_method(frame,method);
+}
+
+/// private static native AccessControlContext getStackAccessControlContext();
+/// ()Ljava/security/AccessControlContext;
+pub fn get_stack_access_control_context(frame:&mut Frame) {
+    // todo
+    frame.operand_stack().expect("stack is none").push_ref(None);
 }

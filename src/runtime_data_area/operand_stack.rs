@@ -93,6 +93,15 @@ impl OperandStack {
     }
 
     #[inline]
+    pub fn push_boolean(&mut self,val:bool) {
+        let mut va = 0;
+        if val {
+            va = 1;
+        }
+        self.push_int(va);
+    }
+
+    #[inline]
     pub fn push_slot(&mut self,val:Slot) {
         self.slots.push(val);
         self.size += 1;

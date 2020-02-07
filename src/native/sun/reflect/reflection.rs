@@ -4,6 +4,8 @@ use crate::native::registry::Registry;
 pub fn init() {
     Registry::register("sun/reflect/Reflection", "getCallerClass",
                        "()Ljava/lang/Class;", getCallerClass);
+    Registry::register("sun/reflect/Reflection", "getClassAccessFlags",
+                       "(Ljava/lang/Class;)I", getClassAccessFlags)
 }
 
 pub fn getCallerClass(frame:&mut Frame) {
@@ -29,4 +31,17 @@ pub fn getCallerClass(frame:&mut Frame) {
             index -= 1;
         }
     }
+}
+
+// public static native int getClassAccessFlags(Class<?> type);
+// (Ljava/lang/Class;)I
+pub fn getClassAccessFlags(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let type_ = vars.get_ref(0).unwrap();
+
+    let class = (*type_).borrow().meta().unwrap();
+    let flags = (*class).borrow().access_flags();
+
+    let stack = frame.operand_stack().expect("stack is none");
+    stack.push_int(flags as i32);
 }
