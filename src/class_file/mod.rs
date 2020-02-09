@@ -8,7 +8,7 @@ mod unparsed_attribute;
 mod makers_attribute;
 mod source_file_attribute;
 mod constant_value_attribute;
-mod exceptions_attribute;
+pub mod exceptions_attribute;
 pub mod line_number_table_attribute;
 mod local_variable_table_attribute;
 mod bootstrap_methods_attribute;

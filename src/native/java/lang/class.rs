@@ -97,6 +97,7 @@ pub fn get_modifiers(frame:&mut Frame) {
     let this = frame.local_vars().expect("vars is none")
         .get_this().unwrap();
     let class = (*this).borrow().meta();
+    println!("\tclass:::{}",(*class.clone().unwrap()).borrow().name());
     frame.operand_stack().expect("stack null").push_int((*class.unwrap()).borrow().access_flags() as i32);
 }
 
@@ -224,7 +225,7 @@ pub fn getDeclaredConstructors0(frame:&mut Frame) {
             ops.push_ref(Some(classObj.clone()));                                                     // declaringClass
             let parameter_types = constructor.parameter_types().unwrap();
             ops.push_ref(Some(boxed(to_class_arr(classLoader.clone(), &parameter_types))));         // parameterTypes
-            let exception_types = constructor.exception_types().unwrap();
+            let exception_types = constructor.exception_types().unwrap_or_else(||Vec::new());
             ops.push_ref(Some(boxed(to_class_arr(classLoader.clone(), &exception_types))));         // checkedExceptions
             ops.push_int(constructor.access_flags() as i32);                              // modifiers
             ops.push_int(0);                                                      // todo slot

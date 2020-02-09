@@ -5,7 +5,7 @@ use std::rc::Rc;
 use std::any::Any;
 use crate::class_file::code_attribute::CodeAttribute;
 use std::mem;
-use crate::class_file::attribute_info::Attribute::{Code, ConstantValue};
+use crate::class_file::attribute_info::Attribute::{Code, ConstantValue, RuntimeVisibleAnnotations};
 use crate::class_file::constant_value_attribute::ConstantValueAttribute;
 use std::cell::RefCell;
 

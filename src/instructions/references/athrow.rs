@@ -23,32 +23,32 @@ impl AThrow {
             return borrow_frame.method().find_exception_handler((*object).borrow().class(),pc);
         }
 
-        let thread = frame.thread();
-        let pc = frame.method().find_exception_handler((*object).borrow().class(),frame.next_pc()-1);
-        if pc > 0 {
-            let stack = frame.operand_stack().expect("stack is none");
-            stack.clear();
-            stack.push_ref(Some(object.clone()));
-            frame.set_next_pc(pc);
-            return true;
-        }
-        (*thread).borrow_mut().pop_frame();
-        loop {
-            if (*thread).borrow().is_stack_empty() {
-                break;
-            }
-            let frame = (*thread).borrow().current_frame();
-            let handler_pc = get_handler_pc(frame.clone(),object.clone());
-            if handler_pc > 0 {
-                let mut mut_borrow = (*frame).borrow_mut();
-                let stack = mut_borrow.operand_stack().expect("stack is none");
-                stack.clear();
-                stack.push_ref(Some(object.clone()));
-                mut_borrow.set_next_pc(handler_pc);
-                return true;
-            }
-            (*thread).borrow_mut().pop_frame();
-        }
+//        let thread = frame.thread();
+//        let pc = frame.method().find_exception_handler((*object).borrow().class(),frame.next_pc()-1);
+//        if pc > 0 {
+//            let stack = frame.operand_stack().expect("stack is none");
+//            stack.clear();
+//            stack.push_ref(Some(object.clone()));
+//            frame.set_next_pc(pc);
+//            return true;
+//        }
+//        (*thread).borrow_mut().pop_frame();
+//        loop {
+//            if (*thread).borrow().is_stack_empty() {
+//                break;
+//            }
+//            let frame = (*thread).borrow().current_frame();
+//            let handler_pc = get_handler_pc(frame.clone(),object.clone());
+//            if handler_pc > 0 {
+//                let mut mut_borrow = (*frame).borrow_mut();
+//                let stack = mut_borrow.operand_stack().expect("stack is none");
+//                stack.clear();
+//                stack.push_ref(Some(object.clone()));
+//                mut_borrow.set_next_pc(handler_pc);
+//                return true;
+//            }
+//            (*thread).borrow_mut().pop_frame();
+//        }
         return false;
     }
 

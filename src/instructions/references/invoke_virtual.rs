@@ -77,7 +77,10 @@ impl Instruction for InvokeVirtual {
             obj_class != current_class &&
             !(*obj_class).borrow().is_sub_class_of((*current_class).borrow().deref()) {
 
-            panic!("java.lang.IllegalAccessError")
+            if !((*obj_class).borrow().is_array() && resolved_method.name() == "clone") {
+                panic!("java.lang.IllegalAccessError")
+            }
+//            panic!("java.lang.IllegalAccessError")
         }
 
         let method_to_be_invoked = MethodRef::look_up_method_in_class(obj_class,

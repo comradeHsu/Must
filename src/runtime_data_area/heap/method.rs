@@ -8,9 +8,11 @@ use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::exception_table::ExceptionTable;
 use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
-use crate::class_file::attribute_info::Attribute::{Code, RuntimeVisibleAnnotations};
+use crate::class_file::attribute_info::Attribute::{Code, RuntimeVisibleAnnotations, Exceptions};
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::class_file::exceptions_attribute::ExceptionsAttribute;
+use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 
 #[derive(Debug)]
 pub struct Method {
@@ -21,7 +23,8 @@ pub struct Method {
     arg_slot_count:usize,
     exception_table:ExceptionTable,
     line_number_table:Option<LineNumberTableAttribute>,
-    annotations:Option<Vec<AnnotationAttribute>>
+    annotations:Option<Vec<AnnotationAttribute>>,
+    exceptions:Vec<u16>
 }
 
 impl Method {
@@ -36,7 +39,8 @@ impl Method {
             arg_slot_count: 0,
             exception_table: ExceptionTable::none(),
             line_number_table: None,
-            annotations: None
+            annotations: None,
+            exceptions: vec![]
         };
     }
 
@@ -58,6 +62,9 @@ impl Method {
         if method.is_native() {
             method.inject_code_attribute(md.return_type());
         }
+        if method.name() == "newUpdater" {
+            println!("\tannotation count:{}",method.annotations.as_ref().unwrap().len());
+        }
         return Rc::new(method);
     }
 
@@ -75,8 +82,11 @@ impl Method {
                                                             (*self.class()).borrow().constant_pool());
                 },
                 RuntimeVisibleAnnotations(attr) => {
-                    let clone = attr.annotations().to_vec();
+                    let clone = attr.annotations().clone();
                     self.annotations = Some(clone)
+                },
+                Exceptions(attr) => {
+                    self.exceptions = attr.unsafe_copy();
                 }
                 _ => {}
             }
@@ -250,20 +260,26 @@ impl Method {
     }
 
     pub fn exception_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
-//        if self.exception_table.is_none() {
-//            return None
-//        }
+        if self.exceptions.len() == 0{
+            return None
+        }
 
-//        let exIndexTable = self.exception_table
-//        exClasses := make([]*Class, len(exIndexTable))
-//        cp := self.class.constantPool
-//
-//        for i, exIndex := range exIndexTable {
-//            classRef := cp.GetConstant(uint(exIndex)).(*ClassRef)
-//            exClasses[i] = classRef.ResolvedClass()
-//        }
+        let mut ex_classes = Vec::with_capacity(self.exceptions.len());
+        let class = self.class();
+        let cp = (*class).borrow().constant_pool();
+        let mut borrow = (*cp).borrow_mut();
 
-        return Some(Vec::new())
+        for i in 0..self.exceptions.len() {
+            let ex_index = self.exceptions[i];
+            let constant = borrow.get_constant(ex_index as usize);
+            let class_ref = match constant {
+                ClassReference(reff) => reff,
+                _ => panic!("Not ClassReference")
+            };
+            ex_classes.push(class_ref.resolved_class(class.clone()));
+        }
+
+        return Some(ex_classes);
     }
 
     pub fn shim_return_method() -> Method {
@@ -276,7 +292,8 @@ impl Method {
             arg_slot_count: 0,
             exception_table: ExceptionTable::none(),
             line_number_table: None,
-            annotations: None
+            annotations: None,
+            exceptions: vec![]
         }
     }
 

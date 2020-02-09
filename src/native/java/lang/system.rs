@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::operand_stack::OperandStack;
 use chrono::Local;
+use crate::instructions::base::method_invoke_logic::hack_invoke_method;
 
 pub fn init() {
     Registry::register("java/lang/System", "arraycopy",
@@ -18,7 +19,7 @@ pub fn init() {
     Registry::register("java/lang/System", "initProperties",
                        "(Ljava/util/Properties;)Ljava/util/Properties;", init_properties);
     Registry::register("java/lang/System", "setIn0",
-                       "(Ljava/io/PrintStream;)V", set_in0);
+                       "(Ljava/io/InputStream;)V", set_in0);
     Registry::register("java/lang/System", "setErr0",
                        "(Ljava/io/PrintStream;)V", set_err0);
     Registry::register("java/lang/System", "currentTimeMillis",
@@ -84,22 +85,40 @@ pub fn init_properties(frame:&mut Frame) {
     let loader = (*frame.method().class()).borrow().loader();
     let thread = frame.thread();
     for (key, val) in _sys_props() {
-//        let jKey = StringPool::java_string(loader.clone(), key);
-//        let jVal = StringPool::java_string(loader.clone(), val);
-//        let mut ops = OperandStack::new(3).unwrap();
-//        ops.push_ref(props.clone());
-//        ops.push_ref(Some(jKey));
-//        ops.push_ref(Some(jVal));
-//        let shimFrame = rtda.new_shim_frame(thread, ops)
-//        thread.PushFrame(shimFrame)
-//
-//        base.InvokeMethod(shimFrame, set_prop_method)
+        let j_key = StringPool::java_string(loader.clone(), key);
+        let j_val = StringPool::java_string(loader.clone(), val);
+        let mut ops = OperandStack::new(3).unwrap();
+        ops.push_ref(props.clone());
+        ops.push_ref(Some(j_key));
+        ops.push_ref(Some(j_val));
+        let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
+        (*thread).borrow_mut().push_frame(shim_frame);
+
+        hack_invoke_method(thread.clone(), set_prop_method.clone().unwrap());
     }
 }
 
 fn _sys_props() -> HashMap<String,String> {
     let mut map = HashMap::new();
     map.insert("java.version".to_owned(),"1.8.0".to_owned());
+    map.insert("java.vendor".to_owned(),"jvm.rust".to_owned());
+    map.insert("java.class.version".to_owned(),"52.0".to_owned());
+    map.insert("java.class.path".to_owned(),"todo".to_owned());
+    map.insert("java.awt.graphicsenv".to_owned(),"sun.awt.CGraphicsEnvironment".to_owned());
+    map.insert("os.name".to_owned(),std::env::consts::OS.to_owned());
+    map.insert("os.arch".to_owned(),std::env::consts::ARCH.to_owned());
+    map.insert("os.version".to_owned(),"".to_owned());
+    map.insert("file.separator".to_owned(),"/".to_owned());
+    map.insert("path.separator".to_owned(),":".to_owned());
+    map.insert("line.separator".to_owned(),"\n".to_owned());
+    map.insert("user.name".to_owned(),"".to_owned());
+    map.insert("user.home".to_owned(),"".to_owned());
+    map.insert("user.dir".to_owned(),"".to_owned());
+    map.insert("user.country".to_owned(),"CN".to_owned());
+    map.insert("file.encoding".to_owned(),"UTF-8".to_owned());
+    map.insert("sun.stdout.encoding".to_owned(),"UTF-8".to_owned());
+    map.insert("sun.stderr.encoding".to_owned(),"UTF-8".to_owned());
+
     return map;
 //    return map[string]string{
 //    "java.version":         "1.8.0",

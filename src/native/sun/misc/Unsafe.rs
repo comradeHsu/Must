@@ -1,6 +1,7 @@
 use crate::runtime_data_area::frame::Frame;
 use crate::native::registry::Registry;
 use std::mem::size_of;
+use crate::runtime_data_area::heap::object::DataType::{StandardObject, Ints};
 
 pub fn init() {
     Registry::register("sun/misc/Unsafe", "arrayBaseOffset",
@@ -14,6 +15,10 @@ pub fn init() {
     Registry::register("sun/misc/Unsafe","compareAndSwapObject",
                        "(Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z",
                        compareAndSwapObject);
+    Registry::register("sun/misc/Unsafe", "getIntVolatile",
+                       "(Ljava/lang/Object;J)I", getIntVolatile);
+    Registry::register("sun/misc/Unsafe", "compareAndSwapInt",
+                       "(Ljava/lang/Object;JII)Z", compareAndSwapInt)
 }
 
 pub fn array_base_offset(frame:&mut Frame) {
@@ -65,6 +70,62 @@ pub fn compareAndSwapObject(frame:&mut Frame) {
 //    }
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_boolean(true);
+}
+
+// public native boolean getInt(Object o, long offset);
+// (Ljava/lang/Object;J)I
+pub fn getIntVolatile(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let object = vars.get_ref(1).unwrap();
+    let borrow = (*object).borrow();
+    let data = borrow.data();
+    let offset = vars.get_long(2) as usize;
+
+    let stack = frame.operand_stack().expect("stack is none");
+    match data {
+        StandardObject(inner) => {
+            let slots = inner.as_ref().unwrap();
+            stack.push_int(slots.get_int(offset))
+        },
+        Ints(inner) => {
+            stack.push_int(inner[offset])
+        },
+        _ => panic!("getInt!")
+    }
+}
+
+// public final native boolean compareAndSwapInt(Object o, long offset, int expected, int x);
+// (Ljava/lang/Object;JII)Z
+pub fn compareAndSwapInt(frame:&mut Frame) {
+//    vars := frame.LocalVars()
+//    fields := vars.GetRef(1).Data()
+//    offset := vars.GetLong(2)
+//    expected := vars.GetInt(4)
+//    newVal := vars.GetInt(5)
+//
+//    if slots, ok := fields.(heap.Slots); ok {
+//    // object
+//        oldVal := slots.GetInt(uint(offset))
+//        if oldVal == expected {
+//            slots.SetInt(uint(offset), newVal)
+//            frame.OperandStack().PushBoolean(true)
+//        } else {
+//            frame.OperandStack().PushBoolean(false)
+//        }
+//    } else if ints, ok := fields.([]int32); ok {
+//    // int[]
+//        oldVal := ints[offset]
+//        if oldVal == expected {
+//            ints[offset] = newVal
+//            frame.OperandStack().PushBoolean(true)
+//        } else {
+//            frame.OperandStack().PushBoolean(false)
+//        }
+//    } else {
+//        // todo
+//        panic("todo: compareAndSwapInt!")
+//    }
+    frame.operand_stack().expect("stack is none").push_boolean(true);
 }
 
 #[cfg(test)]
