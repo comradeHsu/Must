@@ -3,7 +3,6 @@ use crate::runtime_data_area::heap::class::Class;
 use crate::class_file::member_info::MemberInfo;
 use crate::runtime_data_area::heap::access_flags::{PUBLIC, FINAL, PRIVATE, PROTECTED, STATIC, SYNTHETIC, ABSTRACT};
 use std::cell::RefCell;
-use std::borrow::Borrow;
 use std::ops::Deref;
 
 #[derive(Debug)]

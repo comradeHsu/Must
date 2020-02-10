@@ -4,7 +4,6 @@ use crate::class_file::constant_pool::{ConstantPool as Pool, ConstantInfoEnum};
 use crate::runtime_data_area::heap::constant_pool::Constant::*;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class_ref::ClassRef;
-use core::mem;
 use crate::runtime_data_area::heap::field_ref::FieldRef;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 use crate::runtime_data_area::heap::interface_method_ref::InterfaceMethodRef;

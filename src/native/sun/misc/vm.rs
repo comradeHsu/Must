@@ -14,6 +14,7 @@ pub fn initialize(frame:&mut Frame) {
     let vm_class = frame.method().class();
     let loader = (*vm_class).borrow().loader();
     let system_class = ClassLoader::load_class(loader,"java/lang/System");
-    let init_method = (*system_class).borrow().get_static_method("initializeSystemClass", "()V");
+    let init_method = (*system_class).borrow()
+        .get_static_method("initializeSystemClass", "()V");
     invoke_method(frame,init_method.unwrap());
 }

@@ -14,18 +14,19 @@ pub fn init() {
     Registry::register("sun/reflect/NativeConstructorAccessorImpl",
                        "newInstance0",
                        "(Ljava/lang/reflect/Constructor;[Ljava/lang/Object;)Ljava/lang/Object;",
-                       newInstance0);
+                       new_instance0);
 }
 
 // private static native Object newInstance0(Constructor<?> c, Object[] os)
 // throws InstantiationException, IllegalArgumentException, InvocationTargetException;
 // (Ljava/lang/reflect/Constructor;[Ljava/lang/Object;)Ljava/lang/Object;
-pub fn newInstance0(frame:&mut Frame) {
+pub fn new_instance0(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
-    let constructorObj = vars.get_ref(0).unwrap();
-    let argArrObj = vars.get_ref(1).unwrap_or_else(||boxed(Object::new(boxed(Class::none()))));
+    let constructor_obj = vars.get_ref(0).unwrap();
+    let arg_arr_obj = vars.get_ref(1)
+        .unwrap_or_else(||boxed(Object::new(boxed(Class::none()))));
 
-    let constructor = get_constructor(constructorObj);
+    let constructor = get_constructor(constructor_obj);
     let class = constructor.class();
 
     if !(*class).borrow().initialized() {
@@ -38,35 +39,35 @@ pub fn newInstance0(frame:&mut Frame) {
     stack.push_ref(obj.clone());
 
     // call <init>
-    let ops = convertArgs(obj.unwrap(), argArrObj, constructor.clone());
-    let shimFrame = Frame::new_shim_frame(frame.thread(), ops.unwrap_or_else(|| OperandStack::new(0).unwrap()));
+    let ops = convert_args(obj.unwrap(), arg_arr_obj, constructor.clone());
+    let shim_frame = Frame::new_shim_frame(frame.thread(), ops.unwrap_or_else(|| OperandStack::new(0).unwrap()));
     let thread = frame.thread();
-    (*thread).borrow_mut().push_frame(shimFrame);
+    (*thread).borrow_mut().push_frame(shim_frame);
 
     hack_invoke_method(thread,constructor);
 }
 
-fn get_method(methodObj:Rc<RefCell<Object>>) -> Rc<Method> {
-    return _get_method(methodObj, false)
+fn get_method(method_obj:Rc<RefCell<Object>>) -> Rc<Method> {
+    return _get_method(method_obj, false)
 }
 
-fn get_constructor(constructorObj:Rc<RefCell<Object>>) -> Rc<Method> {
-    return _get_method(constructorObj, true)
+fn get_constructor(constructor_obj:Rc<RefCell<Object>>) -> Rc<Method> {
+    return _get_method(constructor_obj, true)
 }
 
-fn _get_method(methodObj:Rc<RefCell<Object>>, isConstructor:bool) -> Rc<Method> {
-    let extra = (*methodObj).borrow().meta_data.clone();
+fn _get_method(method_obj:Rc<RefCell<Object>>, is_constructor:bool) -> Rc<Method> {
+    let extra = (*method_obj).borrow().meta_data.clone();
     if extra.not_null() {
         return extra.method();
     }
 
-    if isConstructor {
-        let root = (*methodObj).borrow()
+    if is_constructor {
+        let root = (*method_obj).borrow()
             .get_ref_var("root", "Ljava/lang/reflect/Constructor;")
             .expect("the object hasn't root attribute");
         return (*root).borrow().meta_data.method();
     } else {
-        let root = (*methodObj).borrow()
+        let root = (*method_obj).borrow()
             .get_ref_var("root", "Ljava/lang/reflect/Method;")
             .expect("the object hasn't root attribute");
         return (*root).borrow().meta_data.method();
@@ -74,12 +75,12 @@ fn _get_method(methodObj:Rc<RefCell<Object>>, isConstructor:bool) -> Rc<Method> 
 }
 
 // Object[] -> []interface{}
-fn convertArgs(this:Rc<RefCell<Object>>, argArr:Rc<RefCell<Object>>, method:Rc<Method>) -> Option<OperandStack> {
+fn convert_args(this:Rc<RefCell<Object>>, arg_arr:Rc<RefCell<Object>>, method:Rc<Method>) -> Option<OperandStack> {
     if method.arg_slot_count() == 0 {
         return None
     }
 
-    //	argObjs := argArr.Refs()
+    //	argObjs := arg_arr.Refs()
     //	argTypes := method.ParsedDescriptor().ParameterTypes()
 
     let mut ops = OperandStack::new(method.arg_slot_count()).unwrap();

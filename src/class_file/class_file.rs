@@ -4,8 +4,7 @@ use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::vec::Vec;
 use std::rc::Rc;
-use std::cell::{RefCell, Ref};
-use std::borrow::Borrow;
+use std::cell::{RefCell};
 use crate::class_file::attribute_info::Attribute::SourceFile;
 use crate::class_file::source_file_attribute::SourceFileAttribute;
 

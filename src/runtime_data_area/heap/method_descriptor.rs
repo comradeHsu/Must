@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct MethodDescriptor {
     parameter_types:Vec<String>,
     return_type:String

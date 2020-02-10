@@ -4,7 +4,6 @@ use std::mem::size_of;
 use crate::runtime_data_area::heap::object::DataType::{StandardObject, Ints};
 use std::alloc::Layout;
 use crate::utils::numbers::get_power_of_two;
-use std::collections::HashMap;
 
 pub fn init() {
     Registry::register("sun/misc/Unsafe", "arrayBaseOffset",
@@ -12,24 +11,24 @@ pub fn init() {
     Registry::register("sun/misc/Unsafe", "arrayIndexScale",
                        "(Ljava/lang/Class;)I", array_index_scale);
     Registry::register("sun/misc/Unsafe", "addressSize",
-                       "()I", addressSize);
+                       "()I", address_size);
     Registry::register("sun/misc/Unsafe", "objectFieldOffset",
-                       "(Ljava/lang/reflect/Field;)J", objectFieldOffset);
+                       "(Ljava/lang/reflect/Field;)J", object_field_offset);
     Registry::register("sun/misc/Unsafe","compareAndSwapObject",
                        "(Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z",
-                       compareAndSwapObject);
+                       compare_and_swap_object);
     Registry::register("sun/misc/Unsafe", "getIntVolatile",
-                       "(Ljava/lang/Object;J)I", getIntVolatile);
+                       "(Ljava/lang/Object;J)I", get_int_volatile);
     Registry::register("sun/misc/Unsafe", "compareAndSwapInt",
-                       "(Ljava/lang/Object;JII)Z", compareAndSwapInt);
+                       "(Ljava/lang/Object;JII)Z", compare_and_swap_int);
     Registry::register("sun/misc/Unsafe", "allocateMemory",
-                       "(J)J", allocateMemory);
+                       "(J)J", allocate_memory);
     Registry::register("sun/misc/Unsafe", "putLong",
-                       "(JJ)V", putLong);
+                       "(JJ)V", put_long);
     Registry::register("sun/misc/Unsafe", "getByte",
-                       "(J)B", getByte);
+                       "(J)B", get_byte);
     Registry::register("sun/misc/Unsafe", "freeMemory",
-                       "(J)V", freeMemory);
+                       "(J)V", free_memory);
 }
 
 pub fn array_base_offset(frame:&mut Frame) {
@@ -40,17 +39,17 @@ pub fn array_index_scale(frame:&mut Frame) {
     frame.operand_stack().expect("stack is none").push_int(1);
 }
 
-pub fn addressSize(frame:&mut Frame) {
+pub fn address_size(frame:&mut Frame) {
     frame.operand_stack().expect("stack is none").push_int(size_of::<usize>() as i32);
 }
 
 // public native long objectFieldOffset(Field field);
 // (Ljava/lang/reflect/Field;)J
-pub fn objectFieldOffset(frame:&mut Frame) {
+pub fn object_field_offset(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
-    let jField = vars.get_ref(1).unwrap();
+    let j_field = vars.get_ref(1).unwrap();
 
-    let offset = (*jField).borrow().get_int_var("slot", "I");
+    let offset = (*j_field).borrow().get_int_var("slot", "I");
 
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_long(offset as i64);
@@ -58,7 +57,7 @@ pub fn objectFieldOffset(frame:&mut Frame) {
 
 // public final native boolean compareAndSwapObject(Object o, long offset, Object expected, Object x)
 // (Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z
-pub fn compareAndSwapObject(frame:&mut Frame) {
+pub fn compare_and_swap_object(frame:&mut Frame) {
 //    vars := frame.LocalVars()
 //    obj := vars.GetRef(1)
 //    fields := obj.Data()
@@ -85,7 +84,7 @@ pub fn compareAndSwapObject(frame:&mut Frame) {
 
 // public native boolean getInt(Object o, long offset);
 // (Ljava/lang/Object;J)I
-pub fn getIntVolatile(frame:&mut Frame) {
+pub fn get_int_volatile(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let object = vars.get_ref(1).unwrap();
     let borrow = (*object).borrow();
@@ -107,7 +106,7 @@ pub fn getIntVolatile(frame:&mut Frame) {
 
 // public final native boolean compareAndSwapInt(Object o, long offset, int expected, int x);
 // (Ljava/lang/Object;JII)Z
-pub fn compareAndSwapInt(frame:&mut Frame) {
+pub fn compare_and_swap_int(frame:&mut Frame) {
 //    vars := frame.LocalVars()
 //    fields := vars.GetRef(1).Data()
 //    offset := vars.GetLong(2)
@@ -141,7 +140,7 @@ pub fn compareAndSwapInt(frame:&mut Frame) {
 
 /// public native long allocateMemory(long bytes);
 /// (J)J
-pub fn allocateMemory(frame:&mut Frame) {
+pub fn allocate_memory(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     // vars.GetRef(0) // this
     let bytes = vars.get_long(1) as usize;
@@ -157,7 +156,7 @@ pub fn allocateMemory(frame:&mut Frame) {
 
 /// public native void putLong(long address, long x);
 /// (JJ)V
-pub fn putLong(frame:&mut Frame) {
+pub fn put_long(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     // vars.GetRef(0) // this
     let address = vars.get_long(1);
@@ -171,7 +170,7 @@ pub fn putLong(frame:&mut Frame) {
 
 /// public native byte getByte(long address);
 /// (J)B
-pub fn getByte(frame:&mut Frame) {
+pub fn get_byte(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     // vars.GetRef(0) // this
     let address = vars.get_long(1);
@@ -184,7 +183,7 @@ pub fn getByte(frame:&mut Frame) {
 
 /// public native void freeMemory(long address);
 /// (J)V
-pub fn freeMemory(frame:&mut Frame) {
+pub fn free_memory(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     // vars.GetRef(0) // this
     let address = vars.get_long(1) as usize;

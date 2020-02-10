@@ -5,7 +5,6 @@ use crate::class_file::constant_pool::ConstantClassInfo;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use std::ops::Deref;
 use std::cell::RefCell;
-use std::borrow::Borrow;
 
 #[derive(Debug,Clone)]
 pub struct SymRef {

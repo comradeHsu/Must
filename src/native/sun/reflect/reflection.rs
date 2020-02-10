@@ -3,12 +3,12 @@ use crate::native::registry::Registry;
 
 pub fn init() {
     Registry::register("sun/reflect/Reflection", "getCallerClass",
-                       "()Ljava/lang/Class;", getCallerClass);
+                       "()Ljava/lang/Class;", get_caller_class);
     Registry::register("sun/reflect/Reflection", "getClassAccessFlags",
-                       "(Ljava/lang/Class;)I", getClassAccessFlags)
+                       "(Ljava/lang/Class;)I", get_class_access_flags)
 }
 
-pub fn getCallerClass(frame:&mut Frame) {
+pub fn get_caller_class(frame:&mut Frame) {
     let method = frame.method();
     if !method.has_annotation("Lsun/reflect/CallerSensitive;") {
         let class = method.class();
@@ -20,7 +20,7 @@ pub fn getCallerClass(frame:&mut Frame) {
         let borrow = (*thread).borrow();
         let frames = borrow.get_frames();
         let mut index = frames.len() - 2;
-        while index >= 0 {
+        loop {
             let pre_frame = frames.get(index).unwrap();
             let method = (**pre_frame).borrow().method_ptr();
 //            println!("method name:{}",method.name());
@@ -30,6 +30,9 @@ pub fn getCallerClass(frame:&mut Frame) {
                 frame.operand_stack().expect("stack is none").push_ref(java_class);
                 return;
             }
+            if index == 0 {
+                break;
+            }
             index -= 1;
         }
     }
@@ -37,7 +40,7 @@ pub fn getCallerClass(frame:&mut Frame) {
 
 // public static native int getClassAccessFlags(Class<?> type);
 // (Ljava/lang/Class;)I
-pub fn getClassAccessFlags(frame:&mut Frame) {
+pub fn get_class_access_flags(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let type_ = vars.get_ref(0).unwrap();
 

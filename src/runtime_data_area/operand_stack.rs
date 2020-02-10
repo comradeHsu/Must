@@ -1,5 +1,6 @@
 use crate::runtime_data_area::slot::Slot;
-use crate::utils::numbers::{f32_to_i32, i32_to_f32, f64_to_i64, i64_to_f64, i64_back_bytes_to_i32, i64_from_i32_bytes};
+use crate::utils::numbers::{f32_to_i32, i32_to_f32, f64_to_i64, i64_to_f64, i64_back_bytes_to_i32,
+                            i64_from_i32_bytes};
 use std::rc::Rc;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;

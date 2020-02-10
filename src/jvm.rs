@@ -13,6 +13,7 @@ use crate::interpreter::interpret;
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::references::athrow::AThrow;
 use crate::instructions::base::instruction::Instruction;
+use chrono::Local;
 
 pub struct Jvm {
     cmd:Cmd,
@@ -35,13 +36,16 @@ impl Jvm {
 
     pub fn start(&self) {
         self.init_vm();
-        println!("init VM!");
+        println!("init vm! {:?}",Local::now());
         self.exec_main();
     }
 
     fn init_vm(&self) {
+        println!("load vm_class! {:?}",Local::now());
         let vm_class = ClassLoader::load_class(self.class_loader.clone(),"sun/misc/VM");
+        println!("finish load vm_class! {:?}",Local::now());
         init_class(self.main_thread.clone(),vm_class);
+        println!("finish init vm_class! {:?}",Local::now());
         interpret(self.main_thread.clone());
     }
 

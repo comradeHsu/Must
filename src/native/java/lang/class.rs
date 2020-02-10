@@ -24,17 +24,27 @@ pub fn init() {
                        "(Ljava/lang/Class;)Z", desired_assertion_status0);
     Registry::register("java/lang/Class", "forName0",
                        "(Ljava/lang/String;ZLjava/lang/ClassLoader;Ljava/lang/Class;)Ljava/lang/Class;", for_name0);
-    Registry::register("java/lang/Class", "isInterface", "()Z", is_interface);
-    Registry::register("java/lang/Class", "isPrimitive", "()Z", is_primitive);
-    Registry::register("java/lang/Class", "getDeclaredFields0", "(Z)[Ljava/lang/reflect/Field;", getDeclaredFields0);
-    Registry::register("java/lang/Class", "getDeclaredConstructors0", "(Z)[Ljava/lang/reflect/Constructor;", getDeclaredConstructors0);
-    Registry::register("java/lang/Class", "getModifiers", "()I", get_modifiers);
-    Registry::register("java/lang/Class", "getSuperclass", "()Ljava/lang/Class;", get_superclass);
-    Registry::register("java/lang/Class", "getInterfaces0", "()[Ljava/lang/Class;", get_interfaces0);
-    Registry::register("java/lang/Class", "isArray", "()Z", is_array);
+    Registry::register("java/lang/Class", "isInterface",
+                       "()Z", is_interface);
+    Registry::register("java/lang/Class", "isPrimitive",
+                       "()Z", is_primitive);
+    Registry::register("java/lang/Class", "getDeclaredFields0",
+                       "(Z)[Ljava/lang/reflect/Field;", get_declared_fields0);
+    Registry::register("java/lang/Class", "getDeclaredConstructors0",
+                       "(Z)[Ljava/lang/reflect/Constructor;", get_declared_constructors0);
+    Registry::register("java/lang/Class", "getModifiers",
+                       "()I", get_modifiers);
+    Registry::register("java/lang/Class", "getSuperclass",
+                       "()Ljava/lang/Class;", get_superclass);
+    Registry::register("java/lang/Class", "getInterfaces0",
+                       "()[Ljava/lang/Class;", get_interfaces0);
+    Registry::register("java/lang/Class", "isArray",
+                       "()Z", is_array);
 //    Registry::register("java/lang/Class", "getDeclaredMethods0", "(Z)[Ljava/lang/reflect/Method;", getDeclaredMethods0);
-    Registry::register("java/lang/Class", "getComponentType", "()Ljava/lang/Class;", get_component_type);
-    Registry::register("java/lang/Class", "isAssignableFrom", "(Ljava/lang/Class;)Z", is_assignable_from);
+    Registry::register("java/lang/Class", "getComponentType",
+                       "()Ljava/lang/Class;", get_component_type);
+    Registry::register("java/lang/Class", "isAssignableFrom",
+                       "(Ljava/lang/Class;)Z", is_assignable_from);
 }
 
 pub fn get_primitive_class(frame:&mut Frame) {
@@ -98,7 +108,6 @@ pub fn get_modifiers(frame:&mut Frame) {
     let this = frame.local_vars().expect("vars is none")
         .get_this().unwrap();
     let class = (*this).borrow().meta();
-    println!("\tclass:::{}",(*class.clone().unwrap()).borrow().name());
     frame.operand_stack().expect("stack null").push_int((*class.unwrap()).borrow().access_flags() as i32);
 }
 
@@ -146,7 +155,7 @@ fn to_class_arr(loader:Rc<RefCell<ClassLoader>>, classes:&Vec<Rc<RefCell<Class>>
 }
 
 // []byte => byte[]
-fn toByteArr(loader:Rc<RefCell<ClassLoader>>, rbytes:Option<Vec<u8>>) -> Option<ArrayObject> {
+fn to_byte_arr(loader:Rc<RefCell<ClassLoader>>, rbytes:Option<Vec<u8>>) -> Option<ArrayObject> {
     if rbytes.is_some() {
         let j_bytes:Vec<i8> = rbytes.unwrap().iter().map(|x| *x as i8).collect();
         return Some(ArrayObject::from_data(ClassLoader::load_class(loader,"[B"),Bytes(j_bytes)));
@@ -185,126 +194,127 @@ pub fn is_assignable_from(frame:&mut Frame) {
     frame.operand_stack().expect("stack null").push_boolean(ok);
 }
 
-const _constructorConstructorDescriptor:&str = "(Ljava/lang/Class;[Ljava/lang/Class;[Ljava/lang/Class;IILjava/lang/String;[B[B)V";
+const _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR:&str =
+    "(Ljava/lang/Class;[Ljava/lang/Class;[Ljava/lang/Class;IILjava/lang/String;[B[B)V";
 
 // private native Constructor<T>[] getDeclaredConstructors0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Constructor;
-pub fn getDeclaredConstructors0(frame:&mut Frame) {
+pub fn get_declared_constructors0(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
-    let classObj = vars.get_this().unwrap();
-    let publicOnly = vars.get_boolean(1);
+    let class_obj = vars.get_this().unwrap();
+    let public_only = vars.get_boolean(1);
 
-    let class = (*classObj).borrow().meta().unwrap();
-    let constructors = (*class).borrow().get_constructors(publicOnly);
-    let constructorCount = constructors.len();
+    let class = (*class_obj).borrow().meta().unwrap();
+    let constructors = (*class).borrow().get_constructors(public_only);
+    let constructor_count = constructors.len();
 
     let class = frame.method().class();
-    let classLoader = (*class).borrow().loader();
-    let constructorClass = ClassLoader::load_class(classLoader.clone(),"java/lang/reflect/Constructor");
+    let class_loader = (*class).borrow().loader();
+    let constructor_class = ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Constructor");
 
-    let class_arr_class = (*constructorClass).borrow().array_class();
-    let constructorArr = Class::new_array(&class_arr_class,constructorCount);
+    let class_arr_class = (*constructor_class).borrow().array_class();
+    let constructor_arr = Class::new_array(&class_arr_class, constructor_count);
 
-    let boxed_arr = Some(boxed(constructorArr));
+    let boxed_arr = Some(boxed(constructor_arr));
     frame.operand_stack().expect("stack null").push_ref(boxed_arr.clone());
 
-    if constructorCount > 0 {
+    if constructor_count > 0 {
         let thread = frame.thread();
         let arr = boxed_arr.unwrap();
         let mut temp =  (*arr).borrow_mut();
-        let constructorObjs = temp.mut_references();
-        let constructorInitMethod = Class::get_constructor(constructorClass.clone(),_constructorConstructorDescriptor);
+        let constructor_objs = temp.mut_references();
+        let constructor_init_method = Class::get_constructor(constructor_class.clone(), _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR);
         for i in 0..constructors.len() {
             let constructor = constructors[i].clone();
-            let mut constructorObj = Class::new_object(&constructorClass);
-            constructorObj.set_meta_data(Method(constructor.clone()));
-            let object = Some(boxed(constructorObj));
-            constructorObjs[i] = object.clone();
+            let mut constructor_obj = Class::new_object(&constructor_class);
+            constructor_obj.set_meta_data(Method(constructor.clone()));
+            let object = Some(boxed(constructor_obj));
+            constructor_objs[i] = object.clone();
 
             let mut ops = OperandStack::new(9).unwrap();
             ops.push_ref(object);                                                // this
-            ops.push_ref(Some(classObj.clone()));                                                     // declaringClass
+            ops.push_ref(Some(class_obj.clone()));                                                     // declaringClass
             let parameter_types = constructor.parameter_types().unwrap();
-            ops.push_ref(Some(boxed(to_class_arr(classLoader.clone(), &parameter_types))));         // parameterTypes
+            ops.push_ref(Some(boxed(to_class_arr(class_loader.clone(), &parameter_types))));         // parameterTypes
             let exception_types = constructor.exception_types().unwrap_or_else(||Vec::new());
-            ops.push_ref(Some(boxed(to_class_arr(classLoader.clone(), &exception_types))));         // checkedExceptions
+            ops.push_ref(Some(boxed(to_class_arr(class_loader.clone(), &exception_types))));         // checkedExceptions
             ops.push_int(constructor.access_flags() as i32);                              // modifiers
             ops.push_int(0);                                                      // todo slot
-            ops.push_ref(getSignatureStr(classLoader.clone(), constructor.signature()));       // signature
+            ops.push_ref(get_signature_str(class_loader.clone(), constructor.signature()));       // signature
             let mut data:Vec<u8> = vec![0,20];
-            ops.push_ref(Some(boxed(toByteArr(classLoader.clone(), Some((data))).unwrap())));
+            ops.push_ref(Some(boxed(to_byte_arr(class_loader.clone(), Some((data))).unwrap())));
             let mut data:Vec<u8> = vec![0,20];// annotations
-            ops.push_ref(Some(boxed(toByteArr(classLoader.clone(), Some(data)).unwrap()))); // parameterAnnotations
+            ops.push_ref(Some(boxed(to_byte_arr(class_loader.clone(), Some(data)).unwrap()))); // parameterAnnotations
 
-            let shimFrame = Frame::new_shim_frame(thread.clone(), ops);
-            (*thread).borrow_mut().push_frame(shimFrame);
+            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
+            (*thread).borrow_mut().push_frame(shim_frame);
 
-            // init constructorObj
-            hack_invoke_method(thread.clone(), constructorInitMethod.clone().unwrap());
+            // init constructor_obj
+            hack_invoke_method(thread.clone(), constructor_init_method.clone().unwrap());
         }
     }
 }
 
-const _fieldConstructorDescriptor:&str = "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;IILjava/lang/String;[B)V";
+const _FIELD_CONSTRUCTOR_DESCRIPTOR:&str = "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;IILjava/lang/String;[B)V";
 
 // private native Field[] getDeclaredFields0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Field;
-pub fn getDeclaredFields0(frame:&mut Frame) {
+pub fn get_declared_fields0(frame:&mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
-    let classObj = vars.get_this().unwrap();
-    let publicOnly = vars.get_boolean(1);
+    let class_obj = vars.get_this().unwrap();
+    let public_only = vars.get_boolean(1);
 
-    let class = (*classObj).borrow().meta().unwrap();
-    let fields = (*class).borrow().get_fields(publicOnly);
-    let fieldCount = fields.len();
+    let class = (*class_obj).borrow().meta().unwrap();
+    let fields = (*class).borrow().get_fields(public_only);
+    let field_count = fields.len();
 
     let class = frame.method().class();
-    let classLoader = (*class).borrow().loader();
-    let fieldClass = ClassLoader::load_class(classLoader.clone(),"java/lang/reflect/Field");
-    let field_arr_class = (*fieldClass).borrow().array_class();
-    let fieldArr = Class::new_array(&field_arr_class,fieldCount);
+    let class_loader = (*class).borrow().loader();
+    let field_class = ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Field");
+    let field_arr_class = (*field_class).borrow().array_class();
+    let field_arr = Class::new_array(&field_arr_class, field_count);
 
-    let boxed_arr = Some(boxed(fieldArr));
+    let boxed_arr = Some(boxed(field_arr));
     frame.operand_stack().expect("stack null").push_ref(boxed_arr.clone());
 
-    if fieldCount > 0 {
+    if field_count > 0 {
         let thread = frame.thread();
         let arr = boxed_arr.unwrap();
         let mut temp =  (*arr).borrow_mut();
-        let fieldObjs = temp.mut_references();
-        let fieldInitMethod = Class::get_constructor(fieldClass.clone(),_fieldConstructorDescriptor);
+        let field_objs = temp.mut_references();
+        let field_init_method = Class::get_constructor(field_class.clone(), _FIELD_CONSTRUCTOR_DESCRIPTOR);
         for i in 0..fields.len() {
             let field = fields[i].clone();
-            let mut fieldObj = Class::new_object(&fieldClass);
-            fieldObj.set_meta_data(Field(field.clone()));
-            let object = Some(boxed(fieldObj));
-            fieldObjs[i] = object.clone();
+            let mut field_obj = Class::new_object(&field_class);
+            field_obj.set_meta_data(Field(field.clone()));
+            let object = Some(boxed(field_obj));
+            field_objs[i] = object.clone();
 
             let mut ops = OperandStack::new(8).unwrap();
             ops.push_ref(object);                                        // this
-            ops.push_ref(Some(classObj.clone()));                                     // declaringClass
+            ops.push_ref(Some(class_obj.clone()));                                     // declaringClass
             ops.push_ref(Some(StringPool::java_string(
-                classLoader.clone(),
+                class_loader.clone(),
                 (*field).borrow().name().to_string()))
             );      // name
             ops.push_ref((*(*field).borrow().r#type()).borrow().get_java_class());                           // type
             ops.push_int((*field).borrow().access_flags() as i32);                      // modifiers
             ops.push_int((*field).borrow().slot_id() as i32);                  // slot
-            ops.push_ref(getSignatureStr(classLoader.clone(), (*field).borrow().signature()));// signature
+            ops.push_ref(get_signature_str(class_loader.clone(), (*field).borrow().signature()));// signature
             let mut data:Vec<u8> = vec![0,20];
 
-            ops.push_ref(Some(boxed(toByteArr(classLoader.clone(), Some(data)).unwrap())));  // annotations
+            ops.push_ref(Some(boxed(to_byte_arr(class_loader.clone(), Some(data)).unwrap())));  // annotations
 
-            let shimFrame = Frame::new_shim_frame(thread.clone(), ops);
-            (*thread).borrow_mut().push_frame(shimFrame);
+            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
+            (*thread).borrow_mut().push_frame(shim_frame);
 
-            // init fieldObj
-            hack_invoke_method(thread.clone(), fieldInitMethod.clone().unwrap());
+            // init field_obj
+            hack_invoke_method(thread.clone(), field_init_method.clone().unwrap());
         }
     }
 }
 
-fn getSignatureStr(loader:Rc<RefCell<ClassLoader>>, signature:&str) -> Option<Rc<RefCell<Object>>> {
+fn get_signature_str(loader:Rc<RefCell<ClassLoader>>, signature:&str) -> Option<Rc<RefCell<Object>>> {
     if signature != "" {
         return Some(StringPool::java_string(loader, signature.to_string()));
     }

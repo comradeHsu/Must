@@ -5,7 +5,6 @@ use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::class_file::constant_pool::ConstantMethodRefInfo;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::{Class, Interfaces};
-use std::borrow::Borrow;
 use std::ops::Deref;
 
 #[derive(Debug)]

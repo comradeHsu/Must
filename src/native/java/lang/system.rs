@@ -44,7 +44,7 @@ pub fn array_copy(frame:&mut Frame) {
     if !check_array_copy(src.clone(), dest.clone()) {
         panic!("java.lang.ArrayStoreException");
     }
-    if src_pos < 0 || dest_pos < 0 || length < 0 || src_pos+length > (*src).borrow().array_length() ||
+    if src_pos+length > (*src).borrow().array_length() ||
         dest_pos+length > (*dest).borrow().array_length() {
         panic!("java.lang.IndexOutOfBoundsException");
     }

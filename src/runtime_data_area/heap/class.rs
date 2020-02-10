@@ -8,9 +8,8 @@ use crate::runtime_data_area::heap::access_flags::{AccessFlag, PUBLIC, FINAL, SU
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::slot::Slot;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use std::cell::{RefCell, Ref};
+use std::cell::RefCell;
 use crate::runtime_data_area::heap::object::Object;
-use core::mem;
 use std::ops::Deref;
 use crate::runtime_data_area::heap::array_object::ArrayObject;
 use crate::runtime_data_area::heap::object::DataType::{Bytes, Chars, Shorts, Ints, Longs, Floats, Doubles, References};

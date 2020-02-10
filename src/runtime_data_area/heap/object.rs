@@ -3,12 +3,12 @@ use std::rc::Rc;
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
-use std::borrow::{Borrow, BorrowMut};
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
 use crate::native::java::lang::throwable::StackTraceElement;
 use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::MetaData::Null;
+use std::borrow::Borrow;
 
 #[derive(Debug,Clone)]
 pub struct Object {

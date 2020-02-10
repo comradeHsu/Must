@@ -22,7 +22,10 @@ pub fn write_bytes(frame:&mut Frame) {
     let bytes = byte_change(java_bytes);
     let slice = &bytes[off..(off+len)];
     let mut out = io::stdout();
-    out.write(slice);
+    let rs = out.write(slice);
+    if rs.is_err() {
+        println!("Error:{:?}",rs.err().unwrap())
+    }
 }
 
 fn byte_change(java_bytes:&Vec<i8>) -> Vec<u8> {

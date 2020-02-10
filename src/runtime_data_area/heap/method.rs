@@ -3,7 +3,7 @@ use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
 use crate::class_file::member_info::MemberInfo;
 use std::cell::RefCell;
-use crate::runtime_data_area::heap::method_descriptor::MethodDescriptorParser;
+use crate::runtime_data_area::heap::method_descriptor::{MethodDescriptorParser, MethodDescriptor};
 use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::exception_table::ExceptionTable;
 use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
@@ -13,6 +13,7 @@ use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::class_file::exceptions_attribute::ExceptionsAttribute;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
+use std::ptr;
 
 #[derive(Debug)]
 pub struct Method {
@@ -24,7 +25,8 @@ pub struct Method {
     exception_table:ExceptionTable,
     line_number_table:Option<LineNumberTableAttribute>,
     annotations:Option<Vec<AnnotationAttribute>>,
-    exceptions:Vec<u16>
+    exceptions:Vec<u16>,
+    method_desc:MethodDescriptor
 }
 
 impl Method {
@@ -40,7 +42,8 @@ impl Method {
             exception_table: ExceptionTable::none(),
             line_number_table: None,
             annotations: None,
-            exceptions: vec![]
+            exceptions: vec![],
+            method_desc: MethodDescriptor::new()
         };
     }
 
@@ -62,6 +65,7 @@ impl Method {
         if method.is_native() {
             method.inject_code_attribute(md.return_type());
         }
+        method.method_desc = md;
         return Rc::new(method);
     }
 
@@ -157,8 +161,14 @@ impl Method {
     }
 
     #[inline]
-    pub fn code(&self) -> &Vec<u8> {
-        return &self.code;
+    pub fn code(&self) -> Vec<u8> {
+        unsafe {
+            let count = self.code.len();
+            let mut data = Vec::with_capacity(count);
+            ptr::copy_nonoverlapping(self.code.as_ptr(), data.as_mut_ptr(), count);
+            data.set_len(count);
+            return data;
+        }
     }
 
     #[inline]
@@ -245,11 +255,10 @@ impl Method {
             return None;
         }
         let class_loader = (*self.class()).borrow().loader();
-        let desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
-        let param_types = desc.parameter_types();
+        let param_types = self.method_desc.parameter_types();
         let mut param_classes = Vec::with_capacity(param_types.len());
-        for paramType in param_types {
-            let param_class_name = PrimitiveTypes::instance().unwrap().to_class_name(paramType.as_str());
+        for param_type in param_types {
+            let param_class_name = PrimitiveTypes::instance().unwrap().to_class_name(param_type.as_str());
             param_classes.push(ClassLoader::load_class(class_loader.clone(), param_class_name.as_str()));
         }
 
@@ -290,7 +299,8 @@ impl Method {
             exception_table: ExceptionTable::none(),
             line_number_table: None,
             annotations: None,
-            exceptions: vec![]
+            exceptions: vec![],
+            method_desc: MethodDescriptor::new()
         }
     }
 

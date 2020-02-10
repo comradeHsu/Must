@@ -2,7 +2,6 @@ use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction}
 use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::native::registry::Registry;
-use std::borrow::Borrow;
 
 pub struct InvokeNative(NoOperandsInstruction);
 
