@@ -2,6 +2,9 @@ use crate::runtime_data_area::frame::Frame;
 use crate::native::registry::Registry;
 use std::mem::size_of;
 use crate::runtime_data_area::heap::object::DataType::{StandardObject, Ints};
+use std::alloc::Layout;
+use crate::utils::numbers::get_power_of_two;
+use std::collections::HashMap;
 
 pub fn init() {
     Registry::register("sun/misc/Unsafe", "arrayBaseOffset",
@@ -18,7 +21,15 @@ pub fn init() {
     Registry::register("sun/misc/Unsafe", "getIntVolatile",
                        "(Ljava/lang/Object;J)I", getIntVolatile);
     Registry::register("sun/misc/Unsafe", "compareAndSwapInt",
-                       "(Ljava/lang/Object;JII)Z", compareAndSwapInt)
+                       "(Ljava/lang/Object;JII)Z", compareAndSwapInt);
+    Registry::register("sun/misc/Unsafe", "allocateMemory",
+                       "(J)J", allocateMemory);
+    Registry::register("sun/misc/Unsafe", "putLong",
+                       "(JJ)V", putLong);
+    Registry::register("sun/misc/Unsafe", "getByte",
+                       "(J)B", getByte);
+    Registry::register("sun/misc/Unsafe", "freeMemory",
+                       "(J)V", freeMemory);
 }
 
 pub fn array_base_offset(frame:&mut Frame) {
@@ -128,6 +139,94 @@ pub fn compareAndSwapInt(frame:&mut Frame) {
     frame.operand_stack().expect("stack is none").push_boolean(true);
 }
 
+/// public native long allocateMemory(long bytes);
+/// (J)J
+pub fn allocateMemory(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let bytes = vars.get_long(1) as usize;
+    let layout = Layout::from_size_align(bytes,get_power_of_two(bytes))
+        .expect("The layout init fail");
+    unsafe {
+        let ptr = std::alloc::alloc(layout) as usize;
+        let stack = frame.operand_stack().expect("stack is none");
+        memory_size_map::insert(ptr,bytes);
+        stack.push_long(ptr as i64)
+    }
+}
+
+/// public native void putLong(long address, long x);
+/// (JJ)V
+pub fn putLong(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let address = vars.get_long(1);
+    let value = vars.get_long(3);
+
+    let ptr = (address as usize) as *mut u8;
+    unsafe {
+        *(ptr as *mut i64) = value;
+    }
+}
+
+/// public native byte getByte(long address);
+/// (J)B
+pub fn getByte(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let address = vars.get_long(1);
+    let ptr = (address as usize) as *mut u8;
+    unsafe {
+        let value = *(ptr as *mut i8);
+        frame.operand_stack().expect("stack is none").push_int(value as i32);
+    }
+}
+
+/// public native void freeMemory(long address);
+/// (J)V
+pub fn freeMemory(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let address = vars.get_long(1) as usize;
+    let size = memory_size_map::get(address);
+    let layout = Layout::from_size_align(size,get_power_of_two(size))
+        .expect("The layout init fail");
+    unsafe {
+        std::alloc::dealloc(address as *mut u8, layout);
+        memory_size_map::delete(address);
+    }
+}
+
+mod memory_size_map {
+    use std::collections::HashMap;
+
+    static mut MEMORY_SIZE_MAP: Option<HashMap<usize, usize>> = None;
+
+    fn instance() -> &'static mut HashMap<usize, usize> {
+        unsafe {
+            if MEMORY_SIZE_MAP.is_none() {
+                MEMORY_SIZE_MAP = Some(HashMap::new());
+            }
+            return MEMORY_SIZE_MAP.as_mut().unwrap();
+        }
+    }
+
+    pub fn insert(key:usize,size:usize) {
+        instance().insert(key,size);
+    }
+
+    pub fn get(key:usize) -> usize {
+        let size = instance().get(&key);
+        return *size.unwrap();
+    }
+
+    pub fn delete(key:usize) {
+        instance().remove(&key);
+    }
+}
+
+
+
 #[cfg(test)]
 mod java_unsafe {
     use crate::runtime_data_area::heap::object::Object;
@@ -141,6 +240,8 @@ mod java_unsafe {
     use crate::runtime_data_area::heap::class_loader::ClassLoader;
     use crate::cmd::Cmd;
     use std::mem::size_of;
+    use std::alloc::Layout;
+    use crate::utils::numbers::get_power_of_two;
 
     struct Test {
         len:usize,
@@ -170,6 +271,7 @@ mod java_unsafe {
             println!("size:{}", size_of::<Test>());
             println!("size:{}", size_of::<Object>());
             println!("size:{}", size_of::<usize>());
+            println!("size:{}", size_of::<i64>());
         }
     }
 
@@ -213,5 +315,47 @@ mod java_unsafe {
         let hash = ptr as usize;
         let first_ptr = first_ref as usize;
         println!("object ptr:{}, first element ptr:{},差距:{}",hash,first_ptr,first_ptr-hash);
+    }
+
+    #[test]
+    fn test_alloc() {
+        let bytes = 3 as usize;
+        let layout = Layout::from_size_align(bytes,get_power_of_two(bytes))
+            .expect("The layout init fail");
+        unsafe {
+            let ptr = std::alloc::alloc(layout.clone());
+            let ptr_1 = std::alloc::alloc(layout);
+            println!("address:{},sec_address:{}", ptr as usize,ptr_1 as usize);
+        }
+        println!("size:{}", layout.size());
+    }
+
+    #[test]
+    fn test_put() {
+        let bytes = 8 as usize;
+        let layout = Layout::from_size_align(bytes,get_power_of_two(bytes))
+            .expect("The layout init fail");
+        unsafe {
+            let ptr = std::alloc::alloc(layout.clone());
+            *(ptr as *mut i32) = 4;
+            let next = ptr as usize + 4;
+            *(next as *mut i32) = 16;
+            println!("value:{},next:{}", *(ptr as *mut i32),*(next as *mut i32));
+            println!("ptr:{},next_ptr:{}",ptr as usize,next as usize);
+        }
+        println!("size:{}", layout.size());
+    }
+
+    #[test]
+    fn test_get_byte() {
+        let bytes = 8 as usize;
+        let layout = Layout::from_size_align(bytes,get_power_of_two(bytes))
+            .expect("The layout init fail");
+        unsafe {
+            let ptr = std::alloc::alloc(layout.clone());
+            *(ptr as *mut i32) = 129;
+            println!("byte:{},real value:{}",*(ptr as *mut i8),*(ptr as *mut i32));
+        }
+        println!("size:{}", layout.size());
     }
 }

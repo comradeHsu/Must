@@ -62,9 +62,6 @@ impl Method {
         if method.is_native() {
             method.inject_code_attribute(md.return_type());
         }
-        if method.name() == "newUpdater" {
-            println!("\tannotation count:{}",method.annotations.as_ref().unwrap().len());
-        }
         return Rc::new(method);
     }
 
@@ -249,14 +246,14 @@ impl Method {
         }
         let class_loader = (*self.class()).borrow().loader();
         let desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
-        let paramTypes = desc.parameter_types();
-        let mut paramClasses = Vec::with_capacity(paramTypes.len());
-        for paramType in paramTypes {
-            let paramClassName = PrimitiveTypes::instance().unwrap().to_class_name(paramType.as_str());
-            paramClasses.push(ClassLoader::load_class(class_loader.clone(),paramClassName.as_str()));
+        let param_types = desc.parameter_types();
+        let mut param_classes = Vec::with_capacity(param_types.len());
+        for paramType in param_types {
+            let param_class_name = PrimitiveTypes::instance().unwrap().to_class_name(paramType.as_str());
+            param_classes.push(ClassLoader::load_class(class_loader.clone(), param_class_name.as_str()));
         }
 
-        return Some(paramClasses);
+        return Some(param_classes);
     }
 
     pub fn exception_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {

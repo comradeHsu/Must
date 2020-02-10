@@ -9,7 +9,7 @@ public class BoxTest {
         list.add(2);
         list.add(3);
         for (int x : list) {
-
+            System.out.println(x);
         }
     }
 }

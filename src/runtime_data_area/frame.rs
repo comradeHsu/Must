@@ -72,6 +72,11 @@ impl Frame {
     }
 
     #[inline]
+    pub fn method_by_clone(&self) -> Rc<Method> {
+        return self.method.clone();
+    }
+
+    #[inline]
     pub fn method_ptr(&self) -> Rc<Method> {
         return self.method.clone();
     }

@@ -10,6 +10,7 @@ use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::operand_stack::OperandStack;
 use chrono::Local;
 use crate::instructions::base::method_invoke_logic::hack_invoke_method;
+use crate::utils::java_str_to_rust_str;
 
 pub fn init() {
     Registry::register("java/lang/System", "arraycopy",
@@ -24,6 +25,8 @@ pub fn init() {
                        "(Ljava/io/PrintStream;)V", set_err0);
     Registry::register("java/lang/System", "currentTimeMillis",
                        "()J", current_time_millis);
+    Registry::register("java/lang/System", "mapLibraryName",
+                       "(Ljava/lang/String;)Ljava/lang/String;", map_library_name);
 }
 
 pub fn array_copy(frame:&mut Frame) {
@@ -102,6 +105,7 @@ fn _sys_props() -> HashMap<String,String> {
     let mut map = HashMap::new();
     map.insert("java.version".to_owned(),"1.8.0".to_owned());
     map.insert("java.vendor".to_owned(),"jvm.rust".to_owned());
+    map.insert("java.home".to_owned(),"D:\\java8\\JDK".to_owned());
     map.insert("java.class.version".to_owned(),"52.0".to_owned());
     map.insert("java.class.path".to_owned(),"todo".to_owned());
     map.insert("java.awt.graphicsenv".to_owned(),"sun.awt.CGraphicsEnvironment".to_owned());
@@ -161,7 +165,7 @@ pub fn set_err0(frame:&mut Frame) {
     let err = vars.get_ref(0);
 
     let sys_class = frame.method().class();
-    Class::set_ref_var(sys_class, "err", "Ljava/io/InputStream;", err);
+    Class::set_ref_var(sys_class, "err", "Ljava/io/PrintStream;", err);
 }
 
 // public static native long currentTimeMillis();
@@ -170,4 +174,16 @@ pub fn current_time_millis(frame: &mut Frame) {
     let millis = Local::now().timestamp_millis();
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_long(millis)
+}
+
+/// public static native String mapLibraryName(String name);
+/// java/lang/System.mapLibraryName(Ljava/lang/String;)Ljava/lang/String;
+pub fn map_library_name(frame: &mut Frame) {
+    let name = frame.local_vars().expect("vars is none").get_ref(0);
+    let mut rust_name = java_str_to_rust_str(name.clone().unwrap());
+    rust_name.push_str(".dll");
+    let class = frame.method_by_clone().class();
+    let loader = (*class).borrow().loader();
+    let stack = frame.operand_stack().expect("stack is none");
+    stack.push_ref(Some(StringPool::java_string(loader,rust_name)));
 }

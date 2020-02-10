@@ -6,13 +6,17 @@ use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
 use crate::native::java::lang::throwable::StackTraceElement;
+use crate::runtime_data_area::heap::field::Field;
+use crate::runtime_data_area::heap::method::Method;
+use crate::runtime_data_area::heap::object::MetaData::Null;
 
 #[derive(Debug,Clone)]
 pub struct Object {
     pub class:Rc<RefCell<Class>>,
     pub data:DataType,
     pub meta:Option<Rc<RefCell<Class>>>,
-    pub trace:Option<Vec<StackTraceElement>>
+    pub trace:Option<Vec<StackTraceElement>>,
+    pub meta_data:MetaData
 }
 
 impl Object {
@@ -22,7 +26,8 @@ impl Object {
             class: class.clone(),
             data: StandardObject(Some(Slots::with_capacity(count as usize))),
             meta: None,
-            trace: None
+            trace: None,
+            meta_data: MetaData::Null
         };
     }
 
@@ -49,6 +54,11 @@ impl Object {
     #[inline]
     pub fn set_trace(&mut self,eles:Vec<StackTraceElement>) {
         self.trace = Some(eles);
+    }
+
+    #[inline]
+    pub fn set_meta_data(&mut self,data:MetaData) {
+        self.meta_data = data;
     }
 
     #[inline]
@@ -140,4 +150,37 @@ pub enum DataType {
     Floats(Vec<f32>),
     Doubles(Vec<f64>),
     References(Vec<Option<Rc<RefCell<Object>>>>)
+}
+
+#[derive(Debug,Clone)]
+pub enum MetaData {
+    Null,
+    Field(Rc<RefCell<Field>>),
+    Method(Rc<Method>)
+}
+
+impl MetaData {
+    #[inline]
+    pub fn is_null(&self) -> bool {
+        match self {
+            Null => true,
+            _ => false
+        }
+    }
+
+    #[inline]
+    pub fn not_null(&self) -> bool {
+        match self {
+            Null => false,
+            _ => true
+        }
+    }
+
+    #[inline]
+    pub fn method(&self) -> Rc<Method> {
+        match self {
+            MetaData::Method(method) => method.clone(),
+            _ => panic!("The MetaData not method")
+        }
+    }
 }

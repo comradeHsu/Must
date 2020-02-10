@@ -41,6 +41,18 @@ pub fn i64_from_i32_bytes(val:i32) -> i64 {
     return i64::from_be_bytes(array);
 }
 
+///Returns a power of two size for the given target capacity.
+#[inline]
+pub fn get_power_of_two(val:usize) -> usize {
+    let mut n = val - 1;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    return n + 1;
+}
+
 #[cfg(test)]
 mod test{
     use crate::utils::numbers::{f32_to_i32, i32_to_f32};

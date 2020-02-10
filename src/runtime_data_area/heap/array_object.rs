@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::object::{Object, DataType};
+use crate::runtime_data_area::heap::object::{Object, DataType, MetaData};
 use crate::runtime_data_area::heap::object::DataType::{Bytes, Shorts, Ints, Longs, Chars, Floats, Doubles, References};
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -14,7 +14,8 @@ impl Object {
             class,
             data,
             meta: None,
-            trace: None
+            trace: None,
+            meta_data: MetaData::Null
         };
     }
 

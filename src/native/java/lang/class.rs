@@ -13,6 +13,7 @@ use crate::instructions::base::class_init_logic::init_class;
 use crate::runtime_data_area::operand_stack::OperandStack;
 use crate::instructions::base::method_invoke_logic::{invoke_method, hack_invoke_method};
 use crate::runtime_data_area::heap::object::DataType::Bytes;
+use crate::runtime_data_area::heap::object::MetaData::{Field, Method};
 
 pub fn init() {
     Registry::register("java/lang/Class", "getPrimitiveClass",
@@ -215,8 +216,8 @@ pub fn getDeclaredConstructors0(frame:&mut Frame) {
         let constructorInitMethod = Class::get_constructor(constructorClass.clone(),_constructorConstructorDescriptor);
         for i in 0..constructors.len() {
             let constructor = constructors[i].clone();
-            let constructorObj = Class::new_object(&constructorClass);
-//            constructorObj.SetExtra(constructor)
+            let mut constructorObj = Class::new_object(&constructorClass);
+            constructorObj.set_meta_data(Method(constructor.clone()));
             let object = Some(boxed(constructorObj));
             constructorObjs[i] = object.clone();
 
@@ -274,8 +275,8 @@ pub fn getDeclaredFields0(frame:&mut Frame) {
         let fieldInitMethod = Class::get_constructor(fieldClass.clone(),_fieldConstructorDescriptor);
         for i in 0..fields.len() {
             let field = fields[i].clone();
-            let fieldObj = Class::new_object(&fieldClass);
-//            fieldObj.SetExtra(goField)
+            let mut fieldObj = Class::new_object(&fieldClass);
+            fieldObj.set_meta_data(Field(field.clone()));
             let object = Some(boxed(fieldObj));
             fieldObjs[i] = object.clone();
 
