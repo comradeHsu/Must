@@ -1,7 +1,7 @@
 mod vm;
-mod r#unsafe;
+mod Unsafe;
 
 pub fn init() {
     vm::init();
-    r#unsafe::init();
+    Unsafe::init();
 }

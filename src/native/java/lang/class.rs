@@ -40,7 +40,8 @@ pub fn init() {
                        "()[Ljava/lang/Class;", get_interfaces0);
     Registry::register("java/lang/Class", "isArray",
                        "()Z", is_array);
-//    Registry::register("java/lang/Class", "getDeclaredMethods0", "(Z)[Ljava/lang/reflect/Method;", getDeclaredMethods0);
+    Registry::register("java/lang/Class", "getDeclaredMethods0",
+                       "(Z)[Ljava/lang/reflect/Method;", get_declared_methods0);
     Registry::register("java/lang/Class", "getComponentType",
                        "()Ljava/lang/Class;", get_component_type);
     Registry::register("java/lang/Class", "isAssignableFrom",
@@ -319,4 +320,71 @@ fn get_signature_str(loader:Rc<RefCell<ClassLoader>>, signature:&str) -> Option<
         return Some(StringPool::java_string(loader, signature.to_string()));
     }
     return None
+}
+
+const _METHOD_CONSTRUCTOR_DESCRIPTOR:&str =
+    "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;Ljava/lang/Class;[Ljava/lang/Class;IILjava/lang/String;[B[B[B)V";
+
+/// private native Method[] getDeclaredMethods0(boolean publicOnly);
+/// (Z)[Ljava/lang/reflect/Method;
+pub fn get_declared_methods0(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let class_obj = vars.get_this().unwrap();
+    let public_only = vars.get_boolean(1);
+
+    let class = (*class_obj).borrow().meta().unwrap();
+    let methods = (*class).borrow().get_methods(public_only);
+    let method_count = methods.len();
+
+    let class = frame.method().class();
+    let class_loader = (*class).borrow().loader();
+    let method_class = ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Method");
+    let method_arr_class = (*method_class).borrow().array_class();
+    let method_arr = Class::new_array(&method_arr_class, method_count);
+
+
+    let boxed_arr = Some(boxed(method_arr));
+    frame.operand_stack().expect("stack null").push_ref(boxed_arr.clone());
+
+    // create method objs
+    if method_count > 0 {
+        let thread = frame.thread();
+        let arr = boxed_arr.unwrap();
+        let mut temp =  (*arr).borrow_mut();
+        let method_objs = temp.mut_references();
+        let method_constructor = Class::get_constructor(method_class.clone(), _METHOD_CONSTRUCTOR_DESCRIPTOR);
+        for i in 0..method_count {
+            let method = methods[i].clone();
+            let mut method_obj = Class::new_object(&method_class);
+            method_obj.set_meta_data(Method(method.clone()));
+            let object = Some(boxed(method_obj));
+            method_objs[i] = object.clone();
+
+            let mut ops = OperandStack::new(8).unwrap();
+            ops.push_ref(object);                                                // this
+            ops.push_ref(Some(class_obj.clone()));                                                 // declaringClass
+            ops.push_ref(Some(StringPool::java_string(class_loader.clone(), method.name().to_string())));                 // name
+            let parameter_types = method.parameter_types().unwrap();
+            ops.push_ref(Some(boxed(to_class_arr(class_loader.clone(), &parameter_types))));         // parameterTypes
+            ops.push_ref((*method.return_type()).borrow().get_java_class());                             // returnType
+            let exception_types = method.exception_types().unwrap_or_else(||Vec::new());
+            ops.push_ref(Some(boxed(to_class_arr(class_loader.clone(), &exception_types))));         // checkedExceptions
+            ops.push_int(method.access_flags() as i32);                              // modifiers
+            ops.push_int(0);                                                 // todo: slot
+            ops.push_ref(get_signature_str(class_loader.clone(), method.signature()));         // signature
+            let mut data:Vec<u8> = vec![0,20];
+            ops.push_ref(Some(boxed(to_byte_arr(class_loader.clone(), Some(data)).unwrap())));          // annotations
+//            ops.push_ref(toByteArr(classLoader, method.ParameterAnnotationData())) // parameterAnnotations
+            ops.push_ref(None);
+            let mut data:Vec<u8> = vec![0,20];
+            ops.push_ref(None);
+//            ops.push_ref(toByteArr(classLoader, method.AnnotationDefaultData()))   // annotationDefault
+
+            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
+            (*thread).borrow_mut().push_frame(shim_frame);
+
+            // init methodObj
+            hack_invoke_method(thread.clone(),method);
+        }
+    }
 }

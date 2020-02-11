@@ -1,7 +1,6 @@
 use crate::class_file::class_reader::ClassReader;
 use std::rc::Rc;
 use crate::class_file::makers_attribute::DeprecatedAttribute;
-use crate::class_file::member_info::display_16;
 use crate::class_file::constant_pool::ConstantInfoEnum::*;
 use std::cell::RefCell;
 
@@ -236,7 +235,6 @@ pub trait ConstantInfo {
 }
 
 pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
-    let dat = display_16(reader.data.clone());
     let tag = reader.read_u8();
     let mut constant_info = new(tag,cp);
     constant_info.read_info(reader);

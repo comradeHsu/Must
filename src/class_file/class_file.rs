@@ -1,5 +1,5 @@
 use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::member_info::{MemberInfo, display_16};
+use crate::class_file::member_info::{MemberInfo};
 use crate::class_file::class_reader::ClassReader;
 use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
 use std::vec::Vec;

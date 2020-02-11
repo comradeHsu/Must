@@ -605,6 +605,18 @@ impl Class {
         }
     }
 
+    pub fn get_methods(&self, public_only:bool) -> Vec<Rc<Method>> {
+        let mut methods = Vec::with_capacity(self.methods.len());
+        for method in &self.methods {
+            if !method.is_clinit() && !method.is_constructor() {
+                if !public_only || method.is_public() {
+                    methods.push(method.clone());
+                }
+            }
+        }
+        return methods;
+    }
+
     ///about array's class
     /// like int[]
     #[inline]

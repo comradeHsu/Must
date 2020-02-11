@@ -288,6 +288,13 @@ impl Method {
         return Some(ex_classes);
     }
 
+    pub fn return_type(&self) -> Rc<RefCell<Class>> {
+        let return_type = self.method_desc.return_type();
+        let return_class_name = PrimitiveTypes::instance().unwrap().to_class_name(return_type);
+        let class_loader = (*self.class()).borrow().loader();
+        return ClassLoader::load_class(class_loader, return_class_name.as_str());
+    }
+
     pub fn shim_return_method() -> Method {
         let mut class = Class::none();
         return Method{
