@@ -1,88 +1,94 @@
 use crate::instructions::base::instruction::Instruction;
-use crate::instructions::constants::nop::Nop;
-use crate::instructions::constants::constant::{AconstNull, IconstM1, Iconst0, Iconst1, Iconst2,
-                                               Iconst3, Iconst4, Iconst5, Lconst0, Lconst1, Fconst0,
-                                               Fconst1, Fconst2, Dconst0, Dconst1};
+use crate::instructions::comparisons::dcmp::{Dcmpg, Dcmpl};
+use crate::instructions::comparisons::fcmp::{Fcmpg, Fcmpl};
+use crate::instructions::comparisons::if_acmp::{IfACmpEq, IfACmpNe};
+use crate::instructions::comparisons::if_icmp::{
+    IfICmpEq, IfICmpGe, IfICmpGt, IfICmpLe, IfICmpLt, IfICmpNe,
+};
+use crate::instructions::comparisons::ifcond::{IfEq, IfGe, IfGt, IfLe, IfLt, IfNe};
+use crate::instructions::comparisons::lcmp::Lcmp;
+use crate::instructions::constants::constant::{
+    AconstNull, Dconst0, Dconst1, Fconst0, Fconst1, Fconst2, Iconst0, Iconst1, Iconst2, Iconst3,
+    Iconst4, Iconst5, IconstM1, Lconst0, Lconst1,
+};
 use crate::instructions::constants::ipush::{BiPush, SiPush};
+use crate::instructions::constants::ldc::{LDC2w, LDCw, LDC};
+use crate::instructions::constants::nop::Nop;
+use crate::instructions::control::goto::Goto;
+use crate::instructions::control::lookup_switch::LookUpSwitch;
+use crate::instructions::control::r#return::*;
+use crate::instructions::control::table_switch::TableSwitch;
+use crate::instructions::conversions::d2x::{D2f, D2i, D2l};
+use crate::instructions::conversions::f2x::{F2d, F2i, F2l};
+use crate::instructions::conversions::i2x::{I2b, I2c, I2d, I2f, I2l, I2s};
+use crate::instructions::conversions::l2x::{L2d, L2f, L2i};
+use crate::instructions::extended::goto_w::GotoW;
+use crate::instructions::extended::ifnull::{IfNonNull, IfNull};
+use crate::instructions::extended::wide::Wide;
+use crate::instructions::loads::aload::{ALoad, ALoad0, ALoad1, ALoad2, ALoad3};
+use crate::instructions::loads::array_aload::{
+    AAload, BAload, CAload, DAload, FAload, IAload, LAload, SAload,
+};
+use crate::instructions::loads::dload::{DLoad, DLoad0, DLoad1, DLoad2, DLoad3};
+use crate::instructions::loads::fload::{FLoad, FLoad0, FLoad1, FLoad2, FLoad3};
 use crate::instructions::loads::iload::{ILoad, ILoad0, ILoad1, ILoad2, ILoad3};
 use crate::instructions::loads::lload::{LLoad, LLoad0, LLoad1, LLoad2, LLoad3};
-use crate::instructions::loads::fload::{FLoad, FLoad0, FLoad1, FLoad2, FLoad3};
-use crate::instructions::loads::dload::{DLoad, DLoad0, DLoad1, DLoad2, DLoad3};
-use crate::instructions::loads::aload::{ALoad, ALoad0, ALoad1, ALoad2, ALoad3};
-use crate::instructions::stores::istore::{IStore, IStore0, IStore1, IStore2, IStore3};
-use crate::instructions::stores::lstore::{LStore, LStore0, LStore1, LStore2, LStore3};
-use crate::instructions::stores::fstore::{FStore, FStore0, FStore1, FStore2, FStore3};
-use crate::instructions::stores::dstore::{DStore, DStore0, DStore1, DStore2, DStore3};
-use crate::instructions::stores::astore::{AStore, AStore0, AStore1, AStore2, AStore3};
-use crate::instructions::stack::pop::{Pop, Pop2};
-use crate::instructions::stack::dup::{Dup, DupX1, DupX2, Dup2, Dup2X1, Dup2X2};
-use crate::instructions::stack::swap::Swap;
-use crate::instructions::math::add::{IAdd, LAdd, FAdd, DAdd};
-use crate::instructions::math::sub::{ISub, LSub, FSub, DSub};
-use crate::instructions::math::mul::{IMul, LMul, FMul, DMul};
-use crate::instructions::math::div::{IDiv, LDiv, FDiv, DDiv};
-use crate::instructions::math::rem::{IRem, LRem, FRem, DRem};
-use crate::instructions::math::neg::{INeg, LNeg, FNeg, DNeg};
-use crate::instructions::math::sh::{IShl, LShl, IShr, LShr, IuShr, LuShr};
+use crate::instructions::math::add::{DAdd, FAdd, IAdd, LAdd};
 use crate::instructions::math::and::{IAnd, LAnd};
-use crate::instructions::math::or::{IOr, LOr};
-use crate::instructions::math::xor::{IXor, LXor};
+use crate::instructions::math::div::{DDiv, FDiv, IDiv, LDiv};
 use crate::instructions::math::iinc::IInc;
-use crate::instructions::conversions::i2x::{I2l, I2d, I2f, I2b, I2c, I2s};
-use crate::instructions::conversions::l2x::{L2i, L2f, L2d};
-use crate::instructions::conversions::f2x::{F2i, F2l, F2d};
-use crate::instructions::conversions::d2x::{D2i, D2l, D2f};
-use crate::instructions::comparisons::lcmp::Lcmp;
-use crate::instructions::comparisons::fcmp::{Fcmpl, Fcmpg};
-use crate::instructions::comparisons::dcmp::{Dcmpl, Dcmpg};
-use crate::instructions::comparisons::ifcond::{IfEq, IfNe, IfLt, IfGe, IfGt, IfLe};
-use crate::instructions::comparisons::if_icmp::{IfICmpEq, IfICmpNe, IfICmpGt, IfICmpLt, IfICmpGe,
-                                                IfICmpLe};
-use crate::instructions::comparisons::if_acmp::{IfACmpEq, IfACmpNe};
-use crate::instructions::control::goto::Goto;
-use crate::instructions::control::table_switch::TableSwitch;
-use crate::instructions::control::lookup_switch::{LookUpSwitch};
-use crate::instructions::extended::wide::Wide;
-use crate::instructions::extended::ifnull::{IfNull, IfNonNull};
-use crate::instructions::extended::goto_w::GotoW;
-use crate::instructions::references::get_static::GetStatic;
-use crate::instructions::references::put_static::PutStatic;
-use crate::instructions::references::get_field::GetField;
-use crate::instructions::references::put_field::PutField;
-use crate::instructions::references::invoke_virtual::InvokeVirtual;
-use crate::instructions::references::invoke_special::InvokeSpecial;
-use crate::instructions::references::new::New;
-use crate::instructions::references::check_cast::CheckCast;
-use crate::instructions::references::instance_of::InstanceOf;
-use crate::instructions::constants::ldc::{LDC, LDCw, LDC2w};
-use crate::instructions::control::r#return::*;
-use crate::instructions::references::invoke_static::InvokeStatic;
-use crate::instructions::references::invoke_interface::InvokeInterface;
-use crate::instructions::loads::array_aload::{IAload, LAload, FAload, DAload, AAload, BAload, CAload, SAload};
-use crate::instructions::stores::array_astore::{IAStore, LAStore, FAStore, DAStore, AAStore, BAStore, CAStore, SAStore};
-use crate::instructions::references::new_array::NewArray;
+use crate::instructions::math::mul::{DMul, FMul, IMul, LMul};
+use crate::instructions::math::neg::{DNeg, FNeg, INeg, LNeg};
+use crate::instructions::math::or::{IOr, LOr};
+use crate::instructions::math::rem::{DRem, FRem, IRem, LRem};
+use crate::instructions::math::sh::{IShl, IShr, IuShr, LShl, LShr, LuShr};
+use crate::instructions::math::sub::{DSub, FSub, ISub, LSub};
+use crate::instructions::math::xor::{IXor, LXor};
 use crate::instructions::references::anew_array::ANewArray;
 use crate::instructions::references::array_length::ArrayLength;
-use crate::instructions::references::multi_anew_array::MultiANewArray;
-use crate::instructions::reserved::invoke_native::InvokeNative;
 use crate::instructions::references::athrow::AThrow;
+use crate::instructions::references::check_cast::CheckCast;
+use crate::instructions::references::get_field::GetField;
+use crate::instructions::references::get_static::GetStatic;
+use crate::instructions::references::instance_of::InstanceOf;
+use crate::instructions::references::invoke_interface::InvokeInterface;
+use crate::instructions::references::invoke_special::InvokeSpecial;
+use crate::instructions::references::invoke_static::InvokeStatic;
+use crate::instructions::references::invoke_virtual::InvokeVirtual;
 use crate::instructions::references::monitor::{MonitorEnter, MonitorExit};
+use crate::instructions::references::multi_anew_array::MultiANewArray;
+use crate::instructions::references::new::New;
+use crate::instructions::references::new_array::NewArray;
+use crate::instructions::references::put_field::PutField;
+use crate::instructions::references::put_static::PutStatic;
+use crate::instructions::reserved::invoke_native::InvokeNative;
+use crate::instructions::stack::dup::{Dup, Dup2, Dup2X1, Dup2X2, DupX1, DupX2};
+use crate::instructions::stack::pop::{Pop, Pop2};
+use crate::instructions::stack::swap::Swap;
+use crate::instructions::stores::array_astore::{
+    AAStore, BAStore, CAStore, DAStore, FAStore, IAStore, LAStore, SAStore,
+};
+use crate::instructions::stores::astore::{AStore, AStore0, AStore1, AStore2, AStore3};
+use crate::instructions::stores::dstore::{DStore, DStore0, DStore1, DStore2, DStore3};
+use crate::instructions::stores::fstore::{FStore, FStore0, FStore1, FStore2, FStore3};
+use crate::instructions::stores::istore::{IStore, IStore0, IStore1, IStore2, IStore3};
+use crate::instructions::stores::lstore::{LStore, LStore0, LStore1, LStore2, LStore3};
 
 pub mod base;
-mod constants;
-mod loads;
-mod stores;
-mod stack;
-mod math;
-mod conversions;
 mod comparisons;
+mod constants;
 mod control;
+mod conversions;
 mod extended;
+mod loads;
+mod math;
 pub mod references;
 mod reserved;
+mod stack;
+mod stores;
 
-pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
-    let inst:Box<dyn Instruction> = match opcode {
+pub fn new_instruction(opcode: u8) -> Box<dyn Instruction> {
+    let inst: Box<dyn Instruction> = match opcode {
         0x00 => Box::new(Nop::new()),
         0x01 => Box::new(AconstNull::new()),
         0x02 => Box::new(IconstM1::new()),
@@ -251,8 +257,8 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xa5 => Box::new(IfACmpEq::new()),
         0xa6 => Box::new(IfACmpNe::new()),
         0xa7 => Box::new(Goto::new()),
-//        0xa8 => {},
-//        0xa9 => {},
+        //        0xa8 => {},
+        //        0xa9 => {},
         0xaa => Box::new(TableSwitch::new()),
         0xab => Box::new(LookUpSwitch::new()),
         0xac => Box::new(IReturn::new()),
@@ -269,7 +275,7 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xb7 => Box::new(InvokeSpecial::new()),
         0xb8 => Box::new(InvokeStatic::new()),
         0xb9 => Box::new(InvokeInterface::new()),
-//        0xba => {},
+        //        0xba => {},
         0xbb => Box::new(New::new()),
         0xbc => Box::new(NewArray::new()),
         0xbd => Box::new(ANewArray::new()),
@@ -286,15 +292,15 @@ pub fn new_instruction(opcode:u8) -> Box<dyn Instruction> {
         0xc8 => Box::new(GotoW::new()),
         0xfe => Box::new(InvokeNative::new()),
         _c => {
-            println!("opcode:{}",_c);
+            println!("opcode:{}", _c);
             panic!("instruction error")
         }
     };
-//    println!("instruction:{:?}",opcode);
+    //    println!("instruction:{:?}",opcode);
     return inst;
 }
 
-fn check_index(arr_len:usize, index:usize) {
+fn check_index(arr_len: usize, index: usize) {
     if index >= arr_len {
         panic!("ArrayIndexOutOfBoundsException")
     }

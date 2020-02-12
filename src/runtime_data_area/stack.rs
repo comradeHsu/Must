@@ -1,25 +1,25 @@
-use std::collections::VecDeque;
 use crate::runtime_data_area::frame::Frame;
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::VecDeque;
+use std::rc::Rc;
 
 pub struct Stack {
-    max_size:usize,
-    size:usize,
-    frames:VecDeque<Rc<RefCell<Frame>>>
+    max_size: usize,
+    size: usize,
+    frames: VecDeque<Rc<RefCell<Frame>>>,
 }
 
 impl Stack {
     #[inline]
-    pub fn new(max_size:usize) -> Stack {
-        return Stack{
+    pub fn new(max_size: usize) -> Stack {
+        return Stack {
             max_size,
-            size:0,
-            frames: Default::default()
+            size: 0,
+            frames: Default::default(),
         };
     }
 
-    pub fn push(&mut self,frame:Frame) {
+    pub fn push(&mut self, frame: Frame) {
         if self.frames.len() >= self.max_size {
             panic!("java.lang.StackOverflowError");
         }
@@ -36,11 +36,11 @@ impl Stack {
         return frame;
     }
 
-    pub fn top(& self) -> Rc<RefCell<Frame>> {
+    pub fn top(&self) -> Rc<RefCell<Frame>> {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
-        let frame = self.frames.get(self.size-1).unwrap();
+        let frame = self.frames.get(self.size - 1).unwrap();
         return frame.clone();
     }
 
@@ -60,5 +60,4 @@ impl Stack {
     pub fn get_frames(&self) -> &VecDeque<Rc<RefCell<Frame>>> {
         return &self.frames;
     }
-
 }

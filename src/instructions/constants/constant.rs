@@ -1,6 +1,6 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
+use crate::runtime_data_area::frame::Frame;
 
 ///aconst_null
 pub struct AconstNull(NoOperandsInstruction);
@@ -18,7 +18,9 @@ impl Instruction for AconstNull {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_ref(None);
     }
 }
@@ -39,7 +41,9 @@ impl Instruction for Dconst0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_double(0.0f64);
     }
 }
@@ -60,7 +64,9 @@ impl Instruction for Dconst1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_double(1.0f64);
     }
 }
@@ -81,7 +87,9 @@ impl Instruction for Fconst0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_float(0.0f32);
     }
 }
@@ -102,7 +110,9 @@ impl Instruction for Fconst1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_float(1.0f32);
     }
 }
@@ -123,7 +133,9 @@ impl Instruction for Fconst2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_float(2.0f32);
     }
 }
@@ -144,7 +156,9 @@ impl Instruction for IconstM1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(-1i32);
     }
 }
@@ -165,7 +179,9 @@ impl Instruction for Iconst0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(0i32);
     }
 }
@@ -186,7 +202,9 @@ impl Instruction for Iconst1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(1i32);
     }
 }
@@ -207,7 +225,9 @@ impl Instruction for Iconst2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(2i32);
     }
 }
@@ -228,7 +248,9 @@ impl Instruction for Iconst3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(3i32);
     }
 }
@@ -249,7 +271,9 @@ impl Instruction for Iconst4 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(4i32);
     }
 }
@@ -270,7 +294,9 @@ impl Instruction for Iconst5 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_int(5i32);
     }
 }
@@ -291,7 +317,9 @@ impl Instruction for Lconst0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_long(0i64);
     }
 }
@@ -312,7 +340,9 @@ impl Instruction for Lconst1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        frame.operand_stack().expect("operand_stack is empty")
+        frame
+            .operand_stack()
+            .expect("operand_stack is empty")
             .push_long(1i64);
     }
 }

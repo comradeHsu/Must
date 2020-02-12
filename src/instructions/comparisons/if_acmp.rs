@@ -1,7 +1,7 @@
+use crate::instructions::base::branch_logic::branch;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::instructions::base::branch_logic::branch;
 
 fn acmp(frame: &mut Frame) -> bool {
     let stack = frame.operand_stack().expect("operand_stack is none");
@@ -26,7 +26,7 @@ impl Instruction for IfACmpEq {
 
     fn execute(&mut self, frame: &mut Frame) {
         if acmp(frame) {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -47,7 +47,7 @@ impl Instruction for IfACmpNe {
 
     fn execute(&mut self, frame: &mut Frame) {
         if !acmp(frame) {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }

@@ -1,6 +1,6 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use std::borrow::Borrow;
 
@@ -19,7 +19,7 @@ impl Instruction for InstanceOf {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-//        let stack = frame.operand_stack().expect("stack is none");
+        //        let stack = frame.operand_stack().expect("stack is none");
         let reference = frame.operand_stack().expect("stack is none").pop_ref();
         if reference.is_none() {
             frame.operand_stack().expect("stack is none").push_int(0);
@@ -31,7 +31,7 @@ impl Instruction for InstanceOf {
         let constant = borrow_cp.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let class = class_ref.resolved_class(class);
         if (*reference.unwrap()).borrow().is_instance_of(class) {

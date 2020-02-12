@@ -1,33 +1,36 @@
-use crate::runtime_data_area::heap::class_member::ClassMember;
-use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use crate::class_file::member_info::MemberInfo;
-use std::cell::RefCell;
-use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use crate::class_file::member_info::MemberInfo;
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::runtime_data_area::heap::class_member::ClassMember;
+use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Field {
-    class_member:ClassMember,
-    const_value_index:usize,
-    slot_id:usize,
-    annotations:Option<Vec<AnnotationAttribute>>
+    class_member: ClassMember,
+    const_value_index: usize,
+    slot_id: usize,
+    annotations: Option<Vec<AnnotationAttribute>>,
 }
 
 impl Field {
     #[inline]
     pub fn new() -> Field {
-        return Field{
+        return Field {
             class_member: ClassMember::new(),
             const_value_index: 0,
             slot_id: 0,
-            annotations: None
+            annotations: None,
         };
     }
 
-    pub fn new_fields(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Rc<RefCell<Field>>> {
+    pub fn new_fields(
+        class: Rc<RefCell<Class>>,
+        infos: &Vec<MemberInfo>,
+    ) -> Vec<Rc<RefCell<Field>>> {
         let mut fields = Vec::with_capacity(infos.len());
         for info in infos {
             let mut field = Field::new();
@@ -40,7 +43,7 @@ impl Field {
         return fields;
     }
 
-    fn copy_const_attribute(&mut self,info:&MemberInfo) {
+    fn copy_const_attribute(&mut self, info: &MemberInfo) {
         let const_attr = info.constant_value_attr();
         if const_attr.is_some() {
             self.const_value_index = const_attr.unwrap().value_index() as usize;
@@ -48,7 +51,7 @@ impl Field {
     }
 
     ///copy annotations info
-    fn copy_annotations(&mut self,info:&MemberInfo) {
+    fn copy_annotations(&mut self, info: &MemberInfo) {
         let attributes = info.attributes();
         for attribute in attributes {
             match attribute {
@@ -87,7 +90,7 @@ impl Field {
     }
 
     #[inline]
-    pub fn set_slot(&mut self,slot_id:usize) {
+    pub fn set_slot(&mut self, slot_id: usize) {
         self.slot_id = slot_id;
     }
 
@@ -98,7 +101,7 @@ impl Field {
     }
 
     #[inline]
-    pub fn is_accessible_to(&self, class:&Class) -> bool {
+    pub fn is_accessible_to(&self, class: &Class) -> bool {
         return self.class_member.is_accessible_to(class);
     }
 
@@ -109,20 +112,22 @@ impl Field {
 
     // reflection
     pub fn r#type(&self) -> Rc<RefCell<Class>> {
-        let class_name = PrimitiveTypes::instance().unwrap().to_class_name(self.descriptor());
+        let class_name = PrimitiveTypes::instance()
+            .unwrap()
+            .to_class_name(self.descriptor());
         return ClassLoader::load_class(
             (*self.parent().class()).borrow().loader(),
-            class_name.as_str()
+            class_name.as_str(),
         );
     }
 
     #[inline]
-    pub fn access_flags(&self) -> u16{
+    pub fn access_flags(&self) -> u16 {
         return self.class_member.access_flags();
     }
 
     #[inline]
     pub fn signature(&self) -> &str {
-        return self.class_member.signature()
+        return self.class_member.signature();
     }
 }

@@ -3,12 +3,14 @@ use crate::class_file::class_reader::ClassReader;
 use std::ptr;
 
 pub struct ExceptionsAttribute {
-    exception_index_table:Vec<u16>
+    exception_index_table: Vec<u16>,
 }
 
 impl ExceptionsAttribute {
     pub fn new() -> ExceptionsAttribute {
-        return ExceptionsAttribute{ exception_index_table: vec![] };
+        return ExceptionsAttribute {
+            exception_index_table: vec![],
+        };
     }
 
     pub fn exception_index_table(&self) -> &Vec<u16> {

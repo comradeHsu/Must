@@ -1,6 +1,6 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
+use crate::runtime_data_area::frame::Frame;
 
 pub struct Return(NoOperandsInstruction);
 
@@ -41,12 +41,14 @@ impl Instruction for AReturn {
         let mut current_frame = (*thread).borrow_mut().pop_frame();
         let mut borrow = (*thread).borrow_mut();
         let invoke_frame = borrow.current_frame();
-//        let mut borrow_frame = (*current_frame).borrow_mut();
-        let return_value = frame.operand_stack().expect("stack is none")
-            .pop_ref();
+        //        let mut borrow_frame = (*current_frame).borrow_mut();
+        let return_value = frame.operand_stack().expect("stack is none").pop_ref();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_ref(return_value.clone());
-//        println!("return value is none:{}",return_value.is_none());
+        borrow_invoke
+            .operand_stack()
+            .expect("stack is none")
+            .push_ref(return_value.clone());
+        //        println!("return value is none:{}",return_value.is_none());
     }
 }
 
@@ -69,11 +71,13 @@ impl Instruction for DReturn {
         let mut current_frame = (*thread).borrow_mut().pop_frame();
         let mut borrow = (*thread).borrow_mut();
         let invoke_frame = borrow.current_frame();
-//        let mut borrow_frame = (*current_frame).borrow_mut();
-        let return_value = frame.operand_stack().expect("stack is none")
-            .pop_double();
+        //        let mut borrow_frame = (*current_frame).borrow_mut();
+        let return_value = frame.operand_stack().expect("stack is none").pop_double();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_double(return_value);
+        borrow_invoke
+            .operand_stack()
+            .expect("stack is none")
+            .push_double(return_value);
     }
 }
 
@@ -96,11 +100,13 @@ impl Instruction for FReturn {
         let mut current_frame = (*thread).borrow_mut().pop_frame();
         let mut borrow = (*thread).borrow_mut();
         let invoke_frame = borrow.current_frame();
-//        let mut borrow_frame = (*current_frame).borrow_mut();
-        let return_value = frame.operand_stack().expect("stack is none")
-            .pop_float();
+        //        let mut borrow_frame = (*current_frame).borrow_mut();
+        let return_value = frame.operand_stack().expect("stack is none").pop_float();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_float(return_value);
+        borrow_invoke
+            .operand_stack()
+            .expect("stack is none")
+            .push_float(return_value);
     }
 }
 
@@ -123,11 +129,13 @@ impl Instruction for IReturn {
         let mut current_frame = (*thread).borrow_mut().pop_frame();
         let mut borrow = (*thread).borrow_mut();
         let invoke_frame = borrow.current_frame();
-//        let mut borrow_frame = (*current_frame).borrow_mut();
-        let return_value = frame.operand_stack().expect("stack is none")
-            .pop_int();
+        //        let mut borrow_frame = (*current_frame).borrow_mut();
+        let return_value = frame.operand_stack().expect("stack is none").pop_int();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_int(return_value);
+        borrow_invoke
+            .operand_stack()
+            .expect("stack is none")
+            .push_int(return_value);
     }
 }
 
@@ -150,10 +158,12 @@ impl Instruction for LReturn {
         let mut current_frame = (*thread).borrow_mut().pop_frame();
         let mut borrow = (*thread).borrow_mut();
         let invoke_frame = borrow.current_frame();
-//        let mut borrow_frame = (*current_frame).borrow_mut();
-        let return_value = frame.operand_stack().expect("stack is none")
-            .pop_long();
+        //        let mut borrow_frame = (*current_frame).borrow_mut();
+        let return_value = frame.operand_stack().expect("stack is none").pop_long();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
-        borrow_invoke.operand_stack().expect("stack is none").push_long(return_value);
+        borrow_invoke
+            .operand_stack()
+            .expect("stack is none")
+            .push_long(return_value);
     }
 }

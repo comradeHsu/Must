@@ -1,12 +1,12 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::instructions::base::class_init_logic::init_class;
+use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -29,19 +29,22 @@ impl Instruction for New {
         let constant = borrow_pool.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let class = class_ref.resolved_class(class.clone());
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(),class.clone());
+            init_class(frame.thread(), class.clone());
             return;
         }
-        let ref_class= (*class).borrow();
-        if ref_class.is_interface() || ref_class.is_abstract(){
+        let ref_class = (*class).borrow();
+        if ref_class.is_interface() || ref_class.is_abstract() {
             panic!("java.lang.InstantiationError")
         }
         let object = Class::new_object(&class);
-        frame.operand_stack().expect("").push_ref(Some(boxed(object)));
+        frame
+            .operand_stack()
+            .expect("")
+            .push_ref(Some(boxed(object)));
     }
 }

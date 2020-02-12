@@ -1,12 +1,12 @@
-use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
+use crate::class_file::constant_pool::ConstantPool;
 use std::rc::Rc;
 
 pub struct EnclosingMethodAttribute {
-    cp:Rc<ConstantPool>,
-    class_index:u16,
-    method_index:u16
+    cp: Rc<ConstantPool>,
+    class_index: u16,
+    method_index: u16,
 }
 
 impl EnclosingMethodAttribute {
@@ -14,11 +14,11 @@ impl EnclosingMethodAttribute {
         return self.cp.get_utf8(self.class_index as usize);
     }
 
-    pub fn method_name_and_descriptor(&self) -> (&str,&str) {
+    pub fn method_name_and_descriptor(&self) -> (&str, &str) {
         if self.class_index > 0 {
             return self.cp.get_name_and_type(self.method_index as usize);
         }
-        return ("","")
+        return ("", "");
     }
 }
 

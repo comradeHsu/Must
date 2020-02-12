@@ -1,6 +1,6 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
+use crate::runtime_data_area::frame::Frame;
 
 pub struct Dcmpg(NoOperandsInstruction);
 
@@ -17,7 +17,7 @@ impl Instruction for Dcmpg {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        dcmp(frame,true);
+        dcmp(frame, true);
     }
 }
 
@@ -36,19 +36,19 @@ impl Instruction for Dcmpl {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        dcmp(frame,false);
+        dcmp(frame, false);
     }
 }
 
-fn dcmp(frame: &mut Frame,flag:bool) {
+fn dcmp(frame: &mut Frame, flag: bool) {
     let stack = frame.operand_stack().expect("operand_stack is none");
     let v2 = stack.pop_double();
     let v1 = stack.pop_double();
     if v1 > v2 {
         stack.push_int(1);
-    } else if  v1 == v2 {
+    } else if v1 == v2 {
         stack.push_int(0);
-    } else if  v1 < v2{
+    } else if v1 < v2 {
         stack.push_int(-1);
     } else if flag {
         stack.push_int(1);

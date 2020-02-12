@@ -1,25 +1,30 @@
-use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::instruction::{LocalVarsInstruction, Instruction, NoOperandsInstruction};
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{
+    Instruction, LocalVarsInstruction, NoOperandsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
 
-fn d_load(frame: &mut Frame, index:usize) {
-    let val = frame.local_vars().expect("local_vars is empty")
+fn d_load(frame: &mut Frame, index: usize) {
+    let val = frame
+        .local_vars()
+        .expect("local_vars is empty")
         .get_double(index);
-    frame.operand_stack().expect("operand_stack is empty")
+    frame
+        .operand_stack()
+        .expect("operand_stack is empty")
         .push_double(val);
 }
 ///dload
 pub struct DLoad(LocalVarsInstruction);
 
 impl DLoad {
-
     #[inline]
     pub const fn new() -> DLoad {
         return DLoad(LocalVarsInstruction::new());
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> DLoad {
+    pub fn with_index(index: usize) -> DLoad {
         return DLoad(LocalVarsInstruction::with_index(index));
     }
 }
@@ -50,7 +55,7 @@ impl Instruction for DLoad0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_load(frame,0);
+        d_load(frame, 0);
     }
 }
 
@@ -70,7 +75,7 @@ impl Instruction for DLoad1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_load(frame,1);
+        d_load(frame, 1);
     }
 }
 
@@ -90,7 +95,7 @@ impl Instruction for DLoad2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_load(frame,2);
+        d_load(frame, 2);
     }
 }
 
@@ -110,6 +115,6 @@ impl Instruction for DLoad3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_load(frame,3);
+        d_load(frame, 3);
     }
 }

@@ -1,61 +1,60 @@
-use crate::runtime_data_area::heap::class_member::ClassMember;
-use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use crate::class_file::member_info::MemberInfo;
-use std::cell::RefCell;
-use crate::runtime_data_area::heap::method_descriptor::{MethodDescriptorParser, MethodDescriptor};
-use crate::runtime_data_area::heap::access_flags::NATIVE;
-use crate::runtime_data_area::heap::exception_table::ExceptionTable;
-use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
-use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
-use crate::class_file::attribute_info::Attribute::{Code, RuntimeVisibleAnnotations, Exceptions};
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::class_file::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
 use crate::class_file::exceptions_attribute::ExceptionsAttribute;
+use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
+use crate::class_file::member_info::MemberInfo;
+use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::runtime_data_area::heap::access_flags::NATIVE;
+use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::runtime_data_area::heap::class_member::ClassMember;
+use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
+use crate::runtime_data_area::heap::exception_table::ExceptionTable;
+use crate::runtime_data_area::heap::method_descriptor::{MethodDescriptor, MethodDescriptorParser};
+use std::cell::RefCell;
 use std::ptr;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Method {
-    class_member:ClassMember,
-    max_stack:usize,
-    max_locals:usize,
-    code:Vec<u8>,
-    arg_slot_count:usize,
-    exception_table:ExceptionTable,
-    line_number_table:Option<LineNumberTableAttribute>,
-    annotations:Option<Vec<AnnotationAttribute>>,
-    exceptions:Vec<u16>,
-    method_desc:MethodDescriptor
+    class_member: ClassMember,
+    max_stack: usize,
+    max_locals: usize,
+    code: Vec<u8>,
+    arg_slot_count: usize,
+    exception_table: ExceptionTable,
+    line_number_table: Option<LineNumberTableAttribute>,
+    annotations: Option<Vec<AnnotationAttribute>>,
+    exceptions: Vec<u16>,
+    method_desc: MethodDescriptor,
 }
 
 impl Method {
-
     #[inline]
     pub fn new() -> Method {
-        return Method{ 
-            class_member: ClassMember::new(), 
-            max_stack: 0, 
-            max_locals: 0, 
+        return Method {
+            class_member: ClassMember::new(),
+            max_stack: 0,
+            max_locals: 0,
             code: vec![],
             arg_slot_count: 0,
             exception_table: ExceptionTable::none(),
             line_number_table: None,
             annotations: None,
             exceptions: vec![],
-            method_desc: MethodDescriptor::new()
+            method_desc: MethodDescriptor::new(),
         };
     }
 
-    pub fn new_methods(class:Rc<RefCell<Class>>,infos:&Vec<MemberInfo>) -> Vec<Rc<Method>> {
+    pub fn new_methods(class: Rc<RefCell<Class>>, infos: &Vec<MemberInfo>) -> Vec<Rc<Method>> {
         let mut methods = Vec::with_capacity(infos.len());
         for info in infos {
-            methods.push(Method::new_method(class.clone(),info));
+            methods.push(Method::new_method(class.clone(), info));
         }
         return methods;
     }
 
-    fn new_method(class:Rc<RefCell<Class>>,info:&MemberInfo) -> Rc<Method> {
+    fn new_method(class: Rc<RefCell<Class>>, info: &MemberInfo) -> Rc<Method> {
         let mut method = Method::new();
         method.class_member.set_class(class.clone());
         method.class_member.copy_member_info(info);
@@ -70,7 +69,7 @@ impl Method {
     }
 
     /// clone cast,waiting improve
-    pub fn copy_attributes(&mut self,info:&MemberInfo) {
+    pub fn copy_attributes(&mut self, info: &MemberInfo) {
         let attributes = info.attributes();
         for attribute in attributes {
             match attribute {
@@ -79,13 +78,15 @@ impl Method {
                     self.max_stack = attr.max_stack() as usize;
                     self.code = attr.code().clone();
                     self.line_number_table = attr.line_number_table_attribute();
-                    self.exception_table = ExceptionTable::new(attr.exception_table(),
-                                                            (*self.class()).borrow().constant_pool());
-                },
+                    self.exception_table = ExceptionTable::new(
+                        attr.exception_table(),
+                        (*self.class()).borrow().constant_pool(),
+                    );
+                }
                 RuntimeVisibleAnnotations(attr) => {
                     let clone = attr.annotations().clone();
                     self.annotations = Some(clone)
-                },
+                }
                 Exceptions(attr) => {
                     self.exceptions = attr.unsafe_copy();
                 }
@@ -94,8 +95,8 @@ impl Method {
         }
     }
 
-    fn calc_arg_slot_count(&mut self,parameter_types:&Vec<String>) {
-//        let parsed_desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
+    fn calc_arg_slot_count(&mut self, parameter_types: &Vec<String>) {
+        //        let parsed_desc = MethodDescriptorParser::parse_method_descriptor(self.descriptor());
         for parameter_type in parameter_types {
             self.arg_slot_count += 1;
             if parameter_type.as_str() == "J" || parameter_type.as_str() == "D" {
@@ -108,21 +109,21 @@ impl Method {
     }
 
     /// construct native code inject to operand stack
-    fn inject_code_attribute(&mut self, return_type:&String) {
+    fn inject_code_attribute(&mut self, return_type: &String) {
         self.max_stack = 4;
         self.max_locals = self.arg_slot_count;
         let first = return_type.chars().next().unwrap();
         match first {
-            'V' => self.code = vec![0xfe, 0xb1], // return
-            'D' => self.code = vec![0xfe, 0xaf], // dreturn
-            'F' => self.code = vec![0xfe, 0xae], // freturn
-            'J' => self.code = vec![0xfe, 0xad], // lreturn
+            'V' => self.code = vec![0xfe, 0xb1],       // return
+            'D' => self.code = vec![0xfe, 0xaf],       // dreturn
+            'F' => self.code = vec![0xfe, 0xae],       // freturn
+            'J' => self.code = vec![0xfe, 0xad],       // lreturn
             'L' | '[' => self.code = vec![0xfe, 0xb0], // areturn
-            _ => self.code = vec![0xfe, 0xac] // ireturn
+            _ => self.code = vec![0xfe, 0xac],         // ireturn
         }
     }
 
-    pub fn find_exception_handler(&self, class:Rc<RefCell<Class>>, pc:i32) -> i32 {
+    pub fn find_exception_handler(&self, class: Rc<RefCell<Class>>, pc: i32) -> i32 {
         let handler = self.exception_table.find_exception_handler(class, pc);
         if handler.is_some() {
             return handler.unwrap().handler_pc();
@@ -172,7 +173,7 @@ impl Method {
     }
 
     #[inline]
-    pub fn is_accessible_to(&self, class:&Class) -> bool {
+    pub fn is_accessible_to(&self, class: &Class) -> bool {
         return self.class_member.is_accessible_to(class);
     }
 
@@ -206,17 +207,21 @@ impl Method {
         return 0 != self.class_member.access_flags() & NATIVE;
     }
 
-    pub fn get_line_number(&self, pc:i32) -> i32 {
+    pub fn get_line_number(&self, pc: i32) -> i32 {
         if self.is_native() {
             return -2;
         }
         if self.line_number_table.is_none() {
             return -1;
         }
-        return self.line_number_table.as_ref().unwrap().get_line_number(pc as u16);
+        return self
+            .line_number_table
+            .as_ref()
+            .unwrap()
+            .get_line_number(pc as u16);
     }
 
-    pub fn has_annotation(&self,name:&str) -> bool {
+    pub fn has_annotation(&self, name: &str) -> bool {
         if self.annotations.is_none() {
             return false;
         }
@@ -236,21 +241,21 @@ impl Method {
 
     #[inline]
     pub fn is_clinit(&self) -> bool {
-        return self.is_static() && self.name() == "<clinit>"
+        return self.is_static() && self.name() == "<clinit>";
     }
 
     #[inline]
-    pub fn access_flags(&self) -> u16{
+    pub fn access_flags(&self) -> u16 {
         return self.class_member.access_flags();
     }
 
     #[inline]
     pub fn signature(&self) -> &str {
-        return self.class_member.signature()
+        return self.class_member.signature();
     }
 
     // reflection
-    pub fn parameter_types(&self) -> Option<Vec<Rc<RefCell<Class>>>>{
+    pub fn parameter_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
         if self.arg_slot_count == 0 {
             return None;
         }
@@ -258,16 +263,21 @@ impl Method {
         let param_types = self.method_desc.parameter_types();
         let mut param_classes = Vec::with_capacity(param_types.len());
         for param_type in param_types {
-            let param_class_name = PrimitiveTypes::instance().unwrap().to_class_name(param_type.as_str());
-            param_classes.push(ClassLoader::load_class(class_loader.clone(), param_class_name.as_str()));
+            let param_class_name = PrimitiveTypes::instance()
+                .unwrap()
+                .to_class_name(param_type.as_str());
+            param_classes.push(ClassLoader::load_class(
+                class_loader.clone(),
+                param_class_name.as_str(),
+            ));
         }
 
         return Some(param_classes);
     }
 
     pub fn exception_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
-        if self.exceptions.len() == 0{
-            return None
+        if self.exceptions.len() == 0 {
+            return None;
         }
 
         let mut ex_classes = Vec::with_capacity(self.exceptions.len());
@@ -280,7 +290,7 @@ impl Method {
             let constant = borrow.get_constant(ex_index as usize);
             let class_ref = match constant {
                 ClassReference(reff) => reff,
-                _ => panic!("Not ClassReference")
+                _ => panic!("Not ClassReference"),
             };
             ex_classes.push(class_ref.resolved_class(class.clone()));
         }
@@ -290,14 +300,16 @@ impl Method {
 
     pub fn return_type(&self) -> Rc<RefCell<Class>> {
         let return_type = self.method_desc.return_type();
-        let return_class_name = PrimitiveTypes::instance().unwrap().to_class_name(return_type);
+        let return_class_name = PrimitiveTypes::instance()
+            .unwrap()
+            .to_class_name(return_type);
         let class_loader = (*self.class()).borrow().loader();
         return ClassLoader::load_class(class_loader, return_class_name.as_str());
     }
 
     pub fn shim_return_method() -> Method {
         let mut class = Class::none();
-        return Method{
+        return Method {
             class_member: ClassMember::shim(class),
             max_stack: 0,
             max_locals: 0,
@@ -307,8 +319,7 @@ impl Method {
             line_number_table: None,
             annotations: None,
             exceptions: vec![],
-            method_desc: MethodDescriptor::new()
-        }
+            method_desc: MethodDescriptor::new(),
+        };
     }
-
 }

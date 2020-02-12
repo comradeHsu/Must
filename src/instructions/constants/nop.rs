@@ -1,6 +1,6 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
+use crate::runtime_data_area::frame::Frame;
 
 pub struct Nop(NoOperandsInstruction);
 
@@ -16,6 +16,5 @@ impl Instruction for Nop {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-    }
+    fn execute(&mut self, frame: &mut Frame) {}
 }

@@ -1,25 +1,30 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, LocalVarsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{
+    Instruction, LocalVarsInstruction, NoOperandsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
 
-fn i_load(frame: &mut Frame,index:usize) {
-    let val = frame.local_vars().expect("local_vars is empty")
+fn i_load(frame: &mut Frame, index: usize) {
+    let val = frame
+        .local_vars()
+        .expect("local_vars is empty")
         .get_int(index);
-    frame.operand_stack().expect("operand_stack is empty")
+    frame
+        .operand_stack()
+        .expect("operand_stack is empty")
         .push_int(val);
 }
 ///iload
 pub struct ILoad(LocalVarsInstruction);
 
 impl ILoad {
-
     #[inline]
     pub const fn new() -> ILoad {
         return ILoad(LocalVarsInstruction::new());
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> ILoad {
+    pub fn with_index(index: usize) -> ILoad {
         return ILoad(LocalVarsInstruction::with_index(index));
     }
 }
@@ -30,7 +35,7 @@ impl Instruction for ILoad {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_load(frame,self.0.get_index());
+        i_load(frame, self.0.get_index());
     }
 }
 
@@ -50,7 +55,7 @@ impl Instruction for ILoad0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_load(frame,0);
+        i_load(frame, 0);
     }
 }
 
@@ -70,7 +75,7 @@ impl Instruction for ILoad1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_load(frame,1);
+        i_load(frame, 1);
     }
 }
 
@@ -90,7 +95,7 @@ impl Instruction for ILoad2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_load(frame,2);
+        i_load(frame, 2);
     }
 }
 
@@ -110,6 +115,6 @@ impl Instruction for ILoad3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_load(frame,3);
+        i_load(frame, 3);
     }
 }

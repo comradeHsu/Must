@@ -1,13 +1,13 @@
-
-pub mod object;
 pub mod class;
-pub mod system;
-mod float;
-mod double;
-mod string;
-pub mod throwable;
-mod thread;
 mod class_loader;
+mod double;
+mod float;
+pub mod object;
+mod runtime;
+mod string;
+pub mod system;
+mod thread;
+pub mod throwable;
 
 pub fn init() {
     object::init();
@@ -19,4 +19,5 @@ pub fn init() {
     throwable::init();
     thread::init();
     class_loader::init();
+    runtime::init();
 }

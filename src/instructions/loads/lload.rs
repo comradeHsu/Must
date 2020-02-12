@@ -1,25 +1,30 @@
-use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::instruction::{LocalVarsInstruction, Instruction, NoOperandsInstruction};
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{
+    Instruction, LocalVarsInstruction, NoOperandsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
 
-fn l_load(frame: &mut Frame, index:usize) {
-    let val = frame.local_vars().expect("local_vars is empty")
+fn l_load(frame: &mut Frame, index: usize) {
+    let val = frame
+        .local_vars()
+        .expect("local_vars is empty")
         .get_long(index);
-    frame.operand_stack().expect("operand_stack is empty")
+    frame
+        .operand_stack()
+        .expect("operand_stack is empty")
         .push_long(val);
 }
 ///lload
 pub struct LLoad(LocalVarsInstruction);
 
 impl LLoad {
-
     #[inline]
     pub const fn new() -> LLoad {
         return LLoad(LocalVarsInstruction::new());
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> LLoad {
+    pub fn with_index(index: usize) -> LLoad {
         return LLoad(LocalVarsInstruction::with_index(index));
     }
 }
@@ -30,7 +35,7 @@ impl Instruction for LLoad {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        l_load(frame,self.0.get_index());
+        l_load(frame, self.0.get_index());
     }
 }
 
@@ -50,7 +55,7 @@ impl Instruction for LLoad0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        l_load(frame,0);
+        l_load(frame, 0);
     }
 }
 
@@ -70,7 +75,7 @@ impl Instruction for LLoad1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        l_load(frame,1);
+        l_load(frame, 1);
     }
 }
 
@@ -90,7 +95,7 @@ impl Instruction for LLoad2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        l_load(frame,2);
+        l_load(frame, 2);
     }
 }
 
@@ -110,6 +115,6 @@ impl Instruction for LLoad3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        l_load(frame,3);
+        l_load(frame, 3);
     }
 }

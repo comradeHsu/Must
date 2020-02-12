@@ -1,8 +1,8 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
-use crate::instructions::base::class_init_logic::init_class;
 
 pub struct GetStatic(ConstantPoolInstruction);
 
@@ -25,14 +25,14 @@ impl Instruction for GetStatic {
         let constant = borrow_cp.get_constant(self.0.index());
         let field_ref = match constant {
             FieldReference(c) => c,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let field_option = field_ref.resolved_field(c);
         let field = (*field_option.unwrap()).borrow();
         let class = field.parent().class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(),class.clone());
+            init_class(frame.thread(), class.clone());
             return;
         }
         if !field.parent().is_static() {
@@ -45,7 +45,7 @@ impl Instruction for GetStatic {
         let stack = frame.operand_stack().expect("stack is none");
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z'|'B'|'C'|'S'|'I' => stack.push_int(slots.get_int(slot_id)),
+            'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
             'F' => stack.push_float(slots.get_float(slot_id)),
             'J' => stack.push_long(slots.get_long(slot_id)),
             'D' => stack.push_double(slots.get_double(slot_id)),

@@ -1,7 +1,7 @@
+use crate::instructions::base::branch_logic::branch;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::instructions::base::branch_logic::branch;
 
 pub struct IfNull(BranchInstruction);
 
@@ -18,11 +18,12 @@ impl Instruction for IfNull {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let reference = frame.operand_stack()
+        let reference = frame
+            .operand_stack()
             .expect("operand_stack is none")
             .pop_ref();
         if reference.is_none() {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -42,11 +43,12 @@ impl Instruction for IfNonNull {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let reference = frame.operand_stack()
+        let reference = frame
+            .operand_stack()
             .expect("operand_stack is none")
             .pop_ref();
         if reference.is_some() {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }

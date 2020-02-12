@@ -1,12 +1,10 @@
-
 pub struct ClassReader {
-    pub data:Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl ClassReader {
-
-    pub fn new(data:Vec<u8>) -> ClassReader {
-        return ClassReader{data };
+    pub fn new(data: Vec<u8>) -> ClassReader {
+        return ClassReader { data };
     }
 
     #[inline]
@@ -61,7 +59,7 @@ impl ClassReader {
     }
 
     #[inline]
-    pub fn read_bytes(&mut self, n:usize) -> Vec<u8> {
+    pub fn read_bytes(&mut self, n: usize) -> Vec<u8> {
         let mut bytes = Vec::new();
         for _i in 0..n {
             bytes.push(self.data.remove(0usize));

@@ -1,18 +1,18 @@
-use std::path::Path;
 use crate::class_path::class_path::{Entry, FindClassError};
-use std::fs::File;
-use zip::read::ZipFile;
-use podio::ReadPodExt;
-use std::rc::Rc;
-use std::cell::RefCell;
-use zip::ZipArchive;
-use std::collections::HashMap;
 use crate::utils::boxed;
+use podio::ReadPodExt;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::fs::File;
+use std::path::Path;
+use std::rc::Rc;
+use zip::read::ZipFile;
+use zip::ZipArchive;
 
 #[derive(Clone)]
 pub struct ZipEntry {
-    abs_path:String,
-    file_cache:FileCache
+    abs_path: String,
+    file_cache: FileCache,
 }
 
 impl ZipEntry {
@@ -25,30 +25,27 @@ impl ZipEntry {
         let mut zip = zip::ZipArchive::new(zip_file).unwrap();
         let mut size_map = HashMap::with_capacity(zip.len());
         for i in 0..zip.len() {
-            let mut file:ZipFile = zip.by_index(i).unwrap();
-            size_map.insert(file.name().to_string(),i);
+            let mut file: ZipFile = zip.by_index(i).unwrap();
+            size_map.insert(file.name().to_string(), i);
         }
-        let cache = FileCache::new(zip,size_map);
-        return ZipEntry{
+        let cache = FileCache::new(zip, size_map);
+        return ZipEntry {
             abs_path: String::from(class_path),
-            file_cache: cache
+            file_cache: cache,
         };
     }
 }
 
 impl Entry for ZipEntry {
-    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>,Box<dyn Entry>),FindClassError> {
+    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>, Box<dyn Entry>), FindClassError> {
         let index = self.file_cache.get(class_name);
         if index.is_some() {
             let size = *index.unwrap();
             let zip_file = self.file_cache.file.clone();
             let mut borrow = (*zip_file).borrow_mut();
-            let mut file:ZipFile = borrow.by_index(size).unwrap();
+            let mut file: ZipFile = borrow.by_index(size).unwrap();
             let bytes = file.read_exact(file.size() as usize).unwrap();
-            return Ok((
-                bytes,
-                Box::new(self.clone())
-            ));
+            return Ok((bytes, Box::new(self.clone())));
         }
         return Err(FindClassError("don't find class".to_string()));
     }
@@ -60,29 +57,29 @@ impl Entry for ZipEntry {
 
 #[derive(Clone)]
 struct FileCache {
-    file:Rc<RefCell<ZipArchive<File>>>,
-    index_table:Rc<HashMap<String,usize>>
+    file: Rc<RefCell<ZipArchive<File>>>,
+    index_table: Rc<HashMap<String, usize>>,
 }
 
 impl FileCache {
-    pub fn new(zip:ZipArchive<File>,map:HashMap<String,usize>) -> FileCache {
-        return FileCache{ 
-            file: boxed(zip), 
-            index_table: Rc::new(map)
+    pub fn new(zip: ZipArchive<File>, map: HashMap<String, usize>) -> FileCache {
+        return FileCache {
+            file: boxed(zip),
+            index_table: Rc::new(map),
         };
     }
-    
-    pub fn get(&self,key:&str) -> Option<&usize> {
+
+    pub fn get(&self, key: &str) -> Option<&usize> {
         return self.index_table.get(key);
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::{fs, io};
     use crate::class_path::zip_entry::ZipEntry;
     use podio::ReadPodExt;
     use std::io::Read;
+    use std::{fs, io};
 
     #[test]
     fn test_zip() {
@@ -103,10 +100,19 @@ mod test {
             }
 
             if (&*file.name()).ends_with('/') {
-                println!("File {} extracted to \"{}\"", i, outpath.as_path().display());
+                println!(
+                    "File {} extracted to \"{}\"",
+                    i,
+                    outpath.as_path().display()
+                );
                 fs::create_dir_all(&outpath).unwrap();
             } else {
-                println!("File {} extracted to \"{}\" ({} bytes)", i, outpath.as_path().display(), file.size());
+                println!(
+                    "File {} extracted to \"{}\" ({} bytes)",
+                    i,
+                    outpath.as_path().display(),
+                    file.size()
+                );
                 if let Some(p) = outpath.parent() {
                     if !p.exists() {
                         fs::create_dir_all(&p).unwrap();
@@ -124,10 +130,10 @@ mod test {
         let fname = std::path::Path::new("D:/java8\\jdk-class\\java\\lang\\Object.class");
         let file = fs::File::open(fname).unwrap();
         let mut object = Vec::new();
-        file.bytes().for_each(|a| {object.push(a.unwrap())});
-        println!("zip_o:{},o:{}", zip_object.len(),object.len());
+        file.bytes().for_each(|a| object.push(a.unwrap()));
+        println!("zip_o:{},o:{}", zip_object.len(), object.len());
         for i in 0..zip_object.len() {
-            println!("zip_o:{},o:{}", zip_object[i],object[i]);
+            println!("zip_o:{},o:{}", zip_object[i], object[i]);
         }
     }
 
@@ -140,7 +146,7 @@ mod test {
             let mut file = archive.by_index(i).unwrap();
             let size = file.size() as usize;
             if file.name() == "java/lang/Object.class" {
-                bytes = podio::ReadPodExt::read_exact(&mut file,size).unwrap();
+                bytes = podio::ReadPodExt::read_exact(&mut file, size).unwrap();
                 return bytes;
             }
         }

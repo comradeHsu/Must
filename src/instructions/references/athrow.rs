@@ -1,11 +1,11 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::runtime_data_area::thread::Thread;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
+use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::object::Object;
+use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct AThrow(NoOperandsInstruction);
 
@@ -15,16 +15,20 @@ impl AThrow {
         return AThrow(NoOperandsInstruction::new());
     }
 
-    fn find_and_goto_exception_handler(frame: &mut Frame, object:Rc<RefCell<Object>>) -> bool {
+    fn find_and_goto_exception_handler(frame: &mut Frame, object: Rc<RefCell<Object>>) -> bool {
         ///
-        fn get_handler_pc(frame:Rc<RefCell<Frame>>,object:Rc<RefCell<Object>>) -> i32 {
+        fn get_handler_pc(frame: Rc<RefCell<Frame>>, object: Rc<RefCell<Object>>) -> i32 {
             let pc = (*frame).borrow().next_pc() - 1;
             let borrow_frame = (*frame).borrow();
-            return borrow_frame.method().find_exception_handler((*object).borrow().class(),pc);
+            return borrow_frame
+                .method()
+                .find_exception_handler((*object).borrow().class(), pc);
         }
 
         let thread = frame.thread();
-        let pc = frame.method().find_exception_handler((*object).borrow().class(),frame.next_pc()-1);
+        let pc = frame
+            .method()
+            .find_exception_handler((*object).borrow().class(), frame.next_pc() - 1);
         if pc > 0 {
             let stack = frame.operand_stack().expect("stack is none");
             stack.clear();
@@ -38,7 +42,7 @@ impl AThrow {
                 break;
             }
             let frame = (*thread).borrow().current_frame();
-            let handler_pc = get_handler_pc(frame.clone(),object.clone());
+            let handler_pc = get_handler_pc(frame.clone(), object.clone());
             if handler_pc > 0 {
                 let mut mut_borrow = (*frame).borrow_mut();
                 let stack = mut_borrow.operand_stack().expect("stack is none");
@@ -52,20 +56,23 @@ impl AThrow {
         return false;
     }
 
-    fn handle_uncaught_exception(thread:Rc<RefCell<Thread>>, object:Rc<RefCell<Object>>) {
+    fn handle_uncaught_exception(thread: Rc<RefCell<JavaThread>>, object: Rc<RefCell<Object>>) {
         (*thread).borrow_mut().clear_stack();
-        let java_msg = (*object).borrow().get_ref_var("detailMessage", "Ljava/lang/String;");
-//        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
+        let java_msg = (*object)
+            .borrow()
+            .get_ref_var("detailMessage", "Ljava/lang/String;");
+        //        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
         let bor_obj = (*object).borrow();
         let stes = bor_obj.trace().expect("The exception object hasn't trace");
         let ex_class = bor_obj.class();
 
-        let detail_message = bor_obj.get_ref_var("detailMessage","Ljava/lang/String;")
-            .map_or("".to_string(),|v| java_str_to_rust_str(v));
+        let detail_message = bor_obj
+            .get_ref_var("detailMessage", "Ljava/lang/String;")
+            .map_or("".to_string(), |v| java_str_to_rust_str(v));
 
-        println!("\t{},{}" ,(*ex_class).borrow().java_name(),detail_message);
+        println!("\t{},{}", (*ex_class).borrow().java_name(), detail_message);
         for ste in stes {
-            println!("\tat {}" ,ste.to_string());
+            println!("\tat {}", ste.to_string());
         }
     }
 }
@@ -83,11 +90,11 @@ impl Instruction for AThrow {
         let thread = frame.thread();
         let object = ex.unwrap();
 
-//        let meta = (*object).borrow().meta();
-//        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
+        //        let meta = (*object).borrow().meta();
+        //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
 
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
-            Self::handle_uncaught_exception(thread,object);
+            Self::handle_uncaught_exception(thread, object);
         }
     }
 }

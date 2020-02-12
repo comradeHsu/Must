@@ -1,7 +1,7 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::instructions::check_index;
+use crate::runtime_data_area::frame::Frame;
 
 pub struct AAload(NoOperandsInstruction);
 
@@ -27,7 +27,7 @@ impl Instruction for AAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let references = borrow.references();
-        check_index(references.len(),index);
+        check_index(references.len(), index);
         stack.push_ref(references[index].clone());
     }
 }
@@ -56,7 +56,7 @@ impl Instruction for BAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let bytes = borrow.bytes();
-        check_index(bytes.len(),index);
+        check_index(bytes.len(), index);
         stack.push_int(bytes[index] as i32);
     }
 }
@@ -85,7 +85,7 @@ impl Instruction for CAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let chars = borrow.chars();
-        check_index(chars.len(),index);
+        check_index(chars.len(), index);
         stack.push_int(chars[index] as i32);
     }
 }
@@ -114,7 +114,7 @@ impl Instruction for DAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let doubles = borrow.doubles();
-        check_index(doubles.len(),index);
+        check_index(doubles.len(), index);
         stack.push_double(doubles[index]);
     }
 }
@@ -143,7 +143,7 @@ impl Instruction for FAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let floats = borrow.floats();
-        check_index(floats.len(),index);
+        check_index(floats.len(), index);
         stack.push_float(floats[index]);
     }
 }
@@ -172,7 +172,7 @@ impl Instruction for IAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let ints = borrow.ints();
-        check_index(ints.len(),index);
+        check_index(ints.len(), index);
         stack.push_int(ints[index]);
     }
 }
@@ -201,7 +201,7 @@ impl Instruction for LAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let longs = borrow.longs();
-        check_index(longs.len(),index);
+        check_index(longs.len(), index);
         stack.push_long(longs[index]);
     }
 }
@@ -230,8 +230,7 @@ impl Instruction for SAload {
         let object = arr_ref.unwrap();
         let borrow = (*object).borrow();
         let shorts = borrow.shorts();
-        check_index(shorts.len(),index);
+        check_index(shorts.len(), index);
         stack.push_int(shorts[index] as i32);
     }
 }
-

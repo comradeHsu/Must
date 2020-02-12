@@ -1,24 +1,31 @@
-use crate::instructions::base::instruction::{LocalVarsInstruction, NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{
+    Instruction, LocalVarsInstruction, NoOperandsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
 
-fn d_store(frame: &mut Frame,index:usize) {
-    let val = frame.operand_stack().expect("operand_stack is empty").pop_double();
-    frame.local_vars().expect("local_vars is empty").set_double(index,val);
+fn d_store(frame: &mut Frame, index: usize) {
+    let val = frame
+        .operand_stack()
+        .expect("operand_stack is empty")
+        .pop_double();
+    frame
+        .local_vars()
+        .expect("local_vars is empty")
+        .set_double(index, val);
 }
 
 ///dstore
 pub struct DStore(LocalVarsInstruction);
 
 impl DStore {
-
     #[inline]
     pub const fn new() -> DStore {
         return DStore(LocalVarsInstruction::new());
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> DStore {
+    pub fn with_index(index: usize) -> DStore {
         return DStore(LocalVarsInstruction::with_index(index));
     }
 }
@@ -29,7 +36,7 @@ impl Instruction for DStore {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_store(frame,self.0.get_index());
+        d_store(frame, self.0.get_index());
     }
 }
 
@@ -49,7 +56,7 @@ impl Instruction for DStore0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_store(frame,0);
+        d_store(frame, 0);
     }
 }
 
@@ -69,7 +76,7 @@ impl Instruction for DStore1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_store(frame,1);
+        d_store(frame, 1);
     }
 }
 
@@ -89,7 +96,7 @@ impl Instruction for DStore2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_store(frame,2);
+        d_store(frame, 2);
     }
 }
 
@@ -109,6 +116,6 @@ impl Instruction for DStore3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        d_store(frame,3);
+        d_store(frame, 3);
     }
 }

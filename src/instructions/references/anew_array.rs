@@ -1,8 +1,8 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
 
 pub struct ANewArray(ConstantPoolInstruction);
@@ -26,7 +26,7 @@ impl Instruction for ANewArray {
         let constant = borrow.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(refe) => refe,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let component_class = class_ref.resolved_class(class);
         let stack = frame.operand_stack().expect("stack is none");
@@ -35,7 +35,7 @@ impl Instruction for ANewArray {
             panic!("java.lang.NegativeArraySizeException")
         }
         let array_class = (*component_class).borrow().array_class();
-        let array = Class::new_array(&array_class,count as usize);
+        let array = Class::new_array(&array_class, count as usize);
         stack.push_ref(Some(boxed(array)));
     }
 }

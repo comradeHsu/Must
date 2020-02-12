@@ -1,22 +1,25 @@
 pub struct BytecodeReader {
-    code:Vec<u8>,
-    pc:i32
+    code: Vec<u8>,
+    pc: i32,
 }
 
 impl BytecodeReader {
     #[inline]
     pub fn new() -> BytecodeReader {
-        return BytecodeReader{ code: vec![], pc: 0 };
+        return BytecodeReader {
+            code: vec![],
+            pc: 0,
+        };
     }
 
     #[inline]
-    pub fn reset(&mut self,code:Vec<u8>, pc:i32) {
+    pub fn reset(&mut self, code: Vec<u8>, pc: i32) {
         self.code = code;
         self.pc = pc;
     }
 
     #[inline]
-    pub fn pc(&self) -> i32{
+    pub fn pc(&self) -> i32 {
         return self.pc;
     }
 
@@ -31,7 +34,7 @@ impl BytecodeReader {
     }
 
     pub fn read_u16(&mut self) -> u16 {
-        let mut bytes:[u8;2] = [0;2];
+        let mut bytes: [u8; 2] = [0; 2];
         bytes[0] = self.read_u8();
         bytes[1] = self.read_u8();
         return u16::from_be_bytes(bytes);
@@ -42,14 +45,14 @@ impl BytecodeReader {
     }
 
     pub fn read_i32(&mut self) -> i32 {
-        let mut bytes:[u8;4] = [0;4];
+        let mut bytes: [u8; 4] = [0; 4];
         for i in 0..4usize {
             bytes[i] = self.read_u8();
         }
         return i32::from_be_bytes(bytes);
     }
 
-    pub fn read_i32_table(&mut self,count:usize) -> Vec<i32>{
+    pub fn read_i32_table(&mut self, count: usize) -> Vec<i32> {
         let mut vec = Vec::with_capacity(count);
         for _i in 0..count {
             vec.push(self.read_i32());

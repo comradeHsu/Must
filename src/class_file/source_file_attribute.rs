@@ -1,25 +1,26 @@
-use crate::class_file::constant_pool::{ConstantPool};
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
-use std::rc::Rc;
+use crate::class_file::constant_pool::ConstantPool;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct SourceFileAttribute {
-    cp:Rc<RefCell<ConstantPool>>,
-    source_file_index:u16
+    cp: Rc<RefCell<ConstantPool>>,
+    source_file_index: u16,
 }
 
 impl SourceFileAttribute {
     pub fn new() -> SourceFileAttribute {
-        return SourceFileAttribute{
+        return SourceFileAttribute {
             cp: Rc::new(RefCell::new(ConstantPool::new())),
-            source_file_index: 0 };
+            source_file_index: 0,
+        };
     }
 
-    pub fn with_cp(cp:Rc<RefCell<ConstantPool>>) -> SourceFileAttribute {
-        return SourceFileAttribute{
+    pub fn with_cp(cp: Rc<RefCell<ConstantPool>>) -> SourceFileAttribute {
+        return SourceFileAttribute {
             cp,
-            source_file_index: 0
+            source_file_index: 0,
         };
     }
 

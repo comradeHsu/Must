@@ -1,7 +1,7 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::instructions::check_index;
+use crate::runtime_data_area::frame::Frame;
 
 pub struct AAStore(NoOperandsInstruction);
 
@@ -28,7 +28,7 @@ impl Instruction for AAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let references = borrow.mut_references();
-        check_index(references.len(),index);
+        check_index(references.len(), index);
         references[index] = val;
     }
 }
@@ -58,7 +58,7 @@ impl Instruction for BAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let bytes = borrow.mut_bytes();
-        check_index(bytes.len(),index);
+        check_index(bytes.len(), index);
         bytes[index] = val as i8;
     }
 }
@@ -88,7 +88,7 @@ impl Instruction for CAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let chars = borrow.mut_chars();
-        check_index(chars.len(),index);
+        check_index(chars.len(), index);
         chars[index] = val as u16;
     }
 }
@@ -118,7 +118,7 @@ impl Instruction for DAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let doubles = borrow.mut_doubles();
-        check_index(doubles.len(),index);
+        check_index(doubles.len(), index);
         doubles[index] = val;
     }
 }
@@ -148,7 +148,7 @@ impl Instruction for FAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let floats = borrow.mut_floats();
-        check_index(floats.len(),index);
+        check_index(floats.len(), index);
         floats[index] = val;
     }
 }
@@ -178,7 +178,7 @@ impl Instruction for IAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let ints = borrow.mut_ints();
-        check_index(ints.len(),index);
+        check_index(ints.len(), index);
         ints[index] = val;
     }
 }
@@ -208,7 +208,7 @@ impl Instruction for LAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let longs = borrow.mut_longs();
-        check_index(longs.len(),index);
+        check_index(longs.len(), index);
         longs[index] = val;
     }
 }
@@ -238,7 +238,7 @@ impl Instruction for SAStore {
         let object = arr_ref.unwrap();
         let mut borrow = (*object).borrow_mut();
         let shorts = borrow.mut_shorts();
-        check_index(shorts.len(),index);
+        check_index(shorts.len(), index);
         shorts[index] = val as i16;
     }
 }

@@ -1,9 +1,9 @@
-use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
-use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::instructions::base::class_init_logic::init_class;
+use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
+use crate::instructions::base::method_invoke_logic::invoke_method;
+use crate::runtime_data_area::frame::Frame;
+use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
 
 pub struct InvokeStatic(ConstantPoolInstruction);
 
@@ -26,7 +26,7 @@ impl Instruction for InvokeStatic {
         let constant = borrow_cp.get_constant(self.0.index());
         let method_ref = match constant {
             MethodReference(c) => c,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let resolved_method = method_ref.resolved_method(pool_class).unwrap();
         if !resolved_method.is_static() {
@@ -35,9 +35,9 @@ impl Instruction for InvokeStatic {
         let class = resolved_method.class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(),class.clone());
+            init_class(frame.thread(), class.clone());
             return;
         }
-        invoke_method(frame,resolved_method);
+        invoke_method(frame, resolved_method);
     }
 }

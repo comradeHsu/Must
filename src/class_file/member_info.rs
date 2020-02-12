@@ -1,38 +1,43 @@
-use crate::class_file::constant_pool::{ConstantPool};
+use crate::class_file::attribute_info::Attribute::{
+    Code, ConstantValue, RuntimeVisibleAnnotations,
+};
+use crate::class_file::attribute_info::{read_attributes, Attribute, AttributeInfo};
 use crate::class_file::class_reader::ClassReader;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
-use std::rc::Rc;
 use crate::class_file::code_attribute::CodeAttribute;
-use crate::class_file::attribute_info::Attribute::{Code, ConstantValue, RuntimeVisibleAnnotations};
+use crate::class_file::constant_pool::ConstantPool;
 use crate::class_file::constant_value_attribute::ConstantValueAttribute;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct MemberInfo {
-    cp:Rc<RefCell<ConstantPool>>,
-    access_flags:u16,
-    name_index:u16,
-    descriptor_index:u16,
-    attributes:Vec<Attribute>
+    cp: Rc<RefCell<ConstantPool>>,
+    access_flags: u16,
+    name_index: u16,
+    descriptor_index: u16,
+    attributes: Vec<Attribute>,
 }
 
 impl MemberInfo {
-    pub fn read_member(reader:&mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> MemberInfo {
-        let mut mem =  MemberInfo{
-            cp:cp.clone(),
+    pub fn read_member(reader: &mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> MemberInfo {
+        let mut mem = MemberInfo {
+            cp: cp.clone(),
             access_flags: reader.read_u16(),
             name_index: reader.read_u16(),
             descriptor_index: reader.read_u16(),
-            attributes: vec![]
+            attributes: vec![],
         };
-        mem.attributes = read_attributes(reader,cp);
+        mem.attributes = read_attributes(reader, cp);
         return mem;
     }
 
-    pub fn read_members(reader:&mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> Vec<MemberInfo> {
+    pub fn read_members(
+        reader: &mut ClassReader,
+        cp: Rc<RefCell<ConstantPool>>,
+    ) -> Vec<MemberInfo> {
         let member_count = reader.read_u16();
-        let mut members:Vec<MemberInfo> = Vec::new();
+        let mut members: Vec<MemberInfo> = Vec::new();
         for _i in 0..member_count {
-            members.push(MemberInfo::read_member(reader,cp.clone()));
+            members.push(MemberInfo::read_member(reader, cp.clone()));
         }
         return members;
     }
@@ -56,7 +61,7 @@ impl MemberInfo {
         return &self.attributes;
     }
 
-    pub fn code_attributes(&self) -> Option<&CodeAttribute>{
+    pub fn code_attributes(&self) -> Option<&CodeAttribute> {
         for i in 0..self.attributes.len() {
             let attribute = &self.attributes[i];
             match attribute {
@@ -76,10 +81,9 @@ impl MemberInfo {
         }
         return None;
     }
-
 }
 
-pub fn display_16(vec:Vec<u8>) -> String{
+pub fn display_16(vec: Vec<u8>) -> String {
     let mut string = String::new();
     string.push_str("[");
     for v in vec {
@@ -89,7 +93,7 @@ pub fn display_16(vec:Vec<u8>) -> String{
     return string;
 }
 
-fn to_16(mut v:u8) -> String{
+fn to_16(mut v: u8) -> String {
     let mut string = String::new();
     if v == 0 {
         string.push_str("00");
@@ -116,12 +120,12 @@ fn to_16(mut v:u8) -> String{
             13 => "D",
             14 => "E",
             15 => "F",
-            _ => ""
+            _ => "",
         };
-        string.insert_str(0,s);
+        string.insert_str(0, s);
     }
     if string.len() == 1 {
-        string.insert_str(0,"0");
+        string.insert_str(0, "0");
     }
     return string;
 }

@@ -1,29 +1,29 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::utils::boxed;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-const AT_BOOLEAN:u8 = 4;
-const AT_CHAR:u8 = 5;
-const AT_FLOAT:u8 = 6;
-const AT_DOUBLE:u8 = 7;
-const AT_BYTE:u8 = 8;
-const AT_SHORT:u8 = 9;
-const AT_INT:u8 = 10;
-const AT_LONG:u8 = 11;
+const AT_BOOLEAN: u8 = 4;
+const AT_CHAR: u8 = 5;
+const AT_FLOAT: u8 = 6;
+const AT_DOUBLE: u8 = 7;
+const AT_BYTE: u8 = 8;
+const AT_SHORT: u8 = 9;
+const AT_INT: u8 = 10;
+const AT_LONG: u8 = 11;
 
 pub struct NewArray {
-    atype:u8
+    atype: u8,
 }
 
 impl NewArray {
     #[inline]
     pub fn new() -> NewArray {
-        return NewArray{ atype: 0 };
+        return NewArray { atype: 0 };
     }
 }
 
@@ -40,22 +40,22 @@ impl Instruction for NewArray {
             panic!("java.lang.NegativeArraySizeException")
         }
         let class_loader = (*class).borrow().loader();
-        let array_class = get_primitive_array_class(class_loader,self.atype);
-        let array_object = Class::new_array(&array_class,count as usize);
+        let array_class = get_primitive_array_class(class_loader, self.atype);
+        let array_object = Class::new_array(&array_class, count as usize);
         stack.push_ref(Some(boxed(array_object)));
     }
 }
 
-fn get_primitive_array_class(loader:Rc<RefCell<ClassLoader>>, atype:u8) -> Rc<RefCell<Class>> {
+fn get_primitive_array_class(loader: Rc<RefCell<ClassLoader>>, atype: u8) -> Rc<RefCell<Class>> {
     match atype {
-        AT_BOOLEAN => ClassLoader::load_class(loader,"[Z"),
-        AT_CHAR => ClassLoader::load_class(loader,"[C"),
-        AT_FLOAT => ClassLoader::load_class(loader,"[F"),
-        AT_DOUBLE => ClassLoader::load_class(loader,"[D"),
-        AT_BYTE => ClassLoader::load_class(loader,"[B"),
-        AT_SHORT => ClassLoader::load_class(loader,"[S"),
-        AT_INT => ClassLoader::load_class(loader,"[I"),
-        AT_LONG => ClassLoader::load_class(loader,"[J"),
-        _ => panic!("Invalid atype!")
+        AT_BOOLEAN => ClassLoader::load_class(loader, "[Z"),
+        AT_CHAR => ClassLoader::load_class(loader, "[C"),
+        AT_FLOAT => ClassLoader::load_class(loader, "[F"),
+        AT_DOUBLE => ClassLoader::load_class(loader, "[D"),
+        AT_BYTE => ClassLoader::load_class(loader, "[B"),
+        AT_SHORT => ClassLoader::load_class(loader, "[S"),
+        AT_INT => ClassLoader::load_class(loader, "[I"),
+        AT_LONG => ClassLoader::load_class(loader, "[J"),
+        _ => panic!("Invalid atype!"),
     }
 }

@@ -1,19 +1,18 @@
 use crate::class_file::class_reader::ClassReader;
-use std::rc::Rc;
-use crate::class_file::makers_attribute::DeprecatedAttribute;
 use crate::class_file::constant_pool::ConstantInfoEnum::*;
+use crate::class_file::makers_attribute::DeprecatedAttribute;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 //pub type ConstantPool = Vec<ConstantInfoEnum>;
 
 pub struct ConstantPool {
-    vec:Vec<ConstantInfoEnum>
+    vec: Vec<ConstantInfoEnum>,
 }
 
 impl ConstantPool {
-
     pub fn new() -> ConstantPool {
-        return ConstantPool{ vec: vec![] };
+        return ConstantPool { vec: vec![] };
     }
 
     pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<RefCell<ConstantPool>> {
@@ -29,24 +28,24 @@ impl ConstantPool {
                     vec.push(constant_info);
                     vec.push(None);
                     continue;
-                },
+                }
                 Double(info) => {
                     i = i + 2;
                     vec.push(constant_info);
                     vec.push(None);
                     continue;
-                },
+                }
                 _ => {}
             }
             vec.push(constant_info);
             i += 1;
         }
-        let mut c = Rc::new(RefCell::new(ConstantPool{vec}));
+        let mut c = Rc::new(RefCell::new(ConstantPool { vec }));
         ConstantPool::post_constant_pool(c.clone());
         return c;
     }
 
-    fn post_constant_pool(rc_pool:Rc<RefCell<ConstantPool>>) {
+    fn post_constant_pool(rc_pool: Rc<RefCell<ConstantPool>>) {
         let clone_pool = rc_pool.clone();
         let pool = &mut (*clone_pool).borrow_mut().vec;
         for c in pool {
@@ -65,7 +64,7 @@ impl ConstantPool {
     pub fn get_constant_info(&self, index: usize) -> &ConstantInfoEnum {
         let info = self.vec.get(index - 1);
         if info.is_none() {
-            println!("index is {}, vec len : {}",index,self.vec.len());
+            println!("index is {}, vec len : {}", index, self.vec.len());
             panic!("Invalid constant pool index!");
         }
         return info.unwrap();
@@ -75,7 +74,7 @@ impl ConstantPool {
         let info = self.get_constant_info(index);
         let mut inf = match info {
             NameAndType(name_and_type) => name_and_type,
-            _ => panic!("info is not NameAndType")
+            _ => panic!("info is not NameAndType"),
         };
         let name = self.get_utf8(inf.name_index as usize);
         let desc = self.get_utf8(inf.desc_index as usize);
@@ -86,7 +85,7 @@ impl ConstantPool {
         let info = self.get_constant_info(index);
         let mut class = match info {
             Class(class) => class,
-            _ => panic!("info is not NameAndType")
+            _ => panic!("info is not NameAndType"),
         };
         return self.get_utf8(class.name_index as usize);
     }
@@ -95,7 +94,7 @@ impl ConstantPool {
         let info = self.get_constant_info(index);
         let utf8 = match info {
             Utf8(utf) => utf,
-            _ => panic!("info is not NameAndType")
+            _ => panic!("info is not NameAndType"),
         };
         return utf8.val.as_str();
     }
@@ -106,7 +105,7 @@ impl ConstantPool {
     }
 
     #[inline]
-    pub fn get_info(&self,index:usize) -> Option<&ConstantInfoEnum> {
+    pub fn get_info(&self, index: usize) -> Option<&ConstantInfoEnum> {
         return self.vec.get(index);
     }
 }
@@ -125,7 +124,7 @@ enum ConstantInfoTag {
     ConstantUtf8 = 1,
     ConstantMethodHandle = 15,
     ConstantMethodType = 16,
-    ConstantInvokeDynamic = 18
+    ConstantInvokeDynamic = 18,
 }
 
 impl ConstantInfoTag {
@@ -146,7 +145,7 @@ impl ConstantInfoTag {
             16 => ConstantInfoTag::ConstantMethodType,
             18 => ConstantInfoTag::ConstantInvokeDynamic,
             _ => {
-                println!("tag:{}",v);
+                println!("tag:{}", v);
                 panic!("java.lang.ClassFormatError: constant pool tag!")
             }
         };
@@ -169,11 +168,11 @@ pub enum ConstantInfoEnum {
     NameAndType(ConstantNameAndTypeInfo),
     MethodHandle(ConstantMethodHandleInfo),
     MethodType(ConstantMethodTypeInfo),
-    InvokeDynamic(ConstantInvokeDynamicInfo)
+    InvokeDynamic(ConstantInvokeDynamicInfo),
 }
 
 impl ConstantInfoEnum {
-    pub fn read_info(&mut self,reader: &mut ClassReader) {
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         match self {
             Utf8(utf8) => utf8.read_info(reader),
             Integer(integer) => integer.read_info(reader),
@@ -196,28 +195,28 @@ impl ConstantInfoEnum {
     pub fn integer(&self) -> i32 {
         match self {
             Integer(integer) => integer.val,
-            _ => panic!("ConstantInfoEnum type error!")
+            _ => panic!("ConstantInfoEnum type error!"),
         }
     }
 
     pub fn long(&self) -> i64 {
         match self {
             Long(long) => long.val,
-            _ => panic!("ConstantInfoEnum type error!")
+            _ => panic!("ConstantInfoEnum type error!"),
         }
     }
 
     pub fn float(&self) -> f32 {
         match self {
             Float(float) => float.val,
-            _ => panic!("ConstantInfoEnum type error!")
+            _ => panic!("ConstantInfoEnum type error!"),
         }
     }
 
     pub fn double(&self) -> f64 {
         match self {
             Double(double) => double.val,
-            _ => panic!("ConstantInfoEnum type error!")
+            _ => panic!("ConstantInfoEnum type error!"),
         }
     }
 
@@ -225,63 +224,83 @@ impl ConstantInfoEnum {
         match self {
             Utf8(utf) => utf.val.clone(),
             Str(utf) => utf.string(),
-            _ => panic!("ConstantInfoEnum type error!")
+            _ => panic!("ConstantInfoEnum type error!"),
         }
     }
 }
 
 pub trait ConstantInfo {
-    fn read_info(&mut self,reader: &mut ClassReader);
+    fn read_info(&mut self, reader: &mut ClassReader);
 }
 
-pub fn read_constant_info(reader:&mut ClassReader,cp:Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
+pub fn read_constant_info(
+    reader: &mut ClassReader,
+    cp: Rc<RefCell<ConstantPool>>,
+) -> ConstantInfoEnum {
     let tag = reader.read_u8();
-    let mut constant_info = new(tag,cp);
+    let mut constant_info = new(tag, cp);
     constant_info.read_info(reader);
     return constant_info;
 }
 
-pub fn new(tag:u8, cp: Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
-    let constant_info:ConstantInfoEnum = match ConstantInfoTag::from(tag) {
-        ConstantInfoTag::ConstantUtf8 => Utf8(ConstantUtf8Info{ val: String::new() }),
-        ConstantInfoTag::ConstantInteger => Integer(ConstantIntegerInfo{ val: 0 }),
-        ConstantInfoTag::ConstantFloat => Float(ConstantFloatInfo{ val: 0.0 }),
-        ConstantInfoTag::ConstantLong => Long(ConstantLongInfo{ val: 0 }),
-        ConstantInfoTag::ConstantDouble => Double(ConstantDoubleInfo{ val: 0.0 }),
-        ConstantInfoTag::ConstantClass => Class(ConstantClassInfo{ cp:cp.clone(), name_index: 0 }),
-        ConstantInfoTag::ConstantString => Str(ConstantStringInfo{ cp:cp.clone(), string_index: 0 }),
-        ConstantInfoTag::ConstantFieldref => FieldRef(ConstantFieldRefInfo(ConstantMemberRefInfo{
-            cp:cp.clone(),
-            class_index: 0,
-            name_and_type_index: 0
-        })),
-        ConstantInfoTag::ConstantMethodref => MethodRef(ConstantMethodRefInfo(ConstantMemberRefInfo{
-            cp:cp.clone(),
-            class_index: 0,
-            name_and_type_index: 0
-        })),
-        ConstantInfoTag::ConstantInterfaceMethodref => InterfaceMethodRef(
-            ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo{
-            cp,
-            class_index: 0,
-            name_and_type_index: 0
-        })),
-        ConstantInfoTag::ConstantNameAndType => NameAndType(ConstantNameAndTypeInfo{ name_index: 0,desc_index: 0 }),
-        //待完善
-        ConstantInfoTag::ConstantMethodHandle => MethodHandle(ConstantMethodHandleInfo{
-            reference_kind: 0, reference_index: 0
+pub fn new(tag: u8, cp: Rc<RefCell<ConstantPool>>) -> ConstantInfoEnum {
+    let constant_info: ConstantInfoEnum = match ConstantInfoTag::from(tag) {
+        ConstantInfoTag::ConstantUtf8 => Utf8(ConstantUtf8Info { val: String::new() }),
+        ConstantInfoTag::ConstantInteger => Integer(ConstantIntegerInfo { val: 0 }),
+        ConstantInfoTag::ConstantFloat => Float(ConstantFloatInfo { val: 0.0 }),
+        ConstantInfoTag::ConstantLong => Long(ConstantLongInfo { val: 0 }),
+        ConstantInfoTag::ConstantDouble => Double(ConstantDoubleInfo { val: 0.0 }),
+        ConstantInfoTag::ConstantClass => Class(ConstantClassInfo {
+            cp: cp.clone(),
+            name_index: 0,
         }),
-        ConstantInfoTag::ConstantMethodType => MethodType(ConstantMethodTypeInfo{ descriptor_index: 0 }),
-        ConstantInfoTag::ConstantInvokeDynamic => InvokeDynamic(ConstantInvokeDynamicInfo{
+        ConstantInfoTag::ConstantString => Str(ConstantStringInfo {
+            cp: cp.clone(),
+            string_index: 0,
+        }),
+        ConstantInfoTag::ConstantFieldref => {
+            FieldRef(ConstantFieldRefInfo(ConstantMemberRefInfo {
+                cp: cp.clone(),
+                class_index: 0,
+                name_and_type_index: 0,
+            }))
+        }
+        ConstantInfoTag::ConstantMethodref => {
+            MethodRef(ConstantMethodRefInfo(ConstantMemberRefInfo {
+                cp: cp.clone(),
+                class_index: 0,
+                name_and_type_index: 0,
+            }))
+        }
+        ConstantInfoTag::ConstantInterfaceMethodref => {
+            InterfaceMethodRef(ConstantInterfaceMethodRefInfo(ConstantMemberRefInfo {
+                cp,
+                class_index: 0,
+                name_and_type_index: 0,
+            }))
+        }
+        ConstantInfoTag::ConstantNameAndType => NameAndType(ConstantNameAndTypeInfo {
+            name_index: 0,
+            desc_index: 0,
+        }),
+        //待完善
+        ConstantInfoTag::ConstantMethodHandle => MethodHandle(ConstantMethodHandleInfo {
+            reference_kind: 0,
+            reference_index: 0,
+        }),
+        ConstantInfoTag::ConstantMethodType => MethodType(ConstantMethodTypeInfo {
+            descriptor_index: 0,
+        }),
+        ConstantInfoTag::ConstantInvokeDynamic => InvokeDynamic(ConstantInvokeDynamicInfo {
             bootstrap_method_attr_index: 0,
-            name_and_type_index: 0
+            name_and_type_index: 0,
         }),
     };
     return constant_info;
 }
 
 pub struct ConstantIntegerInfo {
-    val:i32
+    val: i32,
 }
 
 impl ConstantIntegerInfo {
@@ -290,7 +309,7 @@ impl ConstantIntegerInfo {
         return self.val;
     }
 
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         self.val = reader.read_u32() as i32;
     }
 }
@@ -302,16 +321,16 @@ impl ConstantInfo for ConstantIntegerInfo {
 }
 
 pub struct ConstantFloatInfo {
-    val:f32
+    val: f32,
 }
 
-impl ConstantFloatInfo{
+impl ConstantFloatInfo {
     #[inline]
     pub fn val(&self) -> f32 {
         return self.val;
     }
 
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         let byte = reader.read_u32();
         self.val = f32::from_bits(byte);
     }
@@ -324,16 +343,16 @@ impl ConstantInfo for ConstantFloatInfo {
 }
 
 pub struct ConstantLongInfo {
-    val:i64
+    val: i64,
 }
 
-impl ConstantLongInfo{
+impl ConstantLongInfo {
     #[inline]
     pub fn val(&self) -> i64 {
         return self.val;
     }
 
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         let byte = reader.read_u64();
         self.val = byte as i64;
     }
@@ -346,17 +365,16 @@ impl ConstantInfo for ConstantLongInfo {
 }
 
 pub struct ConstantDoubleInfo {
-    val:f64
+    val: f64,
 }
 
-impl ConstantDoubleInfo{
-
+impl ConstantDoubleInfo {
     #[inline]
     pub fn val(&self) -> f64 {
         return self.val;
     }
 
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         let byte = reader.read_u64();
 
         self.val = f64::from_bits(byte);
@@ -370,11 +388,11 @@ impl ConstantInfo for ConstantDoubleInfo {
 }
 
 pub struct ConstantUtf8Info {
-    val:String
+    val: String,
 }
 
-impl ConstantUtf8Info{
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+impl ConstantUtf8Info {
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         let len = reader.read_u16() as usize;
         let bytes = reader.read_bytes(len);
         self.val = String::from_utf8(bytes).unwrap();
@@ -388,12 +406,12 @@ impl ConstantInfo for ConstantUtf8Info {
 }
 
 pub struct ConstantStringInfo {
-    cp:Rc<RefCell<ConstantPool>>,
-    string_index:u16
+    cp: Rc<RefCell<ConstantPool>>,
+    string_index: u16,
 }
 
 impl ConstantStringInfo {
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         self.string_index = reader.read_u16();
     }
 
@@ -410,12 +428,12 @@ impl ConstantInfo for ConstantStringInfo {
 }
 
 pub struct ConstantClassInfo {
-    cp:Rc<RefCell<ConstantPool>>,
-    name_index:u16
+    cp: Rc<RefCell<ConstantPool>>,
+    name_index: u16,
 }
 
 impl ConstantClassInfo {
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         self.name_index = reader.read_u16();
     }
 
@@ -432,12 +450,12 @@ impl ConstantInfo for ConstantClassInfo {
 }
 
 pub struct ConstantNameAndTypeInfo {
-    name_index:u16,
-    desc_index:u16
+    name_index: u16,
+    desc_index: u16,
 }
 
-impl ConstantNameAndTypeInfo{
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+impl ConstantNameAndTypeInfo {
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         self.name_index = reader.read_u16();
         self.desc_index = reader.read_u16();
     }
@@ -450,13 +468,13 @@ impl ConstantInfo for ConstantNameAndTypeInfo {
 }
 
 pub struct ConstantMemberRefInfo {
-    cp:Rc<RefCell<ConstantPool>>,
-    class_index:u16,
-    name_and_type_index:u16
+    cp: Rc<RefCell<ConstantPool>>,
+    class_index: u16,
+    name_and_type_index: u16,
 }
 
 impl ConstantMemberRefInfo {
-    pub fn read_info(&mut self,reader:&mut ClassReader){
+    pub fn read_info(&mut self, reader: &mut ClassReader) {
         self.class_index = reader.read_u16();
         self.name_and_type_index = reader.read_u16();
     }
@@ -466,10 +484,10 @@ impl ConstantMemberRefInfo {
         return borrow.get_class_name(self.class_index as usize).to_owned();
     }
 
-    pub fn name_and_descriptor(&self) -> (String,String) {
+    pub fn name_and_descriptor(&self) -> (String, String) {
         let borrow = (*self.cp).borrow();
-        let (f,s)  = borrow.get_name_and_type(self.name_and_type_index as usize);
-        return (f.to_owned(),s.to_owned())
+        let (f, s) = borrow.get_name_and_type(self.name_and_type_index as usize);
+        return (f.to_owned(), s.to_owned());
     }
 }
 
@@ -526,7 +544,7 @@ impl ConstantInfo for ConstantInterfaceMethodRefInfo {
 
 pub struct ConstantInvokeDynamicInfo {
     bootstrap_method_attr_index: u16,
-    name_and_type_index: u16
+    name_and_type_index: u16,
 }
 
 impl ConstantInfo for ConstantInvokeDynamicInfo {
@@ -537,8 +555,8 @@ impl ConstantInfo for ConstantInvokeDynamicInfo {
 }
 
 pub struct ConstantMethodHandleInfo {
-    reference_kind:u8,
-    reference_index:u16
+    reference_kind: u8,
+    reference_index: u16,
 }
 
 impl ConstantInfo for ConstantMethodHandleInfo {
@@ -549,7 +567,7 @@ impl ConstantInfo for ConstantMethodHandleInfo {
 }
 
 pub struct ConstantMethodTypeInfo {
-    descriptor_index:u16
+    descriptor_index: u16,
 }
 
 impl ConstantInfo for ConstantMethodTypeInfo {
@@ -560,17 +578,17 @@ impl ConstantInfo for ConstantMethodTypeInfo {
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
     use crate::class_file::constant_pool::tests::Number::{Int, Lon};
     use std::mem;
+    use std::rc::Rc;
 
     pub trait Num {
         fn num(&self) -> i64;
     }
 
     pub struct Integer {
-        val:i32,
-        string:String
+        val: i32,
+        string: String,
     }
 
     impl Integer {
@@ -586,7 +604,7 @@ mod tests {
     }
 
     pub struct Long {
-        val:i64
+        val: i64,
     }
 
     impl Num for Long {
@@ -597,10 +615,10 @@ mod tests {
 
     pub enum Number {
         Int(Integer),
-        Lon(Long)
+        Lon(Long),
     }
 
-    pub fn get_constant_info(this: &Vec<Number>, index:usize) -> &Number {
+    pub fn get_constant_info(this: &Vec<Number>, index: usize) -> &Number {
         let info = this.get(index);
         if info.is_none() {
             panic!("Invalid constant pool index!");
@@ -608,16 +626,16 @@ mod tests {
         return info.unwrap();
     }
 
-    pub fn get_utf8(this:&Rc<Vec<Number>>,index:usize) -> & str {
-        let info = get_constant_info(this.as_ref(),index);
+    pub fn get_utf8(this: &Rc<Vec<Number>>, index: usize) -> &str {
+        let info = get_constant_info(this.as_ref(), index);
         let utf8 = match info {
             Int(utf) => utf,
-            _ => panic!("info is not NameAndType")
+            _ => panic!("info is not NameAndType"),
         };
         return utf8.string.as_str();
     }
 
-    pub fn get_constant_info_1(this: &Vec<Box<dyn Num>>, index:usize) -> &dyn Num {
+    pub fn get_constant_info_1(this: &Vec<Box<dyn Num>>, index: usize) -> &dyn Num {
         let info = this.get(index);
         if info.is_none() {
             panic!("Invalid constant pool index!");
@@ -625,11 +643,11 @@ mod tests {
         return info.unwrap().as_ref();
     }
 
-    pub fn get_utf8_1<'a>(this:Rc<Vec<Box<dyn Num>>>,index:usize) -> &'a str {
-        let info = get_constant_info_1(this.as_ref(),index);
+    pub fn get_utf8_1<'a>(this: Rc<Vec<Box<dyn Num>>>, index: usize) -> &'a str {
+        let info = get_constant_info_1(this.as_ref(), index);
         unsafe {
-            let (data, _v_table) : (usize, usize) =  mem::transmute(info);
-            let p = data as * const () as * const Integer;
+            let (data, _v_table): (usize, usize) = mem::transmute(info);
+            let p = data as *const () as *const Integer;
             return &(*p).string.as_str();
         }
     }
@@ -637,28 +655,46 @@ mod tests {
     #[test]
     fn test() {
         let mut vec = Vec::new();
-        vec.push(Int(Integer{ val: 0, string: "0".to_string() }));
-        vec.push(Lon(Long{ val: 1 }));
-        vec.push(Int(Integer{ val: 2, string: "2".to_string() }));
-        vec.push(Lon(Long{ val: 3 }));
-        vec.push(Int(Integer{ val: 4,string: "4".to_string() }));
-        vec.push(Lon(Long{ val: 5 }));
+        vec.push(Int(Integer {
+            val: 0,
+            string: "0".to_string(),
+        }));
+        vec.push(Lon(Long { val: 1 }));
+        vec.push(Int(Integer {
+            val: 2,
+            string: "2".to_string(),
+        }));
+        vec.push(Lon(Long { val: 3 }));
+        vec.push(Int(Integer {
+            val: 4,
+            string: "4".to_string(),
+        }));
+        vec.push(Lon(Long { val: 5 }));
         let rc = Rc::new(vec);
-        let ss = get_utf8(&rc,4);
-        println!("{}",ss);
+        let ss = get_utf8(&rc, 4);
+        println!("{}", ss);
     }
 
     #[test]
     fn test_1() {
-        let mut vec:Vec<Box<dyn Num>> = Vec::new();
-        vec.push(Box::new (Integer{ val: 0, string: "0".to_string() }));
-        vec.push(Box::new(Long{ val: 1 }));
-        vec.push(Box::new(Integer{ val: 2, string: "2".to_string() }));
-        vec.push(Box::new(Long{ val: 3 }));
-        vec.push(Box::new(Integer{ val: 4,string: "4".to_string() }));
-        vec.push(Box::new(Long{ val: 5 }));
+        let mut vec: Vec<Box<dyn Num>> = Vec::new();
+        vec.push(Box::new(Integer {
+            val: 0,
+            string: "0".to_string(),
+        }));
+        vec.push(Box::new(Long { val: 1 }));
+        vec.push(Box::new(Integer {
+            val: 2,
+            string: "2".to_string(),
+        }));
+        vec.push(Box::new(Long { val: 3 }));
+        vec.push(Box::new(Integer {
+            val: 4,
+            string: "4".to_string(),
+        }));
+        vec.push(Box::new(Long { val: 5 }));
         let rc = Rc::new(vec);
-        let ss = get_utf8_1(rc,4);
-        println!("{}",ss);
+        let ss = get_utf8_1(rc, 4);
+        println!("{}", ss);
     }
 }

@@ -1,7 +1,7 @@
+use crate::instructions::base::branch_logic::branch;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::instructions::base::branch_logic::branch;
 
 pub struct IfEq(BranchInstruction);
 
@@ -18,10 +18,12 @@ impl Instruction for IfEq {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val == 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -41,10 +43,12 @@ impl Instruction for IfNe {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val != 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -64,10 +68,12 @@ impl Instruction for IfLt {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val < 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -87,10 +93,12 @@ impl Instruction for IfLe {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val <= 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -110,10 +118,12 @@ impl Instruction for IfGt {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val > 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }
@@ -133,10 +143,12 @@ impl Instruction for IfGe {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let val = frame.operand_stack().expect("operand_stack is none")
+        let val = frame
+            .operand_stack()
+            .expect("operand_stack is none")
             .pop_int();
         if val >= 0 {
-            branch(frame,self.0.get_offset());
+            branch(frame, self.0.get_offset());
         }
     }
 }

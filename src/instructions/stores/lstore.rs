@@ -1,24 +1,31 @@
-use crate::instructions::base::instruction::{LocalVarsInstruction, NoOperandsInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{
+    Instruction, LocalVarsInstruction, NoOperandsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
 
-fn i_store(frame: &mut Frame,index:usize) {
-    let val = frame.operand_stack().expect("operand_stack is empty").pop_long();
-    frame.local_vars().expect("local_vars is empty").set_long(index,val);
+fn i_store(frame: &mut Frame, index: usize) {
+    let val = frame
+        .operand_stack()
+        .expect("operand_stack is empty")
+        .pop_long();
+    frame
+        .local_vars()
+        .expect("local_vars is empty")
+        .set_long(index, val);
 }
 
 ///lstore
 pub struct LStore(LocalVarsInstruction);
 
 impl LStore {
-
     #[inline]
     pub const fn new() -> LStore {
         return LStore(LocalVarsInstruction::new());
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> LStore {
+    pub fn with_index(index: usize) -> LStore {
         return LStore(LocalVarsInstruction::with_index(index));
     }
 }
@@ -29,7 +36,7 @@ impl Instruction for LStore {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_store(frame,self.0.get_index());
+        i_store(frame, self.0.get_index());
     }
 }
 
@@ -49,7 +56,7 @@ impl Instruction for LStore0 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_store(frame,0);
+        i_store(frame, 0);
     }
 }
 
@@ -69,7 +76,7 @@ impl Instruction for LStore1 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_store(frame,1);
+        i_store(frame, 1);
     }
 }
 
@@ -89,7 +96,7 @@ impl Instruction for LStore2 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_store(frame,2);
+        i_store(frame, 2);
     }
 }
 
@@ -109,6 +116,6 @@ impl Instruction for LStore3 {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        i_store(frame,3);
+        i_store(frame, 3);
     }
 }

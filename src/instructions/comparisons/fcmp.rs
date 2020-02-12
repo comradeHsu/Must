@@ -1,5 +1,5 @@
-use crate::instructions::base::instruction::{NoOperandsInstruction, Instruction};
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::runtime_data_area::frame::Frame;
 
 pub struct Fcmpg(NoOperandsInstruction);
@@ -17,7 +17,7 @@ impl Instruction for Fcmpg {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        fcmp(frame,true);
+        fcmp(frame, true);
     }
 }
 
@@ -36,19 +36,19 @@ impl Instruction for Fcmpl {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        fcmp(frame,false);
+        fcmp(frame, false);
     }
 }
 
-fn fcmp(frame: &mut Frame,flag:bool) {
+fn fcmp(frame: &mut Frame, flag: bool) {
     let stack = frame.operand_stack().expect("operand_stack is none");
     let v2 = stack.pop_float();
     let v1 = stack.pop_float();
     if v1 > v2 {
         stack.push_int(1);
-    } else if  v1 == v2 {
+    } else if v1 == v2 {
         stack.push_int(0);
-    } else if  v1 < v2{
+    } else if v1 < v2 {
         stack.push_int(-1);
     } else if flag {
         stack.push_int(1);

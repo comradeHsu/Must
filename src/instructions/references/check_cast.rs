@@ -1,6 +1,6 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 
 pub struct CheckCast(ConstantPoolInstruction);
@@ -30,7 +30,7 @@ impl Instruction for CheckCast {
         let constant = borrow_cp.get_constant(self.0.index());
         let class_ref = match constant {
             ClassReference(c) => c,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let class = class_ref.resolved_class(c);
         if !(*reference.unwrap()).borrow().is_instance_of(class) {

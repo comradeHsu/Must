@@ -1,30 +1,30 @@
-use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::member_info::{MemberInfo};
-use crate::class_file::class_reader::ClassReader;
-use crate::class_file::attribute_info::{AttributeInfo, read_attributes, Attribute};
-use std::vec::Vec;
-use std::rc::Rc;
-use std::cell::{RefCell};
 use crate::class_file::attribute_info::Attribute::SourceFile;
+use crate::class_file::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::class_file::class_reader::ClassReader;
+use crate::class_file::constant_pool::ConstantPool;
+use crate::class_file::member_info::MemberInfo;
 use crate::class_file::source_file_attribute::SourceFileAttribute;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::vec::Vec;
 
 pub struct ClassFile {
-    minor_version:u16,
-    major_version:u16,
-    constant_pool:Rc<RefCell<ConstantPool>>,
-    access_flags:u16,
-    this_class:u16,
-    super_class:u16,
-    interfaces:Vec<u16>,
-    fields:Vec<MemberInfo>,
-    methods:Vec<MemberInfo>,
-    attributes:Vec<Attribute>
+    minor_version: u16,
+    major_version: u16,
+    constant_pool: Rc<RefCell<ConstantPool>>,
+    access_flags: u16,
+    this_class: u16,
+    super_class: u16,
+    interfaces: Vec<u16>,
+    fields: Vec<MemberInfo>,
+    methods: Vec<MemberInfo>,
+    attributes: Vec<Attribute>,
 }
 
 impl ClassFile {
-    pub fn parse(class_data:Vec<u8>) -> ClassFile {
+    pub fn parse(class_data: Vec<u8>) -> ClassFile {
         let mut class_reader = ClassReader::new(class_data);
-        let mut class_file = ClassFile{
+        let mut class_file = ClassFile {
             minor_version: 0,
             major_version: 0,
             constant_pool: Rc::new(RefCell::new(ConstantPool::new())),
@@ -40,7 +40,7 @@ impl ClassFile {
         return class_file;
     }
 
-    fn read(& mut self, reader:&mut ClassReader) {
+    fn read(&mut self, reader: &mut ClassReader) {
         self.read_and_check_magic(reader);
         self.read_and_check_version(reader);
         self.constant_pool = ConstantPool::read_constant_pool(reader);
@@ -53,21 +53,21 @@ impl ClassFile {
         self.attributes = read_attributes(reader, self.constant_pool.clone())
     }
 
-    fn read_and_check_magic(&mut self, reader:&mut ClassReader) {
+    fn read_and_check_magic(&mut self, reader: &mut ClassReader) {
         let magic = reader.read_u32();
         if magic != 0xCAFEBABE {
             panic!("java.lang.ClassFormatError: magic!")
         }
     }
 
-    fn read_and_check_version(&mut self, reader:&mut ClassReader) {
+    fn read_and_check_version(&mut self, reader: &mut ClassReader) {
         self.minor_version = reader.read_u16();
         self.major_version = reader.read_u16();
         match self.major_version {
             45 => return,
             46..=52 => {
                 if self.minor_version == 0 {
-                    return
+                    return;
                 }
             }
             _ => {}
@@ -110,13 +110,18 @@ impl ClassFile {
             let borrow = (*self.constant_pool).borrow();
             return Some(borrow.get_class_name(self.super_class as usize).to_owned());
         }
-        return None // 只有 java.lang.Object没有超类
+        return None; // 只有 java.lang.Object没有超类
     }
 
     pub fn interface_names(&self) -> Vec<String> {
         let mut interface_names = Vec::new();
         for index in &self.interfaces {
-            interface_names.push((*self.constant_pool).borrow().get_class_name(*index as usize).to_string());
+            interface_names.push(
+                (*self.constant_pool)
+                    .borrow()
+                    .get_class_name(*index as usize)
+                    .to_string(),
+            );
         }
         return interface_names;
     }
@@ -138,26 +143,29 @@ impl ClassFile {
 
     pub fn display(&self) {
         println!("ClassFile:");
-        println!("  minor_version:{}",self.minor_version);
-        println!("  major_version:{}",self.major_version);
-        println!("  constant_pool count:{}",(*self.constant_pool).borrow().len());
-        println!("  access_flags:{}",self.access_flags);
-        println!("  this_class:{}",self.class_name());
-        println!("  super_class_name:{:?}",self.super_class_name());
+        println!("  minor_version:{}", self.minor_version);
+        println!("  major_version:{}", self.major_version);
+        println!(
+            "  constant_pool count:{}",
+            (*self.constant_pool).borrow().len()
+        );
+        println!("  access_flags:{}", self.access_flags);
+        println!("  this_class:{}", self.class_name());
+        println!("  super_class_name:{:?}", self.super_class_name());
         println!("  interface_names:[");
         let interface_names = self.interface_names();
         for interface_name in interface_names {
-            println!("{},",interface_name);
+            println!("{},", interface_name);
         }
         println!("  ]");
         println!("  fields:[");
         for field in self.fields() {
-            println!("    {},",field.name());
+            println!("    {},", field.name());
         }
         println!("  ]");
         println!("  methods:[");
         for field in self.methods() {
-            println!("    {},",field.name());
+            println!("    {},", field.name());
         }
         println!("  ]");
     }
@@ -165,9 +173,9 @@ impl ClassFile {
 
 #[cfg(test)]
 mod test {
-    use std::rc::Rc;
     use core::mem;
     use std::cell::RefCell;
+    use std::rc::Rc;
 
     #[test]
     fn test_swap() {
@@ -175,13 +183,13 @@ mod test {
         let rc_2 = rc_1.clone();
         let mut rc_3 = Rc::new("456");
         mem::swap(&mut rc_1, &mut rc_3);
-        println!("rc_1:{},rc_2:{},rc_3:{}",rc_1,rc_2,rc_3);
+        println!("rc_1:{},rc_2:{},rc_3:{}", rc_1, rc_2, rc_3);
     }
 
     #[test]
     fn test_into_inner() {
-//        let mut rc_1 = Rc::new(RefCell::new("123"));
-//        let x = rc_1.into_inner();
-//        println!("rc_1:{:?},x:{}",rc_1,x);
+        //        let mut rc_1 = Rc::new(RefCell::new("123"));
+        //        let x = rc_1.into_inner();
+        //        println!("rc_1:{:?},x:{}",rc_1,x);
     }
 }

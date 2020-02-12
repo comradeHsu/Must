@@ -1,30 +1,30 @@
 #[derive(Debug)]
 pub struct MethodDescriptor {
-    parameter_types:Vec<String>,
-    return_type:String
+    parameter_types: Vec<String>,
+    return_type: String,
 }
 
 impl MethodDescriptor {
     #[inline]
     pub fn new() -> MethodDescriptor {
-        return MethodDescriptor{
+        return MethodDescriptor {
             parameter_types: vec![],
-            return_type: "".to_string()
+            return_type: "".to_string(),
         };
     }
 
     #[inline]
-    pub fn add_parameter_type(&mut self,string:String) {
+    pub fn add_parameter_type(&mut self, string: String) {
         self.parameter_types.push(string);
     }
 
     #[inline]
-    pub fn set_return_type(&mut self,string:String) {
+    pub fn set_return_type(&mut self, string: String) {
         self.return_type = string;
     }
 
     #[inline]
-    pub fn return_type(&self)-> &String {
+    pub fn return_type(&self) -> &String {
         return &self.return_type;
     }
 
@@ -35,25 +35,24 @@ impl MethodDescriptor {
 }
 
 pub struct MethodDescriptorParser<'a> {
-    raw:String,
-    offset:usize,
-    parsed:&'a mut MethodDescriptor
+    raw: String,
+    offset: usize,
+    parsed: &'a mut MethodDescriptor,
 }
 
 impl<'a> MethodDescriptorParser<'a> {
-
-    pub fn parse_method_descriptor(descriptor:&str) -> MethodDescriptor {
+    pub fn parse_method_descriptor(descriptor: &str) -> MethodDescriptor {
         let mut method_desc = MethodDescriptor::new();
-        let mut parser = MethodDescriptorParser{
+        let mut parser = MethodDescriptorParser {
             raw: "".to_string(),
             offset: 0,
-            parsed: &mut method_desc
+            parsed: &mut method_desc,
         };
         parser.parse(descriptor);
         return method_desc;
     }
 
-    fn parse(&mut self,descriptor:&str) {
+    fn parse(&mut self, descriptor: &str) {
         self.raw = descriptor.to_string();
         self.start_params();
         self.parse_param_types();
@@ -63,13 +62,13 @@ impl<'a> MethodDescriptorParser<'a> {
     }
 
     fn start_params(&mut self) {
-        if self.read_u8() != '('{
+        if self.read_u8() != '(' {
             self.cause_panic();
         }
     }
 
     fn end_params(&mut self) {
-        if self.read_u8() != ')'{
+        if self.read_u8() != ')' {
             self.cause_panic();
         }
     }
@@ -81,7 +80,7 @@ impl<'a> MethodDescriptorParser<'a> {
     }
 
     fn cause_panic(&self) {
-        panic!("Bad descriptor: {}",self.raw);
+        panic!("Bad descriptor: {}", self.raw);
     }
 
     fn read_u8(&mut self) -> char {
@@ -140,7 +139,7 @@ impl<'a> MethodDescriptorParser<'a> {
     }
 
     fn parse_object_type(&mut self) -> &str {
-        let (_,unread) = self.raw.split_at(self.offset);
+        let (_, unread) = self.raw.split_at(self.offset);
         let semicolon_index = unread.find(';');
         if semicolon_index.is_none() {
             self.cause_panic();
@@ -149,7 +148,7 @@ impl<'a> MethodDescriptorParser<'a> {
             let obj_start = self.offset - 1;
             let obj_end = self.offset + semicolon_index.unwrap() + 1;
             self.offset = obj_end;
-            let descriptor:&str = self.raw.get(obj_start..obj_end).unwrap();
+            let descriptor: &str = self.raw.get(obj_start..obj_end).unwrap();
             return descriptor;
         }
     }
@@ -158,7 +157,7 @@ impl<'a> MethodDescriptorParser<'a> {
         let arr_start = self.offset - 1;
         self.parse_field_type();
         let arr_end = self.offset;
-        let descriptor:&str = self.raw.get(arr_start..arr_end).unwrap();
+        let descriptor: &str = self.raw.get(arr_start..arr_end).unwrap();
         return descriptor;
     }
 }

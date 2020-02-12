@@ -1,31 +1,29 @@
 use crate::class_file::attribute_info::AttributeInfo;
 use crate::class_file::class_reader::ClassReader;
 
-pub struct MakerAttribute{}
+pub struct MakerAttribute {}
 
 pub struct DeprecatedAttribute(MakerAttribute);
 
 impl DeprecatedAttribute {
     pub fn new() -> DeprecatedAttribute {
-        return DeprecatedAttribute(MakerAttribute{});
+        return DeprecatedAttribute(MakerAttribute {});
     }
 }
 
-impl AttributeInfo for DeprecatedAttribute{
-    fn read_info(&mut self, reader: &mut ClassReader) {
-
-    }
+impl AttributeInfo for DeprecatedAttribute {
+    fn read_info(&mut self, reader: &mut ClassReader) {}
 }
 
 pub struct SyntheticAttribute(MakerAttribute);
 
 impl SyntheticAttribute {
     pub fn new() -> SyntheticAttribute {
-        return SyntheticAttribute(MakerAttribute{});
+        return SyntheticAttribute(MakerAttribute {});
     }
 }
 
-impl AttributeInfo for SyntheticAttribute{
+impl AttributeInfo for SyntheticAttribute {
     fn read_info(&mut self, reader: &mut ClassReader) {
         unimplemented!()
     }

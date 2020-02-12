@@ -2,42 +2,36 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::frame::Frame;
 
 pub trait Instruction {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader);
 
-    fn fetch_operands(&mut self,reader:&mut BytecodeReader);
-
-    fn execute(&mut self,frame:&mut Frame);
-
+    fn execute(&mut self, frame: &mut Frame);
 }
 
 ///没有操作数的指令
-pub struct NoOperandsInstruction {
-
-}
+pub struct NoOperandsInstruction {}
 
 impl NoOperandsInstruction {
     #[inline]
     pub const fn new() -> NoOperandsInstruction {
-        return NoOperandsInstruction{};
+        return NoOperandsInstruction {};
     }
 }
 
 impl Instruction for NoOperandsInstruction {
-    fn fetch_operands(&mut self,reader: &mut BytecodeReader) {
-    }
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {}
 
-    fn execute(&mut self,frame: &mut Frame) {
-    }
+    fn execute(&mut self, frame: &mut Frame) {}
 }
 
 ///跳转指令
 pub struct BranchInstruction {
-    offset:i32
+    offset: i32,
 }
 
 impl BranchInstruction {
     #[inline]
     pub const fn new() -> BranchInstruction {
-        return BranchInstruction{ offset: 0 };
+        return BranchInstruction { offset: 0 };
     }
 
     #[inline]
@@ -47,29 +41,29 @@ impl BranchInstruction {
 }
 
 impl Instruction for BranchInstruction {
-    fn fetch_operands(&mut self,reader: &mut BytecodeReader) {
+    fn fetch_operands(&mut self, reader: &mut BytecodeReader) {
         self.offset = reader.read_i16() as i32;
     }
 
-    fn execute(&mut self,frame: &mut Frame) {
+    fn execute(&mut self, frame: &mut Frame) {
         unimplemented!()
     }
 }
 
 ///存储和加载指令：本地变量表
 pub struct LocalVarsInstruction {
-    index:usize
+    index: usize,
 }
 
 impl LocalVarsInstruction {
     #[inline]
     pub const fn new() -> LocalVarsInstruction {
-        return LocalVarsInstruction{ index: 0 };
+        return LocalVarsInstruction { index: 0 };
     }
 
     #[inline]
-    pub fn with_index(index:usize) -> LocalVarsInstruction {
-        return LocalVarsInstruction{ index };
+    pub fn with_index(index: usize) -> LocalVarsInstruction {
+        return LocalVarsInstruction { index };
     }
 
     #[inline]
@@ -90,13 +84,13 @@ impl Instruction for LocalVarsInstruction {
 
 ///存储和加载指令：常量池
 pub struct ConstantPoolInstruction {
-    index:usize
+    index: usize,
 }
 
 impl ConstantPoolInstruction {
     #[inline]
     pub fn new() -> ConstantPoolInstruction {
-        return ConstantPoolInstruction{ index: 0 };
+        return ConstantPoolInstruction { index: 0 };
     }
 
     #[inline]

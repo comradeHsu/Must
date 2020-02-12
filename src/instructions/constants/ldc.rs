@@ -1,7 +1,11 @@
-use crate::instructions::base::instruction::{LocalVarsInstruction, ConstantPoolInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::{Integer, Float, Long, Double, Str, ClassReference};
+use crate::instructions::base::instruction::{
+    ConstantPoolInstruction, Instruction, LocalVarsInstruction,
+};
+use crate::runtime_data_area::frame::Frame;
+use crate::runtime_data_area::heap::constant_pool::Constant::{
+    ClassReference, Double, Float, Integer, Long, Str,
+};
 use crate::runtime_data_area::heap::string_pool::StringPool;
 
 pub struct LDC(LocalVarsInstruction);
@@ -57,21 +61,24 @@ impl Instruction for LDC2w {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-//        let stack = frame.operand_stack().expect("stack is none");
+        //        let stack = frame.operand_stack().expect("stack is none");
         let class = frame.method().class();
         let cp = (*class).borrow().constant_pool();
         let borrow_cp = cp.borrow();
         let constant = borrow_cp.get_constant_immutable(self.0.index());
         match constant {
             Long(v) => frame.operand_stack().expect("stack is none").push_long(*v),
-            Double(v) => frame.operand_stack().expect("stack is none").push_double(*v),
-            _ => panic!("java.lang.ClassFormatError")
+            Double(v) => frame
+                .operand_stack()
+                .expect("stack is none")
+                .push_double(*v),
+            _ => panic!("java.lang.ClassFormatError"),
         }
     }
 }
 
-fn ldc(frame: &mut Frame, index:usize) {
-//    let stack = frame.operand_stack().expect("stack is none");
+fn ldc(frame: &mut Frame, index: usize) {
+    //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
     let cp = (*class).borrow().constant_pool();
     let mut borrow_cp = cp.borrow_mut();
@@ -80,15 +87,21 @@ fn ldc(frame: &mut Frame, index:usize) {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),
         Str(v) => {
-            let string = StringPool::java_string((*class).borrow().loader(),v.clone());
-            frame.operand_stack().expect("stack is none").push_ref(Some(string))
-        },
+            let string = StringPool::java_string((*class).borrow().loader(), v.clone());
+            frame
+                .operand_stack()
+                .expect("stack is none")
+                .push_ref(Some(string))
+        }
         ClassReference(v) => {
             let class = v.resolved_class(class);
             let borrow = (*class).borrow();
             let obj = borrow.java_class();
-            frame.operand_stack().expect("stack is none").push_ref(Some(obj.unwrap().clone()));
-        },
-        _ => panic!("todo: ldc!")
+            frame
+                .operand_stack()
+                .expect("stack is none")
+                .push_ref(Some(obj.unwrap().clone()));
+        }
+        _ => panic!("todo: ldc!"),
     }
 }

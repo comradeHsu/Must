@@ -1,33 +1,33 @@
-use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use crate::runtime_data_area::heap::slots::Slots;
-use crate::runtime_data_area::slot::Slot;
-use std::cell::RefCell;
-use crate::runtime_data_area::heap::object::DataType::StandardObject;
 use crate::native::java::lang::throwable::StackTraceElement;
+use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::method::Method;
+use crate::runtime_data_area::heap::object::DataType::StandardObject;
 use crate::runtime_data_area::heap::object::MetaData::Null;
+use crate::runtime_data_area::heap::slots::Slots;
+use crate::runtime_data_area::slot::Slot;
 use std::borrow::Borrow;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Object {
-    pub class:Rc<RefCell<Class>>,
-    pub data:DataType,
-    pub meta:Option<Rc<RefCell<Class>>>,
-    pub trace:Option<Vec<StackTraceElement>>,
-    pub meta_data:MetaData
+    pub class: Rc<RefCell<Class>>,
+    pub data: DataType,
+    pub meta: Option<Rc<RefCell<Class>>>,
+    pub trace: Option<Vec<StackTraceElement>>,
+    pub meta_data: MetaData,
 }
 
 impl Object {
-    pub fn new(class:Rc<RefCell<Class>>) -> Object {
+    pub fn new(class: Rc<RefCell<Class>>) -> Object {
         let count = (*class).borrow().instance_slot_count();
-        return Object{
+        return Object {
             class: class.clone(),
             data: StandardObject(Some(Slots::with_capacity(count as usize))),
             meta: None,
             trace: None,
-            meta_data: MetaData::Null
+            meta_data: MetaData::Null,
         };
     }
 
@@ -42,7 +42,7 @@ impl Object {
     }
 
     #[inline]
-    pub fn set_meta(&mut self,meta:Rc<RefCell<Class>>) {
+    pub fn set_meta(&mut self, meta: Rc<RefCell<Class>>) {
         self.meta = Some(meta);
     }
 
@@ -52,12 +52,12 @@ impl Object {
     }
 
     #[inline]
-    pub fn set_trace(&mut self,eles:Vec<StackTraceElement>) {
+    pub fn set_trace(&mut self, eles: Vec<StackTraceElement>) {
         self.trace = Some(eles);
     }
 
     #[inline]
-    pub fn set_meta_data(&mut self,data:MetaData) {
+    pub fn set_meta_data(&mut self, data: MetaData) {
         self.meta_data = data;
     }
 
@@ -66,7 +66,7 @@ impl Object {
         let fields = &mut self.data;
         match fields {
             StandardObject(data) => data.as_mut().unwrap(),
-            _ => panic!("The Object is array")
+            _ => panic!("The Object is array"),
         }
     }
 
@@ -75,7 +75,7 @@ impl Object {
         let fields = &self.data;
         match fields {
             StandardObject(data) => data.as_ref().unwrap(),
-            _ => panic!("The Object is array")
+            _ => panic!("The Object is array"),
         }
     }
 
@@ -85,47 +85,48 @@ impl Object {
     }
 
     #[inline]
-    pub fn data(&self) -> & DataType {
+    pub fn data(&self) -> &DataType {
         return &self.data;
     }
 
     #[inline]
-    pub fn is_instance_of(&self, class:Rc<RefCell<Class>>) -> bool {
-        return (*class).borrow().is_assignable_from(self.class.as_ref().borrow().borrow());
+    pub fn is_instance_of(&self, class: Rc<RefCell<Class>>) -> bool {
+        return (*class)
+            .borrow()
+            .is_assignable_from(self.class.as_ref().borrow().borrow());
     }
 
-    pub fn set_ref_var(&mut self, name:&str, descriptor:&str, reference:Rc<RefCell<Object>>) {
-        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+    pub fn set_ref_var(&mut self, name: &str, descriptor: &str, reference: Rc<RefCell<Object>>) {
+        let field = Class::get_field(Some(self.class.clone()), name, descriptor, false);
         let slots = self.fields();
-        slots.set_ref((*field.unwrap()).borrow().slot_id(),Some(reference));
+        slots.set_ref((*field.unwrap()).borrow().slot_id(), Some(reference));
     }
 
-    pub fn get_ref_var(&self, name:&str, descriptor:&str) -> Option<Rc<RefCell<Object>>> {
-        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+    pub fn get_ref_var(&self, name: &str, descriptor: &str) -> Option<Rc<RefCell<Object>>> {
+        let field = Class::get_field(Some(self.class.clone()), name, descriptor, false);
         let fields = &self.data;
         let slots = match fields {
             StandardObject(data) => data.as_ref().unwrap(),
-            _ => panic!("The Object is array")
+            _ => panic!("The Object is array"),
         };
         return slots.get_ref((*field.unwrap()).borrow().slot_id());
     }
 
-    pub fn set_int_var(&mut self, name:&str, descriptor:&str, val:i32) {
-        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+    pub fn set_int_var(&mut self, name: &str, descriptor: &str, val: i32) {
+        let field = Class::get_field(Some(self.class.clone()), name, descriptor, false);
         let slots = self.fields();
-        slots.set_int((*field.unwrap()).borrow().slot_id(),val);
+        slots.set_int((*field.unwrap()).borrow().slot_id(), val);
     }
 
-    pub fn get_int_var(&self, name:&str, descriptor:&str) -> i32 {
-        let field = Class::get_field(Some(self.class.clone()),name,descriptor,false);
+    pub fn get_int_var(&self, name: &str, descriptor: &str) -> i32 {
+        let field = Class::get_field(Some(self.class.clone()), name, descriptor, false);
         let fields = &self.data;
         let slots = match fields {
             StandardObject(data) => data.as_ref().unwrap(),
-            _ => panic!("The Object is array")
+            _ => panic!("The Object is array"),
         };
         return slots.get_int((*field.unwrap()).borrow().slot_id());
     }
-
 }
 
 impl PartialEq for Object {
@@ -139,7 +140,7 @@ impl PartialEq for Object {
     }
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum DataType {
     StandardObject(Option<Slots>),
     Bytes(Vec<i8>),
@@ -149,14 +150,14 @@ pub enum DataType {
     Chars(Vec<u16>),
     Floats(Vec<f32>),
     Doubles(Vec<f64>),
-    References(Vec<Option<Rc<RefCell<Object>>>>)
+    References(Vec<Option<Rc<RefCell<Object>>>>),
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum MetaData {
     Null,
     Field(Rc<RefCell<Field>>),
-    Method(Rc<Method>)
+    Method(Rc<Method>),
 }
 
 impl MetaData {
@@ -164,7 +165,7 @@ impl MetaData {
     pub fn is_null(&self) -> bool {
         match self {
             Null => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -172,7 +173,7 @@ impl MetaData {
     pub fn not_null(&self) -> bool {
         match self {
             Null => false,
-            _ => true
+            _ => true,
         }
     }
 
@@ -180,7 +181,7 @@ impl MetaData {
     pub fn method(&self) -> Rc<Method> {
         match self {
             MetaData::Method(method) => method.clone(),
-            _ => panic!("The MetaData not method")
+            _ => panic!("The MetaData not method"),
         }
     }
 }

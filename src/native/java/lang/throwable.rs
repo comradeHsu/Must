@@ -1,35 +1,44 @@
-use crate::runtime_data_area::frame::Frame;
 use crate::native::registry::Registry;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::thread::Thread;
+use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::object::Object;
+use crate::runtime_data_area::thread::JavaThread;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub fn init() {
-    Registry::register("java/lang/Throwable", "fillInStackTrace",
-                       "(I)Ljava/lang/Throwable;", fill_in_stack_trace);
+    Registry::register(
+        "java/lang/Throwable",
+        "fillInStackTrace",
+        "(I)Ljava/lang/Throwable;",
+        fill_in_stack_trace,
+    );
 }
 
-pub fn fill_in_stack_trace(frame:&mut Frame) {
+pub fn fill_in_stack_trace(frame: &mut Frame) {
     let this = frame.local_vars().expect("vars is none").get_this();
-    frame.operand_stack().expect("stack is none").push_ref(this.clone());
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_ref(this.clone());
     let ptr = this.unwrap();
-    let stes = StackTraceElement::create_stack_trace_elements(ptr.clone(),frame.thread());
+    let stes = StackTraceElement::create_stack_trace_elements(ptr.clone(), frame.thread());
     (*ptr).borrow_mut().set_trace(stes);
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct StackTraceElement {
-    file_name:String,
-    class_name:String,
-    method_name:String,
-    line_number:i32
+    file_name: String,
+    class_name: String,
+    method_name: String,
+    line_number: i32,
 }
 
 impl StackTraceElement {
-
-    fn create_stack_trace_elements(object:Rc<RefCell<Object>>, thread:Rc<RefCell<Thread>>) -> Vec<StackTraceElement> {
+    fn create_stack_trace_elements(
+        object: Rc<RefCell<Object>>,
+        thread: Rc<RefCell<JavaThread>>,
+    ) -> Vec<StackTraceElement> {
         let skip = StackTraceElement::distance_to_object((*object).borrow().class()) as usize + 2;
         let thread_borrow = (*thread).borrow();
         let all_frames = thread_borrow.get_frames();
@@ -40,7 +49,7 @@ impl StackTraceElement {
         return stes;
     }
 
-    fn distance_to_object(class:Rc<RefCell<Class>>) -> i32 {
+    fn distance_to_object(class: Rc<RefCell<Class>>) -> i32 {
         let mut distance = 0;
         let mut c = (*class).borrow().super_class();
         while c.is_some() {
@@ -50,15 +59,15 @@ impl StackTraceElement {
         return distance;
     }
 
-    fn create_stack_trace_element(frame:Rc<RefCell<Frame>>) -> StackTraceElement {
+    fn create_stack_trace_element(frame: Rc<RefCell<Frame>>) -> StackTraceElement {
         let frame_borrow = (*frame).borrow();
         let method = frame_borrow.method();
         let class = method.class();
-        return StackTraceElement{
+        return StackTraceElement {
             file_name: (*class).borrow().source_file(),
             class_name: (*class).borrow().java_name(),
             method_name: method.name().to_string(),
-            line_number: method.get_line_number(frame_borrow.next_pc() - 1)
+            line_number: method.get_line_number(frame_borrow.next_pc() - 1),
         };
     }
 }

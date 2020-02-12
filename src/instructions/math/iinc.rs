@@ -1,22 +1,24 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
 
 pub struct IInc {
-    index:usize,
-    constant:i32
+    index: usize,
+    constant: i32,
 }
 
 impl IInc {
-
     #[inline]
     pub fn new() -> IInc {
-        return IInc{index:0,constant:0};
+        return IInc {
+            index: 0,
+            constant: 0,
+        };
     }
 
     #[inline]
-    pub fn init(index:usize, constant:i32) -> IInc {
-        return IInc{index,constant};
+    pub fn init(index: usize, constant: i32) -> IInc {
+        return IInc { index, constant };
     }
 }
 
@@ -30,6 +32,6 @@ impl Instruction for IInc {
         let vars = frame.local_vars().expect("operand_stack is none");
         let mut val = vars.get_int(self.index);
         val += self.constant;
-        vars.set_int(self.index,val);
+        vars.set_int(self.index, val);
     }
 }

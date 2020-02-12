@@ -1,29 +1,31 @@
+use crate::class_file::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
 use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use crate::class_file::constant_pool::{ConstantPool as Pool, ConstantInfoEnum};
-use crate::runtime_data_area::heap::constant_pool::Constant::*;
-use std::cell::RefCell;
 use crate::runtime_data_area::heap::class_ref::ClassRef;
+use crate::runtime_data_area::heap::constant_pool::Constant::*;
 use crate::runtime_data_area::heap::field_ref::FieldRef;
-use crate::runtime_data_area::heap::method_ref::MethodRef;
 use crate::runtime_data_area::heap::interface_method_ref::InterfaceMethodRef;
+use crate::runtime_data_area::heap::method_ref::MethodRef;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct ConstantPool {
-    class:Option<Rc<RefCell<Class>>>,
-    constants:Vec<Constant>
+    class: Option<Rc<RefCell<Class>>>,
+    constants: Vec<Constant>,
 }
 
 impl ConstantPool {
-
     pub fn none() -> ConstantPool {
-        return ConstantPool{
+        return ConstantPool {
             class: Option::None,
-            constants: vec![]
+            constants: vec![],
         };
     }
 
-    pub fn new_constant_pool(class:Option<Rc<RefCell<Class>>>,pool:Rc<RefCell<Pool>>) -> Rc<RefCell<ConstantPool>> {
+    pub fn new_constant_pool(
+        class: Option<Rc<RefCell<Class>>>,
+        pool: Rc<RefCell<Pool>>,
+    ) -> Rc<RefCell<ConstantPool>> {
         let borrow_pool = (*pool).borrow();
         let size = borrow_pool.len();
         let mut constants = Vec::with_capacity(size);
@@ -38,39 +40,37 @@ impl ConstantPool {
                 ConstantInfoEnum::Double(info) => Double(info.val()),
                 ConstantInfoEnum::Str(info) => Str(info.string().to_string()),
                 ConstantInfoEnum::Class(info) => {
-                    ClassReference(ClassRef::new_class_ref(cp.clone(),info))
-                },
+                    ClassReference(ClassRef::new_class_ref(cp.clone(), info))
+                }
                 ConstantInfoEnum::FieldRef(info) => {
-                    FieldReference(FieldRef::new_field_ref(cp.clone(),info))
-                },
+                    FieldReference(FieldRef::new_field_ref(cp.clone(), info))
+                }
                 ConstantInfoEnum::MethodRef(info) => {
-                    MethodReference(MethodRef::new_method_ref(cp.clone(),info))
-                },
+                    MethodReference(MethodRef::new_method_ref(cp.clone(), info))
+                }
                 ConstantInfoEnum::InterfaceMethodRef(info) => {
-                    InterfaceMethodReference(InterfaceMethodRef::new_method_ref(cp.clone(),info))
-                },
-                _ => None
+                    InterfaceMethodReference(InterfaceMethodRef::new_method_ref(cp.clone(), info))
+                }
+                _ => None,
             };
             match constant {
                 Long(_) | Double(_) => {
                     constants.push(constant);
                     constants.push(None);
                     index += 1;
-                },
-//                None => {},  must be annotated
-                _ => constants.push(constant)
+                }
+                //                None => {},  must be annotated
+                _ => constants.push(constant),
             }
             index += 1;
         }
-        let mut pool = Rc::new(RefCell::new(
-            ConstantPool{ class, constants }
-        ));
+        let mut pool = Rc::new(RefCell::new(ConstantPool { class, constants }));
         let clone = pool.clone();
         (*pool).borrow_mut().lazy_init_for_constants(&clone);
         return pool;
     }
 
-    fn lazy_init_for_constants(&mut self,pool:&Rc<RefCell<ConstantPool>>) {
+    fn lazy_init_for_constants(&mut self, pool: &Rc<RefCell<ConstantPool>>) {
         for constant in &mut self.constants {
             match constant {
                 ClassReference(c) => c.set_constant_pool(pool.clone()),
@@ -82,22 +82,21 @@ impl ConstantPool {
         }
     }
 
-    pub fn get_constant(&mut self, index:usize) -> &mut Constant {
-        let constant = self.constants.get_mut(index-1);
+    pub fn get_constant(&mut self, index: usize) -> &mut Constant {
+        let constant = self.constants.get_mut(index - 1);
         if constant.is_none() {
             panic!("No constants at index {}", index);
         }
         return constant.unwrap();
     }
 
-    pub fn get_constant_immutable(&self, index:usize) -> &Constant {
-        let constant = self.constants.get(index-1);
+    pub fn get_constant_immutable(&self, index: usize) -> &Constant {
+        let constant = self.constants.get(index - 1);
         if constant.is_none() {
             panic!("No constants at index {}", index);
         }
         return constant.unwrap();
     }
-
 
     pub fn class(&self) -> Rc<RefCell<Class>> {
         let class = self.class.as_ref().unwrap();
@@ -105,7 +104,7 @@ impl ConstantPool {
     }
 
     #[inline]
-    pub fn set_class(&mut self,class:Rc<RefCell<Class>>) {
+    pub fn set_class(&mut self, class: Rc<RefCell<Class>>) {
         return self.class = Some(class);
     }
 
@@ -127,5 +126,5 @@ pub enum Constant {
     ClassReference(ClassRef),
     FieldReference(FieldRef),
     MethodReference(MethodRef),
-    InterfaceMethodReference(InterfaceMethodRef)
+    InterfaceMethodReference(InterfaceMethodRef),
 }

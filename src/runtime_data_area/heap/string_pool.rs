@@ -1,24 +1,25 @@
+use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
+use crate::runtime_data_area::heap::object::DataType::Chars;
+use crate::runtime_data_area::heap::object::Object;
+use crate::utils::{boxed, java_str_to_rust_str};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::cell::RefCell;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::heap::object::DataType::Chars;
-use crate::utils::{boxed, java_str_to_rust_str};
 
 pub struct StringPool {
-    pool:HashMap<String,Rc<RefCell<Object>>>
+    pool: HashMap<String, Rc<RefCell<Object>>>,
 }
 
-static mut STRING_POOL:Option<StringPool> = None;
+static mut STRING_POOL: Option<StringPool> = None;
 
 impl StringPool {
-
     fn instance() -> &'static StringPool {
         unsafe {
             if STRING_POOL.is_none() {
-                STRING_POOL = Some(StringPool{ pool: HashMap::new() });
+                STRING_POOL = Some(StringPool {
+                    pool: HashMap::new(),
+                });
             }
             return STRING_POOL.as_ref().unwrap();
         }
@@ -27,35 +28,43 @@ impl StringPool {
     fn mut_instance() -> &'static mut StringPool {
         unsafe {
             if STRING_POOL.is_none() {
-                STRING_POOL = Some(StringPool{ pool: HashMap::new() });
+                STRING_POOL = Some(StringPool {
+                    pool: HashMap::new(),
+                });
             }
             return STRING_POOL.as_mut().unwrap();
         }
     }
 
-    pub fn java_string(loader:Rc<RefCell<ClassLoader>>,string:String) -> Rc<RefCell<Object>>{
+    pub fn java_string(loader: Rc<RefCell<ClassLoader>>, string: String) -> Rc<RefCell<Object>> {
         let pool_str = StringPool::instance().pool.get(&string);
         if pool_str.is_some() {
             return pool_str.unwrap().clone();
         }
-        let chars:Vec<u16> = string.encode_utf16().collect();
-        let java_chars = Object::from_data(ClassLoader::load_class(loader.clone(),"[C"),Chars(chars));
-        let mut java_string = Class::new_object(&ClassLoader::load_class(loader,"java/lang/String"));
-        java_string.set_ref_var("value","[C",boxed(java_chars));
+        let chars: Vec<u16> = string.encode_utf16().collect();
+        let java_chars =
+            Object::from_data(ClassLoader::load_class(loader.clone(), "[C"), Chars(chars));
+        let mut java_string =
+            Class::new_object(&ClassLoader::load_class(loader, "java/lang/String"));
+        java_string.set_ref_var("value", "[C", boxed(java_chars));
         let target = boxed(java_string);
-        StringPool::mut_instance().pool.insert(string,target.clone());
+        StringPool::mut_instance()
+            .pool
+            .insert(string, target.clone());
         return target;
     }
 
     ///java sdk function
     /// string.intern
-    pub fn intern_string(string:Rc<RefCell<Object>>) -> Rc<RefCell<Object>> {
+    pub fn intern_string(string: Rc<RefCell<Object>>) -> Rc<RefCell<Object>> {
         let rust_str = java_str_to_rust_str(string.clone());
         let pool_string = StringPool::instance().pool.get(&rust_str);
         if pool_string.is_some() {
             return pool_string.unwrap().clone();
         }
-        StringPool::mut_instance().pool.insert(rust_str,string.clone());
+        StringPool::mut_instance()
+            .pool
+            .insert(rust_str, string.clone());
         return string;
     }
 }
