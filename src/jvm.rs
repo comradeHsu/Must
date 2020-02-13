@@ -22,8 +22,11 @@ pub struct Jvm {
 }
 
 impl Jvm {
-    pub fn new(cmd: Cmd) -> Jvm {
-        let cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
+    pub fn new(mut cmd: Cmd) -> Jvm {
+        let mut cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
+        if cmd.exec_jar_path().is_some() {
+            cp.handle_jar(&mut cmd);
+        }
         let class_path = Rc::new(cp);
         let class_loader = ClassLoader::new(class_path, cmd.verbose_class);
         return Jvm {

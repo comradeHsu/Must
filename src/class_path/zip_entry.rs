@@ -41,10 +41,10 @@ impl ZipEntry {
             let size = *index.unwrap();
             let zip_file = self.file_cache.file.clone();
             let mut borrow = (*zip_file).borrow_mut();
-            let mut file:ZipFile = borrow.by_index(size).unwrap();
+            let mut file: ZipFile = borrow.by_index(size).unwrap();
             return Some(file.read_exact(file.size() as usize).unwrap());
         }
-        return None
+        return None;
     }
 
     pub fn get_main_class(&self) -> Option<String> {
@@ -52,7 +52,7 @@ impl ZipEntry {
         let mut data = String::from_utf8(jar_file_data).expect("get_main_class FromUtf8Error");
         let lines = data.lines();
         for line in lines {
-            let (key,value) = line.split_at(line.find(':').unwrap_or(0));
+            let (key, value) = line.split_at(line.find(':').unwrap_or(0));
             if key == "Main-Class" {
                 return Some(value.to_string());
             }

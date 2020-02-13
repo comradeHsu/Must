@@ -35,10 +35,11 @@ mod tests {
             help_flag: false,
             version_flag: false,
             verbose_class: false,
-            cp_option: "D:/workspace/rust-jvm".to_string(),
+            cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
             class: "testJava.BubbleSortTest".to_string(),
             args: vec![],
+            exec_jar_path: None,
         };
         let vec = "ha哈哈";
         let s: Vec<u16> = vec.encode_utf16().collect();
@@ -52,10 +53,11 @@ mod tests {
             help_flag: false,
             version_flag: false,
             verbose_class: false,
-            cp_option: "D:/test".to_string(),
+            cp_option: vec!["D:/test".to_string()],
             x_jre_option: "".to_string(),
             class: "com.compile.Main".to_string(),
             args: vec![],
+            exec_jar_path: None,
         };
         Jvm::new(cmd).start();
     }

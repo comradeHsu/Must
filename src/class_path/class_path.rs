@@ -2,15 +2,13 @@ use super::composite_entry;
 use super::dir_entry::DirEntry;
 use crate::class_path::composite_entry::new_wildcard_entry;
 use crate::class_path::zip_entry::ZipEntry;
+use crate::cmd::Cmd;
 use std::error::Error;
 use std::ffi::OsString;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::ffi::OsString;
-use crate::class_path::composite_entry::new_wildcard_entry;
-use crate::cmd::Cmd;
 use std::{env, fmt};
 
 pub static PATH_LIST_SEPARATOR: char = ';';
@@ -65,10 +63,7 @@ pub struct ClassPath {
 }
 
 impl ClassPath {
-
-    pub fn parse(jre_option:&String, cp_option:&Vec<String>) -> ClassPath {
-        let mut class_path = ClassPath{
-    pub fn parse(jre_option: &String, cp_option: &String) -> ClassPath {
+    pub fn parse(jre_option: &String, cp_option: &Vec<String>) -> ClassPath {
         let mut class_path = ClassPath {
             boot_class_path: None,
             ext_class_path: None,
@@ -112,10 +107,7 @@ impl ClassPath {
         panic!("Can not find jre folder!")
     }
 
-    fn user_class_path(&mut self, mut cp_option: String) {
-        if cp_option.as_str() == "" {
-            cp_option = ".".to_string();
-    fn user_class_path(&mut self, cp_option:&Vec<String>) {
+    fn user_class_path(&mut self, cp_option: &Vec<String>) {
         let mut class_paths = Vec::with_capacity(cp_option.len());
         for cp in cp_option {
             if cp == "" {
@@ -129,7 +121,7 @@ impl ClassPath {
         self.user_class_path = Some(class_paths);
     }
 
-    pub fn handle_jar(&mut self,cmd:&mut Cmd) {
+    pub fn handle_jar(&mut self, cmd: &mut Cmd) {
         if let Some(jar) = cmd.exec_jar_path() {
             let entry = ZipEntry::new(jar);
             cmd.set_class(entry.get_main_class().expect("jar中没有主清单属性"));
@@ -155,7 +147,9 @@ impl Entry for ClassPath {
                 return user_read_rs;
             }
         }
-        return Err(FindClassError("java.lang.ClassNotFindException".to_string()));
+        return Err(FindClassError(
+            "java.lang.ClassNotFindException".to_string(),
+        ));
     }
 
     fn to_string(&self) -> String {

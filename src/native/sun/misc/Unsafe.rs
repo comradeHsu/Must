@@ -311,10 +311,11 @@ mod java_unsafe {
             help_flag: false,
             version_flag: false,
             verbose_class: false,
-            cp_option: "D:/workspace/rust-jvm".to_string(),
+            cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
             class: "java.ParseIntTest".to_string(),
             args: vec![],
+            exec_jar_path: None,
         };
         let cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
         let class_path = Rc::new(cp);

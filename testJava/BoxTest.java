@@ -12,6 +12,7 @@ public class BoxTest {
             Thread.sleep(3000);
             System.out.println(x);
         }
+        System.out.println(System.getProperty("java.library.path"));
     }
 
     public void test(boolean bool){

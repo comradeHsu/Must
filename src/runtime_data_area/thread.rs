@@ -73,10 +73,10 @@ impl JavaThread {
         return self.stack.get_frames();
     }
 
-//    #[inline]
-//    pub fn std_thread(&mut self) -> Builder {
-//        return self.thread.take().unwrap();
-//    }
+    //    #[inline]
+    //    pub fn std_thread(&mut self) -> Builder {
+    //        return self.thread.take().unwrap();
+    //    }
 }
 
 #[cfg(test)]
