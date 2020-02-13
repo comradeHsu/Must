@@ -9,6 +9,7 @@ use std::{fmt, env};
 use std::path::Path;
 use std::ffi::OsString;
 use crate::class_path::composite_entry::new_wildcard_entry;
+use crate::cmd::Cmd;
 
 pub static PATH_LIST_SEPARATOR: char = ';';
 
@@ -109,6 +110,14 @@ impl ClassPath {
             }
         }
         self.user_class_path = Some(class_paths);
+    }
+
+    pub fn handle_jar(&mut self,cmd:&mut Cmd) {
+        if let Some(jar) = cmd.exec_jar_path() {
+            let entry = ZipEntry::new(jar);
+            cmd.set_class(entry.get_main_class().expect("jar中没有主清单属性"));
+            self.user_class_path.as_mut().unwrap().push(Box::new(entry));
+        }
     }
 }
 

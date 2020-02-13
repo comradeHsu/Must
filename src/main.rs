@@ -87,7 +87,8 @@ mod tests{
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
             class: "java.BubbleSortTest".to_string(),
-            args: vec![]
+            args: vec![],
+            exec_jar_path: None
         };
         let vec = "ha哈哈";
         let s:Vec<u16> = vec.encode_utf16().collect();
@@ -116,7 +117,8 @@ mod tests{
             cp_option: vec!["D:/test".to_string()],
             x_jre_option: "".to_string(),
             class: "com.compile.Main".to_string(),
-            args: vec![]
+            args: vec![],
+            exec_jar_path: None
         };
         let cp = ClassPath::parse(&cmd.x_jre_option,&cmd.cp_option);
         let class_path = Rc::new(cp);

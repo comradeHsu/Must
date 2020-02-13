@@ -7,7 +7,8 @@ pub struct Cmd {
     pub cp_option: Vec<String>,
     pub x_jre_option:String,
     pub class: String,
-    pub args: Vec<String>
+    pub args: Vec<String>,
+    exec_jar_path:Option<String>
 }
 
 impl Cmd {
@@ -19,7 +20,8 @@ impl Cmd {
             cp_option: vec![],
             x_jre_option: String::new(),
             class: String::new(),
-            args: Vec::new()
+            args: Vec::new(),
+            exec_jar_path: None
         };
     }
 
@@ -39,7 +41,7 @@ impl Cmd {
                 "-verbose" => cmd.verbose_class = true,
                 "-verbose:class" => cmd.verbose_class = true,
                 "class" => cmd.class = arg.clone(),
-                "-cp" | "-classpath"=> {
+                "-cp" | "-classpath" => {
                     let null_ptr = "".to_string();
                     let mut param = args.get(index+1).unwrap_or_else(||{&null_ptr});
                     if param.starts_with("-") {
@@ -48,10 +50,13 @@ impl Cmd {
                         index += 1;
                     }
                     let array:Vec<&str> = param.split(';').collect();
-                    let cps = flat_map::<String,&str>(array);
-                    cmd.cp_option = cps;
+                    let mut cps = flat_map::<String,&str>(array);
+                    cmd.cp_option.append(&mut cps);
                 },
-//                "Xjre" => cmd.x_jre_option = arg,
+                "-jar" => {
+                    let param = args.get(index+1).expect("-jar requires jar file specification");
+                    cmd.exec_jar_path = Some(param.clone())
+                },
                 _ => cmd.args.push(arg.clone())
             }
         }
@@ -61,5 +66,25 @@ impl Cmd {
 
     pub fn print_usage() {
         println!("Usage: {} [-options] class [args...]\n", std::env::args().nth(0).unwrap());
+    }
+
+    #[inline]
+    pub fn exec_jar_path(&self) -> Option<&String> {
+        return self.exec_jar_path.as_ref();
+    }
+
+    #[inline]
+    pub fn x_jre_option(&self) -> &String {
+        return &self.x_jre_option;
+    }
+
+    #[inline]
+    pub fn cp_option(&self) -> &Vec<String> {
+        return &self.cp_option;
+    }
+
+    #[inline]
+    pub fn set_class(&mut self,class:String) {
+        self.class = class;
     }
 }
