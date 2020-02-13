@@ -56,19 +56,19 @@ impl Display for FindClassError {
 pub struct ClassPath {
     boot_class_path: Option<Box<dyn Entry>>,
     ext_class_path: Option<Box<dyn Entry>>,
-    user_class_path: Option<Box<dyn Entry>>,
+    user_class_path: Option<Vec<Box<dyn Entry>>>,
 }
 
 impl ClassPath {
 
-    pub fn parse(jre_option:&String, cp_option:&String) -> ClassPath {
+    pub fn parse(jre_option:&String, cp_option:&Vec<String>) -> ClassPath {
         let mut class_path = ClassPath{
             boot_class_path: None,
             ext_class_path: None,
             user_class_path: None
         };
         class_path.boot_and_ext_class_path(jre_option);
-        class_path.user_class_path(String::from(cp_option));
+        class_path.user_class_path(cp_option);
         return class_path;
     }
 
@@ -76,10 +76,8 @@ impl ClassPath {
         let jre_dir = ClassPath::get_jre_dir(jre_option);
         let jre_lib_path = jre_dir.clone() + "/lib" + "/*";
         self.boot_class_path = Some(Box::new(new_wildcard_entry(&jre_lib_path)));
-        println!("boot:{}\n",self.boot_class_path.as_ref().unwrap().to_string());
         let jre_ext_path = jre_dir + "/lib/ext" + "/*";
         self.ext_class_path = Some(Box::new(new_wildcard_entry(&jre_ext_path)));
-        println!("ext:{}\n",self.ext_class_path.as_ref().unwrap().to_string());
     }
 
     fn get_jre_dir(jre_option:&String) -> String {
@@ -99,30 +97,41 @@ impl ClassPath {
         panic!("Can not find jre folder!")
     }
 
-    fn user_class_path(&mut self, mut cp_option:String) {
-        if cp_option.as_str() == "" {
-            cp_option = ".".to_string();
+    fn user_class_path(&mut self, cp_option:&Vec<String>) {
+        let mut class_paths = Vec::with_capacity(cp_option.len());
+        for cp in cp_option {
+            if cp == "" {
+                let entry = new_entry(&".".to_string());
+                class_paths.push(entry);
+            } else {
+                let entry = new_entry(cp);
+                class_paths.push(entry);
+            }
         }
-        self.user_class_path = Some(new_entry(&cp_option));
+        self.user_class_path = Some(class_paths);
     }
 }
 
-impl Entry for ClassPath{
+impl Entry for ClassPath {
     fn read_class(&self, class_name: &str) -> Result<(Vec<u8>, Box<dyn Entry>), FindClassError> {
         let class = class_name.to_string() + ".class";
         let boot_read_rs = self.boot_class_path.as_ref()
             .unwrap().read_class(&class);
         if boot_read_rs.is_ok() {
-            println!("boot:\n");
             return boot_read_rs;
         }
         let ext_read_rs = self.ext_class_path.as_ref()
             .unwrap().read_class(&class);
         if ext_read_rs.is_ok() {
-            println!("ext:\n");
             return boot_read_rs;
         }
-        return self.user_class_path.as_ref().unwrap().read_class(&class);
+        for path in self.user_class_path.as_ref().unwrap() {
+            let user_read_rs = path.read_class(&class);
+            if user_read_rs.is_ok() {
+                return user_read_rs;
+            }
+        }
+        return Err(FindClassError("java.lang.ClassNotFindException".to_string()));
     }
 
     fn to_string(&self) -> String {

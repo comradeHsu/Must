@@ -84,7 +84,7 @@ mod tests{
             help_flag: false,
             version_flag: false,
             verbose_class: true,
-            cp_option: "D:/workspace/rust-jvm".to_string(),
+            cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
             class: "java.BubbleSortTest".to_string(),
             args: vec![]
@@ -113,7 +113,7 @@ mod tests{
             help_flag: false,
             version_flag: false,
             verbose_class: false,
-            cp_option: "D:/test".to_string(),
+            cp_option: vec!["D:/test".to_string()],
             x_jre_option: "".to_string(),
             class: "com.compile.Main".to_string(),
             args: vec![]
