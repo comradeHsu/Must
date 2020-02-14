@@ -392,10 +392,14 @@ pub struct ConstantUtf8Info {
 }
 
 impl ConstantUtf8Info {
+    /// here must be using from_utf8_unchecked function,
+    /// because java/lang/CharacterData0E.class has unicode char
     pub fn read_info(&mut self, reader: &mut ClassReader) {
         let len = reader.read_u16() as usize;
         let bytes = reader.read_bytes(len);
-        self.val = String::from_utf8(bytes).unwrap();
+        unsafe {
+            self.val = String::from_utf8_unchecked(bytes);
+        }
     }
 }
 
