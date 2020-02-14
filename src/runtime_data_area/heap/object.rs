@@ -90,6 +90,19 @@ impl Object {
     }
 
     #[inline]
+    pub fn is_class_object(&self) -> bool {
+        return self.meta.is_some();
+    }
+
+    #[inline]
+    pub fn is_array_object(&self) -> bool {
+        match &self.data {
+            StandardObject(_) => false,
+            _ => true,
+        }
+    }
+
+    #[inline]
     pub fn is_instance_of(&self, class: Rc<RefCell<Class>>) -> bool {
         return (*class)
             .borrow()
@@ -126,6 +139,32 @@ impl Object {
             _ => panic!("The Object is array"),
         };
         return slots.get_int((*field.unwrap()).borrow().slot_id());
+    }
+
+    pub fn get_ref_var_by_slot_id(&self, slot_id: usize) -> Option<Rc<RefCell<Object>>> {
+        let slots = match &self.data {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array"),
+        };
+        return slots.get_ref(slot_id);
+    }
+
+    #[inline]
+    pub fn get_long_var_by_slot_id(&self, slot_id: usize) -> i64 {
+        let slots = match &self.data {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array"),
+        };
+        return slots.get_long(slot_id);
+    }
+
+    #[inline]
+    pub fn set_long_var_by_slot_id(&mut self, slot_id: usize, value: i64) {
+        let slots = match &mut self.data {
+            StandardObject(data) => data.as_mut().unwrap(),
+            _ => panic!("The Object is array"),
+        };
+        return slots.set_long(slot_id, value);
     }
 }
 

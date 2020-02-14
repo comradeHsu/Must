@@ -91,9 +91,9 @@ impl Instruction for LShl {
 
     fn execute(&mut self, frame: &mut Frame) {
         let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int() as i64;
+        let v2 = stack.pop_int() as u32;
         let v1 = stack.pop_long();
-        let rs = v1 << v2;
+        let (rs, _) = v1.overflowing_shl(v2);
         stack.push_long(rs);
     }
 }

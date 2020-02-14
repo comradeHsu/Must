@@ -550,6 +550,11 @@ impl Class {
     }
 
     #[inline]
+    pub fn static_vars(&self) -> Option<&Slots> {
+        return self.static_vars.as_ref();
+    }
+
+    #[inline]
     pub fn get_clinit_method(&self) -> Option<Rc<Method>> {
         return self.get_static_method("<clinit>", "()V");
     }
@@ -585,7 +590,7 @@ impl Class {
         return primitive.is_some();
     }
 
-    pub fn set_ref_var(
+    pub fn set_static_ref_var(
         class: Rc<RefCell<Self>>,
         name: &str,
         descriptor: &str,
@@ -597,7 +602,7 @@ impl Class {
         slots.set_ref((*field.unwrap()).borrow().slot_id(), reference);
     }
 
-    pub fn get_ref_var(
+    pub fn get_static_ref_var(
         class: Rc<RefCell<Self>>,
         name: &str,
         descriptor: &str,
@@ -606,6 +611,41 @@ impl Class {
         let borrow = (*class).borrow();
         let slots = borrow.static_vars.as_ref().unwrap();
         return slots.get_ref((*field.unwrap()).borrow().slot_id());
+    }
+
+    #[inline]
+    pub fn get_static_ref_by_slot_id(
+        class: Rc<RefCell<Self>>,
+        slot_id: usize,
+    ) -> Option<Rc<RefCell<Object>>> {
+        let borrow = (*class).borrow();
+        return borrow
+            .static_vars
+            .as_ref()
+            .map_or_else(|| None, |slots| slots.get_ref(slot_id));
+    }
+
+    #[inline]
+    pub fn get_static_long_by_slot_id(
+        class: Rc<RefCell<Self>>,
+        slot_id: usize,
+    ) -> i64 {
+        let borrow = (*class).borrow();
+        return borrow
+            .static_vars
+            .as_ref()
+            .map_or_else(|| 0, |slots| slots.get_long(slot_id));
+    }
+
+    #[inline]
+    pub fn set_static_long_by_slot_id(
+        class: Rc<RefCell<Self>>,
+        slot_id: usize,
+        value: i64
+    ) {
+        let mut borrow = (*class).borrow_mut();
+        let static_vars = borrow.static_vars.as_mut().unwrap();
+        static_vars.set_long(slot_id,value);
     }
 
     #[inline]

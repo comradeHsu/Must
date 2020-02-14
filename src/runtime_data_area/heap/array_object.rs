@@ -76,6 +76,25 @@ impl Object {
         }
     }
 
+    pub fn get_long_by_index(&self, index: usize) -> i64 {
+        match &self.data {
+            Longs(array) => {
+                let value = array.get(index).map_or_else(|| 0, |x| *x);
+                return value;
+            }
+            _ => panic!("The object type is error"),
+        }
+    }
+
+    pub fn set_long_by_index(&mut self, index: usize, value:i64) {
+        match &mut self.data {
+            Longs(array) => {
+                array[index] = value;
+            }
+            _ => panic!("The object type is error"),
+        }
+    }
+
     pub fn chars(&self) -> &Vec<u16> {
         match &self.data {
             Chars(array) => array,
@@ -128,6 +147,16 @@ impl Object {
     pub fn mut_references(&mut self) -> &mut Vec<Option<Rc<RefCell<Object>>>> {
         match &mut self.data {
             References(array) => array,
+            _ => panic!("The object type is error"),
+        }
+    }
+
+    pub fn get_references_by_index(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+        match &self.data {
+            References(array) => {
+                let reference = array.get(index).map_or_else(|| None, |x| x.clone());
+                return reference;
+            }
             _ => panic!("The object type is error"),
         }
     }

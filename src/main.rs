@@ -34,10 +34,10 @@ mod tests {
         let cmd = Cmd {
             help_flag: false,
             version_flag: false,
-            verbose_class: false,
+            verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testJava.BubbleSortTest".to_string(),
+            class: "testJava.CLassLoaderTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

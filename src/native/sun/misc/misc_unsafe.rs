@@ -1,9 +1,12 @@
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
+use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::DataType::{Ints, StandardObject};
 use crate::utils::numbers::get_power_of_two;
 use std::alloc::Layout;
 use std::mem::size_of;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub fn init() {
     Registry::register(
@@ -47,6 +50,18 @@ pub fn init() {
     Registry::register("sun/misc/Unsafe", "putLong", "(JJ)V", put_long);
     Registry::register("sun/misc/Unsafe", "getByte", "(J)B", get_byte);
     Registry::register("sun/misc/Unsafe", "freeMemory", "(J)V", free_memory);
+    Registry::register(
+        "sun/misc/Unsafe",
+        "getObjectVolatile",
+        "(Ljava/lang/Object;J)Ljava/lang/Object;",
+        get_object_volatile,
+    );
+    Registry::register(
+        "sun/misc/Unsafe",
+        "compareAndSwapLong",
+        "(Ljava/lang/Object;JJJ)Z",
+        compare_and_swap_long,
+    );
 }
 
 pub fn array_base_offset(frame: &mut Frame) {
@@ -218,6 +233,67 @@ pub fn free_memory(frame: &mut Frame) {
     unsafe {
         std::alloc::dealloc(address as *mut u8, layout);
         memory_size_map::delete(address);
+    }
+}
+
+/// public native Object getObjectVolatile(Object o, long offset);
+/// (Ljava/lang/Object;J)Ljava/lang/Object;
+pub fn get_object_volatile(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let object = vars.get_ref(1).unwrap();
+    let offset = vars.get_long(2) as usize;
+
+    let stack = frame.operand_stack().expect("stack is none");
+    if (*object).borrow().is_class_object() {
+        let meta_class = (*object).borrow().class();
+        let field = Class::get_static_ref_by_slot_id(meta_class, offset);
+        stack.push_ref(field);
+    } else if (*object).borrow().is_array_object() {
+        let element = (*object).borrow().get_references_by_index(offset);
+        stack.push_ref(element);
+    } else {
+        let field = (*object).borrow().get_ref_var_by_slot_id(offset);
+        stack.push_ref(field);
+    }
+}
+
+/// public final native boolean compareAndSwapLong(Object o, long offset,
+///                                                   long expected,
+///                                                   long x);
+/// (Ljava/lang/Object;JJJ)Z
+pub fn compare_and_swap_long(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let object = vars.get_ref(1).unwrap();
+    let offset = vars.get_long(2) as usize;
+    let expect = vars.get_long(3);
+    let new_value = vars.get_long(4);
+
+    let stack = frame.operand_stack().expect("stack is none");
+    let mut field = 0i64;
+    let mut raw_class:Option<Rc<RefCell<Class>>> = None;
+    if (*object).borrow().is_class_object() {
+        let meta_class = (*object).borrow().class();
+        field = Class::get_static_long_by_slot_id(meta_class.clone(), offset);
+        raw_class = Some(meta_class);
+    } else if (*object).borrow().is_array_object() {
+        field = (*object).borrow().get_long_by_index(offset);
+    } else {
+        field = (*object).borrow().get_long_var_by_slot_id(offset);
+    }
+
+    if expect == field {
+        if (*object).borrow().is_class_object() {
+            Class::set_static_long_by_slot_id(raw_class.unwrap(), offset, new_value);
+        } else if (*object).borrow().is_array_object() {
+            (*object).borrow_mut().set_long_by_index(offset,new_value);
+        } else {
+            (*object).borrow_mut().set_long_var_by_slot_id(offset,new_value);
+        }
+        stack.push_boolean(true);
+    } else {
+        stack.push_boolean(false);
     }
 }
 

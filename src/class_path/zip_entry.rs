@@ -36,7 +36,7 @@ impl ZipEntry {
     }
 
     pub fn find_manifest(&self) -> Option<Vec<u8>> {
-        let index = self.file_cache.get("MATA-INF/MANIFEST.MF");
+        let index = self.file_cache.get("/META-INF/MANIFEST.MF");
         if index.is_some() {
             let size = *index.unwrap();
             let zip_file = self.file_cache.file.clone();
