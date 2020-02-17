@@ -55,6 +55,12 @@ pub fn init() {
         "(Ljava/lang/String;)Ljava/lang/String;",
         map_library_name,
     );
+    Registry::register(
+        "java/lang/System",
+        "nanoTime",
+        "()J",
+        nano_time,
+    );
 }
 
 pub fn array_copy(frame: &mut Frame) {
@@ -208,8 +214,8 @@ pub fn set_err0(frame: &mut Frame) {
     Class::set_static_ref_var(sys_class, "err", "Ljava/io/PrintStream;", err);
 }
 
-// public static native long currentTimeMillis();
-// ()J
+/// public static native long currentTimeMillis();
+/// ()J
 pub fn current_time_millis(frame: &mut Frame) {
     let millis = Local::now().timestamp_millis();
     let stack = frame.operand_stack().expect("stack is none");
@@ -226,4 +232,12 @@ pub fn map_library_name(frame: &mut Frame) {
     let loader = (*class).borrow().loader();
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_ref(Some(StringPool::java_string(loader, rust_name)));
+}
+
+/// public static native long nanoTime();
+/// ()J
+pub fn nano_time(frame: &mut Frame) {
+    let nano = Local::now().timestamp_nanos();
+    let stack = frame.operand_stack().expect("stack is none");
+    stack.push_long(nano)
 }

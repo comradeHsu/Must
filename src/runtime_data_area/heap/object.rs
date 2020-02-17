@@ -9,6 +9,7 @@ use crate::runtime_data_area::slot::Slot;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::runtime_data_area::heap::class_loader::ClassLoader;
 
 #[derive(Debug, Clone)]
 pub struct Object {
@@ -197,6 +198,7 @@ pub enum MetaData {
     Null,
     Field(Rc<RefCell<Field>>),
     Method(Rc<Method>),
+    ClassLoader(Rc<RefCell<ClassLoader>>)
 }
 
 impl MetaData {

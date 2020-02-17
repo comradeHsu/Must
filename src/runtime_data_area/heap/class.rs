@@ -426,6 +426,13 @@ impl Class {
     }
 
     #[inline]
+    pub fn new_class_loader_object(class: &Rc<RefCell<Class>>) -> Object {
+        let mut object = Object::new(class.clone());
+
+        return Object::new(class.clone());
+    }
+
+    #[inline]
     pub fn set_class_loader(&mut self, class_loader: Rc<RefCell<ClassLoader>>) {
         self.loader = Some(class_loader);
     }
@@ -702,6 +709,20 @@ impl Class {
             }
         }
         return methods;
+    }
+
+    #[inline]
+    pub fn is_class_loader(&self) -> bool {
+        let mut super_class = self.super_class.clone();
+        while super_class.is_some() {
+            let rc = super_class.unwrap();
+            let rc_super_class = (*rc).borrow();
+            if rc_super_class.name() == "java/lang/CLassLoader" {
+                return true;
+            }
+            super_class = rc_super_class.super_class.clone();
+        }
+        return false;
     }
 
     ///about array's class
