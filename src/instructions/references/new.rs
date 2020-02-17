@@ -41,10 +41,10 @@ impl Instruction for New {
         if ref_class.is_interface() || ref_class.is_abstract() {
             panic!("java.lang.InstantiationError")
         }
-        if ref_class.is_class_loader() {
-
-        }
-        let object = Class::new_object(&class);
+        let object = match ref_class.is_class_loader() {
+            true => Class::new_class_loader_object(&class),
+            false => Class::new_object(&class)
+        };
         frame
             .operand_stack()
             .expect("")

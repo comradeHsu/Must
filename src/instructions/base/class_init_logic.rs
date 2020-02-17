@@ -10,7 +10,7 @@ pub fn init_class(thread: Rc<RefCell<JavaThread>>, class: Rc<RefCell<Class>>) {
 }
 
 fn schedule_clinit(thread: Rc<RefCell<JavaThread>>, class: Rc<RefCell<Class>>) {
-    let clinit = (*class).borrow().get_clinit_method();
+    let clinit = Class::get_clinit_method(class);
     if clinit.is_some() {
         let new_frame = JavaThread::new_frame(thread.clone(), clinit.unwrap());
         (*thread).borrow_mut().push_frame(new_frame);

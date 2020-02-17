@@ -20,6 +20,17 @@ pub struct ClassLoader {
 }
 
 impl ClassLoader {
+
+    #[inline]
+    pub fn non_bootstrap_loader(verbose_class: bool) -> Rc<RefCell<ClassLoader>> {
+        let class_loader = boxed(ClassLoader {
+            class_path:Rc::new(ClassPath::new()),
+            verbose_class,
+            class_map: Default::default(),
+        });
+        return class_loader;
+    }
+
     #[inline]
     pub fn new(class_path: Rc<ClassPath>, verbose_class: bool) -> Rc<RefCell<ClassLoader>> {
         let class_loader = boxed(ClassLoader {

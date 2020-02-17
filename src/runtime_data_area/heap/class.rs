@@ -14,7 +14,7 @@ use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::DataType::{
     Bytes, Chars, Doubles, Floats, Ints, Longs, References, Shorts,
 };
-use crate::runtime_data_area::heap::object::Object;
+use crate::runtime_data_area::heap::object::{Object, MetaData};
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
@@ -428,8 +428,8 @@ impl Class {
     #[inline]
     pub fn new_class_loader_object(class: &Rc<RefCell<Class>>) -> Object {
         let mut object = Object::new(class.clone());
-
-        return Object::new(class.clone());
+        object.set_meta_data(MetaData::ClassLoader(ClassLoader::non_bootstrap_loader(false)));
+        return object;
     }
 
     #[inline]
@@ -562,17 +562,13 @@ impl Class {
     }
 
     #[inline]
-    pub fn get_clinit_method(&self) -> Option<Rc<Method>> {
-        return self.get_static_method("<clinit>", "()V");
+    pub fn get_clinit_method(class:Rc<RefCell<Self>>) -> Option<Rc<Method>> {
+        return Self::get_static_method(class,"<clinit>", "()V");
     }
 
-    pub fn get_static_method(&self, name: &str, desc: &str) -> Option<Rc<Method>> {
-        for method in &self.methods {
-            if method.is_static() && method.name() == name && desc == method.descriptor() {
-                return Some(method.clone());
-            }
-        }
-        return None;
+    #[inline]
+    pub fn get_static_method(class: Rc<RefCell<Class>>, name: &str, desc: &str) -> Option<Rc<Method>> {
+        return Class::get_method(Some(class), name, desc, true);
     }
 
     pub fn get_instance_method(

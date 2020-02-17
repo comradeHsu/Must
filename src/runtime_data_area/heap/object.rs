@@ -225,4 +225,12 @@ impl MetaData {
             _ => panic!("The MetaData not method"),
         }
     }
+
+    #[inline]
+    pub fn get_class_loader(&self) -> Rc<RefCell<ClassLoader>> {
+        match self {
+            MetaData::ClassLoader(loader) => loader.clone(),
+            _ => panic!("The MetaData not ClassLoader"),
+        }
+    }
 }

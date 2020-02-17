@@ -64,6 +64,11 @@ impl JavaThread {
     }
 
     #[inline]
+    pub fn stack_size(&self) -> usize {
+        return self.stack.size();
+    }
+
+    #[inline]
     pub fn clear_stack(&mut self) {
         self.stack.clear();
     }

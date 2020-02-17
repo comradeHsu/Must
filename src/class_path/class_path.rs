@@ -63,6 +63,14 @@ pub struct ClassPath {
 }
 
 impl ClassPath {
+    pub fn new() -> ClassPath {
+        return ClassPath {
+            boot_class_path: None,
+            ext_class_path: None,
+            user_class_path: None,
+        };
+    }
+
     pub fn parse(jre_option: &String, cp_option: &Vec<String>) -> ClassPath {
         let mut class_path = ClassPath {
             boot_class_path: None,

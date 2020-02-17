@@ -8,6 +8,7 @@ use chrono::Local;
 use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
+use crate::runtime_data_area::heap::object::Object;
 
 pub fn interpret(thread: Rc<RefCell<JavaThread>>) {
     circulate(thread);
@@ -37,6 +38,33 @@ pub fn circulate(mut thread: Rc<RefCell<JavaThread>>) {
         }
     }
     println!("end {:?}", Local::now());
+}
+
+/// java method, return ref
+#[inline]
+pub fn invoke_java_method(mut thread: Rc<RefCell<JavaThread>>) -> Option<Rc<RefCell<Object>>> {
+    let mut reader = BytecodeReader::new();
+    loop {
+        let current_frame = (*thread).borrow().current_frame();
+        let pc = (*current_frame).borrow().next_pc();
+        (*thread).borrow_mut().set_pc(pc);
+        let method = (*current_frame).borrow().method_ptr();
+        let bytecode = method.code();
+        reader.reset(bytecode, pc);
+        let opcode = reader.read_u8();
+        let mut inst = new_instruction(opcode);
+        inst.fetch_operands(&mut reader);
+        (*current_frame).borrow_mut().set_next_pc(reader.pc());
+        inst.execute((*current_frame).borrow_mut().deref_mut());
+        if (*thread).borrow().stack_size() == 1 {
+            break;
+        }
+    }
+    let last_frame = (*thread).borrow().current_frame();
+//    let mut borrow_frame = (*last_frame).borrow_mut();
+    let object =  (*last_frame).borrow_mut().operand_stack().expect("stack is none").pop_ref();
+    (*thread).borrow_mut().pop_frame();
+    return object;
 }
 
 #[cfg(test)]

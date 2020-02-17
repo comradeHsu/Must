@@ -50,6 +50,11 @@ impl Stack {
     }
 
     #[inline]
+    pub fn size(&self) -> usize {
+        return self.size;
+    }
+
+    #[inline]
     pub fn clear(&mut self) {
         while !self.is_empty() {
             self.pop();
