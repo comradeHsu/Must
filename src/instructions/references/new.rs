@@ -43,7 +43,7 @@ impl Instruction for New {
         }
         let object = match ref_class.is_class_loader() {
             true => Class::new_class_loader_object(&class),
-            false => Class::new_object(&class)
+            false => Class::new_object(&class),
         };
         frame
             .operand_stack()

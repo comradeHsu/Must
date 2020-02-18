@@ -66,7 +66,7 @@ impl Instruction for IAdd {
         let stack = frame.operand_stack().expect("operand_stack is none");
         let v2 = stack.pop_int();
         let v1 = stack.pop_int();
-        let rs = v1 + v2;
+        let (rs, _) = v1.overflowing_add(v2);
         stack.push_int(rs);
     }
 }

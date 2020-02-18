@@ -1,12 +1,13 @@
+use crate::instructions::base::class_init_logic::init_class;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::DataType::{Ints, StandardObject};
 use crate::utils::numbers::get_power_of_two;
 use std::alloc::Layout;
+use std::cell::RefCell;
 use std::mem::size_of;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 pub fn init() {
     Registry::register(
@@ -61,6 +62,12 @@ pub fn init() {
         "compareAndSwapLong",
         "(Ljava/lang/Object;JJJ)Z",
         compare_and_swap_long,
+    );
+    Registry::register(
+        "sun/misc/Unsafe",
+        "ensureClassInitialized",
+        "(Ljava/lang/Class;)V",
+        ensure_class_initialized,
     );
 }
 
@@ -272,7 +279,7 @@ pub fn compare_and_swap_long(frame: &mut Frame) {
 
     let stack = frame.operand_stack().expect("stack is none");
     let mut field = 0i64;
-    let mut raw_class:Option<Rc<RefCell<Class>>> = None;
+    let mut raw_class: Option<Rc<RefCell<Class>>> = None;
     if (*object).borrow().is_class_object() {
         let meta_class = (*object).borrow().class();
         field = Class::get_static_long_by_slot_id(meta_class.clone(), offset);
@@ -287,13 +294,27 @@ pub fn compare_and_swap_long(frame: &mut Frame) {
         if (*object).borrow().is_class_object() {
             Class::set_static_long_by_slot_id(raw_class.unwrap(), offset, new_value);
         } else if (*object).borrow().is_array_object() {
-            (*object).borrow_mut().set_long_by_index(offset,new_value);
+            (*object).borrow_mut().set_long_by_index(offset, new_value);
         } else {
-            (*object).borrow_mut().set_long_var_by_slot_id(offset,new_value);
+            (*object)
+                .borrow_mut()
+                .set_long_var_by_slot_id(offset, new_value);
         }
         stack.push_boolean(true);
     } else {
         stack.push_boolean(false);
+    }
+}
+
+/// public native void ensureClassInitialized(Class c);
+/// (Ljava/lang/Class;)V
+pub fn ensure_class_initialized(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    // vars.GetRef(0) // this
+    let object = vars.get_ref(1).unwrap();
+    let raw_class = (*object).borrow().meta().unwrap();
+    if !(*raw_class).borrow().initialized() {
+        init_class(frame.thread(), raw_class.clone());
     }
 }
 

@@ -86,7 +86,7 @@ impl Object {
         }
     }
 
-    pub fn set_long_by_index(&mut self, index: usize, value:i64) {
+    pub fn set_long_by_index(&mut self, index: usize, value: i64) {
         match &mut self.data {
             Longs(array) => {
                 array[index] = value;

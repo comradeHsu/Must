@@ -2,6 +2,7 @@ use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::Instruction;
+use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::instructions::references::athrow::AThrow;
 use crate::interpreter::{interpret, invoke_java_method};
 use crate::runtime_data_area::frame::Frame;
@@ -14,7 +15,6 @@ use crate::utils::boxed;
 use chrono::Local;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::instructions::base::method_invoke_logic::invoke_method;
 
 pub struct Jvm {
     cmd: Cmd,
@@ -24,21 +24,37 @@ pub struct Jvm {
     main_thread: Rc<RefCell<JavaThread>>,
 }
 
+pub static mut JVM:Option<Jvm> = None;
+
 impl Jvm {
-    pub fn new(mut cmd: Cmd) -> Jvm {
+    pub fn new(mut cmd: Cmd) -> &'static mut Jvm {
         let mut cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
         if cmd.exec_jar_path().is_some() {
             cp.handle_jar(&mut cmd);
         }
         let class_path = Rc::new(cp);
         let class_loader = ClassLoader::new(class_path, cmd.verbose_class);
-        return Jvm {
+        let jvm = Jvm {
             cmd,
             boot_class_loader: class_loader,
             ext_class_loader: None,
             main_thread: boxed(JavaThread::new_main_thread()),
-            app_class_loader: None
+            app_class_loader: None,
         };
+        unsafe {
+            JVM = Some(jvm);
+            return JVM.as_mut().unwrap();
+        }
+    }
+
+    #[inline]
+    pub fn main_thread(&self) -> Rc<RefCell<JavaThread>> {
+        return self.main_thread.clone();
+    }
+
+    #[inline]
+    pub fn boot_class_loader(&self) -> Rc<RefCell<ClassLoader>> {
+        return self.boot_class_loader.clone();
     }
 
     pub fn start(&mut self) {
@@ -54,21 +70,29 @@ impl Jvm {
     fn init_vm(&mut self) {
         let vm_class = ClassLoader::load_class(self.boot_class_loader.clone(), "sun/misc/VM");
         init_class(self.main_thread.clone(), vm_class);
+        interpret(self.main_thread.clone());
 
-//        let ext_class = ClassLoader::load_class(self.boot_class_loader.clone(), "sun/misc/Launcher$ExtClassLoader");
-//        init_class(self.main_thread.clone(), ext_class.clone());
-//
-//        let app_class = ClassLoader::load_class(self.boot_class_loader.clone(), "sun/misc/Launcher$AppClassLoader");
-//        init_class(self.main_thread.clone(), app_class.clone());
+        let ext_class = ClassLoader::load_class(
+            self.boot_class_loader.clone(),
+            "sun/misc/Launcher$ExtClassLoader",
+        );
+        init_class(self.main_thread.clone(), ext_class.clone());
+
+        let app_class = ClassLoader::load_class(
+            self.boot_class_loader.clone(),
+            "sun/misc/Launcher$AppClassLoader",
+        );
+        init_class(self.main_thread.clone(), app_class.clone());
 
         interpret(self.main_thread.clone());
-//        self.ext_class_loader = self.create_ext_loader(ext_class);
-//        self.app_class_loader = self.create_app_loader(app_class);
+        self.ext_class_loader = self.create_ext_loader(ext_class);
+        self.app_class_loader = self.create_app_loader(app_class);
     }
 
     fn exec_main(&self) {
         let class_name = self.cmd.class.clone().replace('.', "/");
-        let main_class = ClassLoader::load_class(self.boot_class_loader.clone(), class_name.as_str());
+        let main_class =
+            ClassLoader::load_class(self.boot_class_loader.clone(), class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
         if main_method.is_none() {
             println!("Main method not found in class {}", self.cmd.class.as_str());
@@ -85,7 +109,8 @@ impl Jvm {
     }
 
     fn create_args_array(&self) -> Rc<RefCell<Object>> {
-        let string_class = ClassLoader::load_class(self.boot_class_loader.clone(), "java/lang/String");
+        let string_class =
+            ClassLoader::load_class(self.boot_class_loader.clone(), "java/lang/String");
         let args_arr_class = (*string_class).borrow().array_class();
         let mut args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
         let java_args = args_arr.mut_references();
@@ -119,19 +144,33 @@ impl Jvm {
         athrow.execute(frame);
     }
 
-    fn create_ext_loader(&self,ext_class:Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
-        let method = Class::get_static_method(ext_class,"getExtClassLoader","()Lsun/misc/Launcher$ExtClassLoader;");
-        let mut dummy_frame = JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
+    fn create_ext_loader(&self, ext_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
+        let method = Class::get_static_method(
+            ext_class,
+            "getExtClassLoader",
+            "()Lsun/misc/Launcher$ExtClassLoader;",
+        );
+        let mut dummy_frame =
+            JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
         let mut frame = JavaThread::new_frame(self.main_thread.clone(), method.unwrap());
         (*self.main_thread).borrow_mut().push_frame(dummy_frame);
         (*self.main_thread).borrow_mut().push_frame(frame);
         return invoke_java_method(self.main_thread.clone());
     }
 
-    fn create_app_loader(&self, app_class:Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
-        let method = Class::get_static_method(app_class,"getAppClassLoader","(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;");
-        let mut dummy_frame = JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
+    fn create_app_loader(&self, app_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
+        let method = Class::get_static_method(
+            app_class,
+            "getAppClassLoader",
+            "(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;",
+        );
+        let mut dummy_frame =
+            JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
         let mut frame = JavaThread::new_frame(self.main_thread.clone(), method.unwrap());
+        frame
+            .local_vars()
+            .expect("LocalVars is none")
+            .set_ref(0, self.ext_class_loader.clone());
         (*self.main_thread).borrow_mut().push_frame(dummy_frame);
         (*self.main_thread).borrow_mut().push_frame(frame);
         return invoke_java_method(self.main_thread.clone());

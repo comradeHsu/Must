@@ -23,7 +23,7 @@ public class ClassLoaderTest {
 class SelfClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) {
         try {
-            String path = "./" + name + ".class" ;
+            String path = "D:\\workspace\\demo\\target\\classes\\com\\example\\demo\\controller\\" + name + ".class" ;
             FileInputStream in = new FileInputStream(path) ;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buf = new byte[1024] ;
@@ -33,7 +33,8 @@ class SelfClassLoader extends ClassLoader {
             }
             in.close();
             byte[] classBytes = baos.toByteArray();
-            return defineClass(classBytes , 0 , classBytes.length);
+            System.out.println(classBytes.length);
+            return defineClass("com.example.demo.controller.User",classBytes , 0 , classBytes.length);
         } catch (Exception e) {
             e.printStackTrace();
         }

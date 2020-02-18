@@ -16,6 +16,12 @@ pub fn init() {
         "(Ljava/security/PrivilegedAction;)Ljava/lang/Object;",
         do_privileged,
     );
+    Registry::register(
+        "java/security/AccessController",
+        "doPrivileged",
+        "(Ljava/security/PrivilegedExceptionAction;Ljava/security/AccessControlContext;)Ljava/lang/Object;",
+        do_privileged,
+    );
     Registry::register("testJava/LambdaTest", "run", "(LtestJava/Action;)I", run);
     Registry::register(
         "java/security/AccessController",

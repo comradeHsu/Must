@@ -14,7 +14,7 @@ use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::DataType::{
     Bytes, Chars, Doubles, Floats, Ints, Longs, References, Shorts,
 };
-use crate::runtime_data_area::heap::object::{Object, MetaData};
+use crate::runtime_data_area::heap::object::{MetaData, Object};
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
@@ -428,7 +428,9 @@ impl Class {
     #[inline]
     pub fn new_class_loader_object(class: &Rc<RefCell<Class>>) -> Object {
         let mut object = Object::new(class.clone());
-        object.set_meta_data(MetaData::ClassLoader(ClassLoader::non_bootstrap_loader(false)));
+        object.set_meta_data(MetaData::ClassLoader(ClassLoader::non_bootstrap_loader(
+            false,
+        )));
         return object;
     }
 
@@ -562,12 +564,16 @@ impl Class {
     }
 
     #[inline]
-    pub fn get_clinit_method(class:Rc<RefCell<Self>>) -> Option<Rc<Method>> {
-        return Self::get_static_method(class,"<clinit>", "()V");
+    pub fn get_clinit_method(class: Rc<RefCell<Self>>) -> Option<Rc<Method>> {
+        return Self::get_static_method(class, "<clinit>", "()V");
     }
 
     #[inline]
-    pub fn get_static_method(class: Rc<RefCell<Class>>, name: &str, desc: &str) -> Option<Rc<Method>> {
+    pub fn get_static_method(
+        class: Rc<RefCell<Class>>,
+        name: &str,
+        desc: &str,
+    ) -> Option<Rc<Method>> {
         return Class::get_method(Some(class), name, desc, true);
     }
 
@@ -629,10 +635,7 @@ impl Class {
     }
 
     #[inline]
-    pub fn get_static_long_by_slot_id(
-        class: Rc<RefCell<Self>>,
-        slot_id: usize,
-    ) -> i64 {
+    pub fn get_static_long_by_slot_id(class: Rc<RefCell<Self>>, slot_id: usize) -> i64 {
         let borrow = (*class).borrow();
         return borrow
             .static_vars
@@ -641,14 +644,10 @@ impl Class {
     }
 
     #[inline]
-    pub fn set_static_long_by_slot_id(
-        class: Rc<RefCell<Self>>,
-        slot_id: usize,
-        value: i64
-    ) {
+    pub fn set_static_long_by_slot_id(class: Rc<RefCell<Self>>, slot_id: usize, value: i64) {
         let mut borrow = (*class).borrow_mut();
         let static_vars = borrow.static_vars.as_mut().unwrap();
-        static_vars.set_long(slot_id,value);
+        static_vars.set_long(slot_id, value);
     }
 
     #[inline]
@@ -713,7 +712,7 @@ impl Class {
         while super_class.is_some() {
             let rc = super_class.unwrap();
             let rc_super_class = (*rc).borrow();
-            if rc_super_class.name() == "java/lang/CLassLoader" {
+            if rc_super_class.name() == "java/lang/ClassLoader" {
                 return true;
             }
             super_class = rc_super_class.super_class.clone();

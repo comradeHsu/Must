@@ -55,12 +55,7 @@ pub fn init() {
         "(Ljava/lang/String;)Ljava/lang/String;",
         map_library_name,
     );
-    Registry::register(
-        "java/lang/System",
-        "nanoTime",
-        "()J",
-        nano_time,
-    );
+    Registry::register("java/lang/System", "nanoTime", "()J", nano_time);
 }
 
 pub fn array_copy(frame: &mut Frame) {
@@ -138,6 +133,8 @@ pub fn init_properties(frame: &mut Frame) {
 
 fn _sys_props() -> HashMap<String, String> {
     let mut map = HashMap::new();
+    map.insert("java.security.debug".to_owned(), "access".to_owned());
+    map.insert("java.security.auth.debug".to_owned(), "access".to_owned());
     map.insert("java.version".to_owned(), "1.8.0".to_owned());
     map.insert("java.vendor".to_owned(), "jvm.rust".to_owned());
     map.insert("java.home".to_owned(), "D:\\java8\\JDK".to_owned());

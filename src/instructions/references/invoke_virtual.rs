@@ -69,8 +69,8 @@ impl Instruction for InvokeVirtual {
             //                InvokeVirtual::hack_println(frame,method_ref.descriptor());
             //                return;
             //            }
-//            Jvm::throw_exception(frame, "java.lang.NullPointerException", None);
-                        panic!("java.lang.NullPointerException");
+            //            Jvm::throw_exception(frame, "java.lang.NullPointerException", None);
+            panic!("java.lang.NullPointerException");
             return;
         }
         let obj_class = (*object.unwrap()).borrow().class();

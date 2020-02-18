@@ -2,13 +2,14 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::new_instruction;
 use crate::native::init;
 use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::boxed;
 use chrono::Local;
 use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
-use crate::runtime_data_area::heap::object::Object;
+//use std::time;
 
 pub fn interpret(thread: Rc<RefCell<JavaThread>>) {
     circulate(thread);
@@ -26,7 +27,7 @@ pub fn circulate(mut thread: Rc<RefCell<JavaThread>>) {
         (*thread).borrow_mut().set_pc(pc);
         let method = (*current_frame).borrow().method_ptr();
         let bytecode = method.code();
-        //        println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
+        //       println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);
@@ -36,6 +37,8 @@ pub fn circulate(mut thread: Rc<RefCell<JavaThread>>) {
         if (*thread).borrow().is_stack_empty() {
             break;
         }
+        //        let ten_millis = time::Duration::from_millis(50);
+        //        std::thread::sleep(ten_millis);
     }
     println!("end {:?}", Local::now());
 }
@@ -61,8 +64,12 @@ pub fn invoke_java_method(mut thread: Rc<RefCell<JavaThread>>) -> Option<Rc<RefC
         }
     }
     let last_frame = (*thread).borrow().current_frame();
-//    let mut borrow_frame = (*last_frame).borrow_mut();
-    let object =  (*last_frame).borrow_mut().operand_stack().expect("stack is none").pop_ref();
+    //    let mut borrow_frame = (*last_frame).borrow_mut();
+    let object = (*last_frame)
+        .borrow_mut()
+        .operand_stack()
+        .expect("stack is none")
+        .pop_ref();
     (*thread).borrow_mut().pop_frame();
     return object;
 }
