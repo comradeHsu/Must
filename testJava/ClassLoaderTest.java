@@ -23,7 +23,7 @@ public class ClassLoaderTest {
 class SelfClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) {
         try {
-            String path = "D:\\workspace\\demo\\target\\classes\\com\\example\\demo\\controller\\" + name + ".class" ;
+            String path = "D:\\workspace\\demo\\com\\example\\demo\\controller\\" + name + ".class" ;
             FileInputStream in = new FileInputStream(path) ;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buf = new byte[1024] ;

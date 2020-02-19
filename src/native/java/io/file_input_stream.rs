@@ -95,6 +95,20 @@ pub fn read_bytes(frame: &mut Frame) {
     frame.operand_stack().expect("stack is none").push_int(size);
 }
 
+fn unique_path(path:String) -> String {
+    let paths:Vec<&str> = path.split('/').collect();
+    let mut path_str = String::new();
+    for p in paths {
+        if !path_str.contains(p) {
+            path_str.push_str(p);
+            path_str.push('/');
+        }
+    }
+    assert_ne!(0,path_str.len());
+    path_str.pop();
+    return path_str;
+}
+
 /// private native void close0() throws IOException;
 /// ()V
 pub fn close0(frame: &mut Frame) {

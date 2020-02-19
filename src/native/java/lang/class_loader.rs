@@ -55,9 +55,10 @@ pub fn load(frame: &mut Frame) {
 /// private native final Class<?> findLoadedClass0(String name);
 /// (Ljava/lang/String;)Ljava/lang/Class;
 pub fn find_loaded_class0(frame: &mut Frame) {
-    let class = frame.method().class();
-    let loader = (*class).borrow().loader();
-    let name = frame.local_vars().expect("vars is none").get_ref(1);
+    let vars = frame.local_vars().expect("vars is none");
+    let this = vars.get_this().unwrap();
+    let loader = (*this).borrow().get_class_loader();
+    let name = vars.get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = (*loader).borrow().get_class(class_name.as_str());
     if class.is_none() {
@@ -107,7 +108,11 @@ pub fn define_class1(frame:&mut Frame) {
     let mut borrow = (*byte_array).borrow_mut();
     let mut_bytes = borrow.mut_bytes();
     let slice = & mut_bytes[offset..(offset+length)];
-    println!("slice:{:?},offset:{},length:{}",slice,offset,length);
+    let mut str_s = "__JVM_DefineClass__".to_string();
+    if source.is_some() {
+        str_s = java_str_to_rust_str(source.unwrap());
+    }
+    println!("slice:{:?},offset:{},length:{},source:{}",slice,offset,length,str_s);
     let mut bytes = vec![0u8;length];
     for i in 0..length {
         bytes[i] = slice[i] as u8;
