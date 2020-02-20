@@ -53,6 +53,14 @@ pub fn get_power_of_two(val: usize) -> usize {
     return n + 1;
 }
 
+#[inline]
+pub fn i32_for_bool(val: bool) -> i32 {
+    if val {
+        return 1;
+    }
+    return 0;
+}
+
 #[cfg(test)]
 mod test {
     use crate::utils::numbers::{f32_to_i32, i32_to_f32};

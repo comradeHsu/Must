@@ -1,10 +1,10 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::method_invoke_logic::{hack_invoke_method, invoke_method};
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::array_object::ArrayObject;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::object::DataType::Bytes;
 use crate::runtime_data_area::heap::object::MetaData::{Field, Method};
 use crate::runtime_data_area::heap::object::Object;

@@ -1,21 +1,25 @@
 use crate::class_file::class_file::ClassFile;
+use crate::class_loader::class_init_preparation::ClassPreparation;
 use crate::class_path::class_path::{ClassPath, Entry};
+use crate::instrument::java_lang_instrument::JavaLangInstrument;
+use crate::interpreter::invoke_java_method;
+use crate::invoke_support::parameter::{Parameter, Parameters};
+use crate::invoke_support::{invoke, ReturnType};
+use crate::jvm::{Jvm, JVM};
 use crate::runtime_data_area::heap::access_flags::PUBLIC;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::runtime_data_area::heap::constant_pool::{Constant, ConstantPool};
 use crate::runtime_data_area::heap::field::Field;
+use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Debug, Error, Formatter};
 use std::rc::Rc;
-use crate::runtime_data_area::heap::object::Object;
-use crate::jvm::JVM;
-use crate::runtime_data_area::thread::JavaThread;
-use crate::interpreter::invoke_java_method;
 use std::thread::Thread;
 
 pub struct ClassLoader {
@@ -208,133 +212,45 @@ impl ClassLoader {
 
     pub fn link(class: &Rc<RefCell<Class>>) {
         ClassLoader::verify(class);
-        ClassLoader::prepare(class);
+        ClassPreparation::prepare(class);
     }
 
     fn verify(class: &Rc<RefCell<Class>>) {}
 
-    fn prepare(class: &Rc<RefCell<Class>>) {
-        ClassLoader::calc_instance_field_slot_ids(class.clone());
-        ClassLoader::calc_static_field_slot_ids(class.clone());
-        ClassLoader::alloc_and_init_static_vars(class.clone());
-    }
-
-    fn calc_instance_field_slot_ids(class: Rc<RefCell<Class>>) {
-        let mut slot_id = 0usize;
-        {
-            let borrow_class = (*class).borrow();
-            let super_class = borrow_class.super_class();
-            if super_class.is_some() {
-                slot_id = (*super_class.unwrap()).borrow().instance_slot_count() as usize;
-            }
-        }
-        for field in (*class).borrow_mut().fields() {
-            let field = field.clone();
-            if !(*field).borrow().parent().is_static() {
-                (*field).borrow_mut().set_slot(slot_id);
-                slot_id += 1;
-                if (*field).borrow().is_long_or_double() {
-                    slot_id += 1;
-                }
-            }
-        }
-        (*class)
-            .borrow_mut()
-            .set_instance_slot_count(slot_id as u32);
-    }
-
-    fn calc_static_field_slot_ids(class: Rc<RefCell<Class>>) {
-        let mut slot_id = 0usize;
-        for field in (*class).borrow_mut().fields() {
-            let field = field.clone();
-            if (*field).borrow().parent().is_static() {
-                (*field).borrow_mut().set_slot(slot_id);
-                slot_id += 1;
-                if (*field).borrow().is_long_or_double() {
-                    slot_id += 1;
-                }
-            }
-        }
-        (*class).borrow_mut().set_static_slot_count(slot_id as u32);
-    }
-
-    fn alloc_and_init_static_vars(class: Rc<RefCell<Class>>) {
-        let count = (*class).borrow().static_slot_count() as usize;
-        (*class)
-            .borrow_mut()
-            .set_static_vars(Slots::with_capacity(count));
-        let mut static_final_fields = Vec::new();
-        for field in (*class).borrow().fields() {
-            let is_static = field.borrow_mut().parent().is_static();
-            if is_static && field.borrow_mut().parent().is_final() {
-                //                ClassLoader::init_static_final_var(class.clone(), field.clone())
-                static_final_fields.push(field.clone());
-            }
-        }
-        for field in static_final_fields {
-            ClassLoader::init_static_final_var(class.clone(), field)
-        }
-    }
-
-    fn init_static_final_var(class: Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
-        let pool = (*class).borrow().constant_pool();
-        let loader = (*class).borrow().loader();
-        let mut borrow_class = (*class).borrow_mut();
-        let vars = borrow_class.mut_static_vars().expect("static_vars is none");
-        let cp_index = (*field).borrow().const_value_index();
-        let slot_id = (*field).borrow().slot_id();
-        let borrow_pool = (*pool).borrow();
-        if cp_index > 0 {
-            match (*field).borrow().parent().descriptor() {
-                "Z" | "B" | "C" | "S" | "I" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Integer(v) => vars.set_int(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "J" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Long(v) => vars.set_long(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "F" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Float(v) => vars.set_float(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "D" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Double(v) => vars.set_double(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "Ljava/lang/String;" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    let mete_str = match val {
-                        Constant::Str(v) => v.as_str(),
-                        _ => panic!("It's not string"),
-                    };
-                    let java_string = StringPool::java_string(loader, mete_str.to_string());
-                    vars.set_ref(slot_id, Some(java_string));
-                }
-                _ => {}
-            }
-        }
-    }
-
-    pub fn load_class_by_bytes(java_loader: Rc<RefCell<Object>>, class_name: &str, bytes:Vec<u8>) -> Rc<RefCell<Class>> {
+    pub fn load_class_by_bytes(
+        java_loader: Rc<RefCell<Object>>,
+        class_name: &str,
+        protection_domain: Option<Rc<RefCell<Object>>>,
+        bytes: Vec<u8>,
+        byte_array: Option<Rc<RefCell<Object>>>,
+    ) -> Rc<RefCell<Class>> {
         let loader = (*java_loader).borrow().get_class_loader();
         let clone_loader = loader.clone();
         let class_op: Option<Rc<RefCell<Class>>> = (*clone_loader).borrow().get_class(class_name);
         if class_op.is_some() {
             return class_op.unwrap().clone();
         }
+
+        let method = JavaLangInstrument::instance().get_transform_method();
+        let instrument = JavaLangInstrument::instance().get_instrument();
+        let params = vec![
+            Parameter::Object(Some(instrument)),
+            Parameter::Object(Some(java_loader.clone())),
+            Parameter::Object(Some(StringPool::java_string(
+                Jvm::instance().unwrap().boot_class_loader(),
+                class_name.to_string(),
+            ))),
+            Parameter::Object(None),
+            Parameter::Object(protection_domain),
+            Parameter::Object(byte_array),
+            Parameter::Boolean(false),
+        ];
+        let rs = invoke(
+            method,
+            Parameters::with_parameters(params),
+            ReturnType::Object,
+        );
+
         let mut class: Option<Rc<RefCell<Class>>> = None;
         if class_name.starts_with('[') {
             class = Some(ClassLoader::load_array_class(loader.clone(), class_name));
@@ -342,7 +258,7 @@ impl ClassLoader {
             class = Some(ClassLoader::load_non_array_class_by_bytes(
                 java_loader,
                 class_name,
-                bytes
+                bytes,
             ));
         }
         let value = class.unwrap();
@@ -359,23 +275,26 @@ impl ClassLoader {
     fn load_non_array_class_by_bytes(
         java_loader: Rc<RefCell<Object>>,
         class_name: &str,
-        bytes:Vec<u8>
+        bytes: Vec<u8>,
     ) -> Rc<RefCell<Class>> {
         let loader = (*java_loader).borrow().get_class_loader();
         let class = ClassLoader::define_class_by_java(java_loader, bytes);
         ClassLoader::link(&class);
         if (*loader).borrow().verbose_class {
-//            println!("Loaded {}.class from {}", class_name, entry.to_string());
+            //            println!("Loaded {}.class from {}", class_name, entry.to_string());
         }
         return class;
     }
 
-    pub fn define_class_by_java(java_loader: Rc<RefCell<Object>>, data: Vec<u8>) -> Rc<RefCell<Class>> {
+    pub fn define_class_by_java(
+        java_loader: Rc<RefCell<Object>>,
+        data: Vec<u8>,
+    ) -> Rc<RefCell<Class>> {
         let loader = (*java_loader).borrow().get_class_loader();
         let mut class = ClassLoader::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
-        ClassLoader::resolve_super_class_by_java(java_loader.clone(),class.clone());
-        ClassLoader::resolve_interfaces_by_java(java_loader,class.clone());
+        ClassLoader::resolve_super_class_by_java(java_loader.clone(), class.clone());
+        ClassLoader::resolve_interfaces_by_java(java_loader, class.clone());
         (*loader)
             .borrow_mut()
             .class_map
@@ -391,19 +310,30 @@ impl ClassLoader {
         }
         let mut class: Option<Rc<RefCell<Class>>> = None;
         if class_name.starts_with('[') {
-            class = Some(ClassLoader::load_array_class(class_loader.clone(), class_name));
+            class = Some(ClassLoader::load_array_class(
+                class_loader.clone(),
+                class_name,
+            ));
         } else {
             let loader_class = (*loader).borrow().class();
-            let method = Class::get_instance_method(loader_class,"loadClass","(Ljava/lang/String;)Ljava/lang/Class;");
+            let method = Class::get_instance_method(
+                loader_class,
+                "loadClass",
+                "(Ljava/lang/String;)Ljava/lang/Class;",
+            );
             let main_thread = boxed(JavaThread::new_thread());
             let mut dummy_frame =
                 JavaThread::new_frame(main_thread.clone(), method.clone().unwrap());
             let mut frame = JavaThread::new_frame(main_thread.clone(), method.unwrap());
-            let vars = frame
-                .local_vars()
-                .expect("LocalVars is none");
+            let vars = frame.local_vars().expect("LocalVars is none");
             vars.set_this(Some(loader.clone()));
-            vars.set_ref(1,Some(StringPool::java_string(unsafe{JVM.as_ref().unwrap().boot_class_loader()},class_name.to_string())));
+            vars.set_ref(
+                1,
+                Some(StringPool::java_string(
+                    unsafe { JVM.as_ref().unwrap().boot_class_loader() },
+                    class_name.to_string(),
+                )),
+            );
             (*main_thread).borrow_mut().push_frame(dummy_frame);
             (*main_thread).borrow_mut().push_frame(frame);
             let class_obj = invoke_java_method(main_thread.clone()).unwrap();
@@ -434,7 +364,7 @@ impl ClassLoader {
         return class;
     }
 
-    fn resolve_super_class_by_java(java_loader: Rc<RefCell<Object>>,class: Rc<RefCell<Class>>) {
+    fn resolve_super_class_by_java(java_loader: Rc<RefCell<Object>>, class: Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let super_class_name = class.super_class_name();
         //        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
@@ -444,7 +374,7 @@ impl ClassLoader {
             class.set_super_class(super_class);
         }
     }
-    fn resolve_interfaces_by_java(java_loader: Rc<RefCell<Object>>,class: Rc<RefCell<Class>>) {
+    fn resolve_interfaces_by_java(java_loader: Rc<RefCell<Object>>, class: Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let interfaces_name = class.interfaces_name();
         let len = interfaces_name.len();

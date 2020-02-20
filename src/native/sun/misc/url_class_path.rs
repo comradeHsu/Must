@@ -1,7 +1,7 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::utils::boxed;
 
 pub fn init() {

@@ -1,5 +1,5 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::object::DataType::Chars;
 use crate::runtime_data_area::heap::object::Object;
 use crate::utils::{boxed, java_str_to_rust_str};

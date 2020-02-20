@@ -1,8 +1,8 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;

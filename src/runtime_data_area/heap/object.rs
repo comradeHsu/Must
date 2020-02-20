@@ -1,10 +1,10 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::native::java::lang::throwable::StackTraceElement;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
-use crate::runtime_data_area::heap::object::MetaData::{Null, FileOffset};
+use crate::runtime_data_area::heap::object::MetaData::{FileOffset, Null};
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::borrow::Borrow;
@@ -111,7 +111,7 @@ impl Object {
     }
 
     #[inline]
-    pub fn file_offset(& self) -> u64 {
+    pub fn file_offset(&self) -> u64 {
         match &self.meta_data {
             MetaData::FileOffset(offset) => *offset,
             _ => panic!("The Object isn't file"),
@@ -119,12 +119,12 @@ impl Object {
     }
 
     #[inline]
-    pub fn set_file_offset(&mut self,new_offset:u64) {
+    pub fn set_file_offset(&mut self, new_offset: u64) {
         self.set_meta_data(FileOffset(new_offset));
     }
 
     #[inline]
-    pub fn get_class_loader(& self) -> Rc<RefCell<ClassLoader>> {
+    pub fn get_class_loader(&self) -> Rc<RefCell<ClassLoader>> {
         match &self.meta_data {
             MetaData::ClassLoader(loader) => loader.clone(),
             _ => panic!("The Object isn't class loader"),
@@ -220,7 +220,7 @@ pub enum MetaData {
     Field(Rc<RefCell<Field>>),
     Method(Rc<Method>),
     ClassLoader(Rc<RefCell<ClassLoader>>),
-    FileOffset(u64)
+    FileOffset(u64),
 }
 
 impl MetaData {

@@ -1,9 +1,8 @@
 pub mod access_flags;
 pub mod array_object;
 pub mod class;
-pub mod class_loader;
 pub mod class_member;
-mod class_name_helper;
+pub(crate) mod class_name_helper;
 pub mod class_ref;
 pub mod constant_pool;
 mod exception_table;

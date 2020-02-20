@@ -2,10 +2,13 @@ use crate::cmd::Cmd;
 use crate::jvm::Jvm;
 
 mod class_file;
+mod class_loader;
 mod class_path;
 mod cmd;
 mod instructions;
+mod instrument;
 mod interpreter;
+mod invoke_support;
 mod jvm;
 mod native;
 mod runtime_data_area;

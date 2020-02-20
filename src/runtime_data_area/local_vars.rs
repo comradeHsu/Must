@@ -1,7 +1,8 @@
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::slot::Slot;
 use crate::utils::numbers::{
-    f32_to_i32, f64_to_i64, i32_to_f32, i64_back_bytes_to_i32, i64_from_i32_bytes, i64_to_f64,
+    f32_to_i32, f64_to_i64, i32_for_bool, i32_to_f32, i64_back_bytes_to_i32, i64_from_i32_bytes,
+    i64_to_f64,
 };
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -24,6 +25,11 @@ impl LocalVars {
     pub fn get_boolean(&self, index: usize) -> bool {
         let slot = self.vars.get(index).expect("index is wrong");
         return slot.get_num() == 1;
+    }
+
+    pub fn set_boolean(&mut self, index: usize, val: bool) {
+        let slot = self.vars.get_mut(index).expect("index is wrong");
+        slot.set_num(i32_for_bool(val));
     }
 
     pub fn set_int(&mut self, index: usize, val: i32) {

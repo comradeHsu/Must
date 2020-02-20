@@ -38,6 +38,13 @@ impl OperandStack {
     }
 
     #[inline]
+    pub fn pop_boolean(&mut self) -> bool {
+        let slot = self.slots.pop().unwrap();
+        self.size -= 1;
+        return slot.get_num() == 1;
+    }
+
+    #[inline]
     pub fn push_float(&mut self, val: f32) {
         let slot = Slot::with_num(f32_to_i32(val));
         self.slots.push(slot);

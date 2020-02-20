@@ -1,6 +1,6 @@
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::object::{Object, MetaData};
+use crate::runtime_data_area::heap::object::{MetaData, Object};
 use crate::utils::java_str_to_rust_str;
 use std::fs::File;
 use std::io::{stderr, stdin, stdout, Read, Seek, SeekFrom};
@@ -14,12 +14,7 @@ pub fn init() {
         "(Ljava/lang/String;)V",
         open0,
     );
-    Registry::register(
-        "java/io/FileInputStream",
-        "close0",
-        "()V",
-        close0,
-    );
+    Registry::register("java/io/FileInputStream", "close0", "()V", close0);
     Registry::register(
         "java/io/FileInputStream",
         "readBytes",
@@ -61,7 +56,7 @@ pub fn read_bytes(frame: &mut Frame) {
     if path.is_some() {
         let native_path = java_str_to_rust_str(path.unwrap());
         let path = Path::new(&native_path);
-        println!("path:{}",native_path);
+        println!("path:{}", native_path);
         file = Some(File::open(path).unwrap());
     } else if file_descriptor.is_some() {
         let fd = (*file_descriptor.unwrap()).borrow().get_int_var("fd", "I");
@@ -75,7 +70,7 @@ pub fn read_bytes(frame: &mut Frame) {
     if file.is_none() {
         panic!("java/io/IOException File cannot open");
     }
-    let mut bytes = vec![0u8;length];
+    let mut bytes = vec![0u8; length];
     let mut file = file.unwrap();
     let file_offset = (*this).borrow().file_offset() + offset as u64;
     file.seek(SeekFrom::Start(file_offset))
@@ -90,13 +85,15 @@ pub fn read_bytes(frame: &mut Frame) {
             mut_array[offset + i] = bytes[i] as i8;
         }
         size = read_size as i32;
-        (*this).borrow_mut().set_file_offset(file_offset + read_size as u64);
+        (*this)
+            .borrow_mut()
+            .set_file_offset(file_offset + read_size as u64);
     }
     frame.operand_stack().expect("stack is none").push_int(size);
 }
 
-fn unique_path(path:String) -> String {
-    let paths:Vec<&str> = path.split('/').collect();
+fn unique_path(path: String) -> String {
+    let paths: Vec<&str> = path.split('/').collect();
     let mut path_str = String::new();
     for p in paths {
         if !path_str.contains(p) {
@@ -104,7 +101,7 @@ fn unique_path(path:String) -> String {
             path_str.push('/');
         }
     }
-    assert_ne!(0,path_str.len());
+    assert_ne!(0, path_str.len());
     path_str.pop();
     return path_str;
 }
@@ -112,11 +109,11 @@ fn unique_path(path:String) -> String {
 /// private native void close0() throws IOException;
 /// ()V
 pub fn close0(frame: &mut Frame) {
-//    let vars = frame.local_vars().expect("LocalVars is none");
-//    let name = vars.get_ref(1);
-//    let rust_str = java_str_to_rust_str(name.unwrap());
-//    let path = Path::new(&rust_str);
-//    if !path.exists() {
-//        // throws FileNotFoundException;
-//    }
+    //    let vars = frame.local_vars().expect("LocalVars is none");
+    //    let name = vars.get_ref(1);
+    //    let rust_str = java_str_to_rust_str(name.unwrap());
+    //    let path = Path::new(&rust_str);
+    //    if !path.exists() {
+    //        // throws FileNotFoundException;
+    //    }
 }

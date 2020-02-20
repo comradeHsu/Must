@@ -1,8 +1,8 @@
 use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::class_loader::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class_member::ClassMember;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use std::cell::RefCell;

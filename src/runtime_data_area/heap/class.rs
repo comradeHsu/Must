@@ -2,11 +2,11 @@ use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 use crate::class_file::class_file::ClassFile;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use crate::class_loader::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::access_flags::{
     AccessFlag, ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
 };
 use crate::runtime_data_area::heap::array_object::ArrayObject;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::runtime_data_area::heap::field::Field;

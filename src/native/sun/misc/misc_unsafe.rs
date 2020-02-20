@@ -348,10 +348,10 @@ mod memory_size_map {
 
 #[cfg(test)]
 mod java_unsafe {
+    use crate::class_loader::class_loader::ClassLoader;
     use crate::class_path::class_path::ClassPath;
     use crate::cmd::Cmd;
     use crate::runtime_data_area::heap::class::Class;
-    use crate::runtime_data_area::heap::class_loader::ClassLoader;
     use crate::runtime_data_area::heap::object::DataType::{Bytes, Ints};
     use crate::runtime_data_area::heap::object::Object;
     use crate::utils::boxed;

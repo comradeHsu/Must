@@ -1,3 +1,4 @@
+use crate::class_loader::class_loader::ClassLoader;
 use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
@@ -7,7 +8,6 @@ use crate::instructions::references::athrow::AThrow;
 use crate::interpreter::{interpret, invoke_java_method};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_loader::ClassLoader;
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::thread::JavaThread;
@@ -24,7 +24,7 @@ pub struct Jvm {
     main_thread: Rc<RefCell<JavaThread>>,
 }
 
-pub static mut JVM:Option<Jvm> = None;
+pub static mut JVM: Option<Jvm> = None;
 
 impl Jvm {
     pub fn new(mut cmd: Cmd) -> &'static mut Jvm {
@@ -55,6 +55,13 @@ impl Jvm {
     #[inline]
     pub fn boot_class_loader(&self) -> Rc<RefCell<ClassLoader>> {
         return self.boot_class_loader.clone();
+    }
+
+    #[inline]
+    pub fn instance() -> Option<&'static Self> {
+        unsafe {
+            return JVM.as_ref();
+        }
     }
 
     pub fn start(&mut self) {
