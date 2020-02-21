@@ -1,5 +1,5 @@
-use crate::class_loader::class_loader::ClassLoader;
-use crate::jvm::JVM;
+use crate::class_loader::app_class_loader::ClassLoader;
+use crate::jvm::{JVM, Jvm};
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::utils::java_str_to_rust_str;
@@ -60,7 +60,7 @@ pub fn find_loaded_class0(frame: &mut Frame) {
     let loader = (*this).borrow().get_class_loader();
     let name = vars.get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
-    let class = (*loader).borrow().get_class(class_name.as_str());
+    let class = (*loader).borrow().find_class(class_name.as_str());
     if class.is_none() {
         println!("None CLass Is {}", class_name);
         frame.operand_stack().expect("stack is none").push_ref(None);
@@ -77,10 +77,10 @@ pub fn find_loaded_class0(frame: &mut Frame) {
 /// (Ljava/lang/String;)Ljava/lang/Class;
 pub fn find_bootstrap_class(frame: &mut Frame) {
     let class = frame.method().class();
-    let loader = unsafe { JVM.as_ref().unwrap().boot_class_loader() };
+    let loader = Jvm::boot_class_loader();
     let name = frame.local_vars().expect("vars is none").get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
-    let class = (*loader).borrow().get_class(class_name.as_str());
+    let class = loader.find_class(class_name.as_str());
     if class.is_none() {
         println!("None CLass Is {}", class_name);
         frame.operand_stack().expect("stack is none").push_ref(None);

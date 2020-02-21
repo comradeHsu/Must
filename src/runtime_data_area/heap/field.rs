@@ -1,7 +1,7 @@
 use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_member::ClassMember;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
@@ -115,10 +115,9 @@ impl Field {
         let class_name = PrimitiveTypes::instance()
             .unwrap()
             .to_class_name(self.descriptor());
-        return ClassLoader::load_class(
-            (*self.parent().class()).borrow().loader(),
-            class_name.as_str(),
-        );
+        let loader = (*self.parent().class()).borrow().loader();
+        let field_type = (*loader).borrow().find_class(class_name.as_str());
+        return field_type.expect("The field class not loaded");
     }
 
     #[inline]

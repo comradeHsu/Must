@@ -1,4 +1,3 @@
-use crate::class_loader::class_loader::ClassLoader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::method_invoke_logic::{hack_invoke_method, invoke_method};
 use crate::native::registry::Registry;
@@ -14,6 +13,8 @@ use crate::utils::{boxed, java_str_to_rust_str};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::jvm::Jvm;
+use crate::class_loader::app_class_loader::ClassLoader;
 
 pub fn init() {
     Registry::register(
@@ -95,9 +96,8 @@ pub fn get_primitive_class(frame: &mut Frame) {
         .get_this()
         .unwrap();
     let target = java_str_to_rust_str(name_obj);
-    let class = frame.method().class();
-    let loader = (*class).borrow().loader();
-    let class = ClassLoader::load_class(loader, target.as_str());
+
+    let class = Jvm::boot_class_loader().find_or_create( target.as_str());
     let java_class = (*class).borrow().get_java_class();
     frame
         .operand_stack()
@@ -113,7 +113,7 @@ pub fn get_name0(frame: &mut Frame) {
         .unwrap();
     let class = (*this).borrow().meta().unwrap();
     let name = (*class).borrow().java_name();
-    let name_obj = StringPool::java_string((*class).borrow().loader(), name);
+    let name_obj = StringPool::java_string( name);
     frame
         .operand_stack()
         .expect("stack null")
@@ -128,11 +128,11 @@ pub fn for_name0(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let name = vars.get_ref(0);
     let initialize = vars.get_boolean(1);
+    let java_loader = vars.get_ref(2).expect("java.lang.NullPointerException");
 
     let rust_name = java_str_to_rust_str(name.unwrap()).replace('.', "/");
-    let class = frame.method().class();
-    let loader = (*class).borrow().loader();
-    let class = ClassLoader::load_class(loader, rust_name.as_str());
+
+    let class = ClassLoader::load_class(java_loader, rust_name.as_str());
     let java_class = (*class).borrow().get_java_class();
     if initialize && !(*class).borrow().initialized() {
         let thread = frame.thread();
@@ -214,7 +214,6 @@ pub fn get_interfaces0(frame: &mut Frame) {
     let interfaces = borrow.interfaces();
     let none = Vec::new();
     let class_arr = to_class_arr(
-        (*class).borrow().loader(),
         interfaces.unwrap_or_else(|| &none),
     );
     frame
@@ -225,12 +224,11 @@ pub fn get_interfaces0(frame: &mut Frame) {
 
 // []*Class => Class[]
 fn to_class_arr(
-    loader: Rc<RefCell<ClassLoader>>,
     classes: &Vec<Rc<RefCell<Class>>>,
 ) -> ArrayObject {
     let arr_len = classes.len();
-
-    let class_arr_class = (*ClassLoader::load_class(loader, "java/lang/Class"))
+    let bootstrap_loader = Jvm::boot_class_loader();
+    let class_arr_class = (*bootstrap_loader.find_or_create("java/lang/Class"))
         .borrow()
         .array_class();
     let mut class_arr = Class::new_array(&class_arr_class, arr_len);
@@ -246,11 +244,12 @@ fn to_class_arr(
 }
 
 // []byte => byte[]
-fn to_byte_arr(loader: Rc<RefCell<ClassLoader>>, rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
+fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
     if rbytes.is_some() {
         let j_bytes: Vec<i8> = rbytes.unwrap().iter().map(|x| *x as i8).collect();
+        let boot_loader = Jvm::boot_class_loader();
         return Some(ArrayObject::from_data(
-            ClassLoader::load_class(loader, "[B"),
+            boot_loader.find_or_create("[B"),
             Bytes(j_bytes),
         ));
     }
@@ -316,10 +315,8 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
     let constructors = (*class).borrow().get_constructors(public_only);
     let constructor_count = constructors.len();
 
-    let class = frame.method().class();
-    let class_loader = (*class).borrow().loader();
     let constructor_class =
-        ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Constructor");
+        Jvm::boot_class_loader().find_or_create("java/lang/reflect/Constructor");
 
     let class_arr_class = (*constructor_class).borrow().array_class();
     let constructor_arr = Class::new_array(&class_arr_class, constructor_count);
@@ -351,27 +348,24 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
             ops.push_ref(Some(class_obj.clone())); // declaringClass
             let parameter_types = constructor.parameter_types().unwrap();
             ops.push_ref(Some(boxed(to_class_arr(
-                class_loader.clone(),
                 &parameter_types,
             )))); // parameterTypes
             let exception_types = constructor.exception_types().unwrap_or_else(|| Vec::new());
             ops.push_ref(Some(boxed(to_class_arr(
-                class_loader.clone(),
                 &exception_types,
             )))); // checkedExceptions
             ops.push_int(constructor.access_flags() as i32); // modifiers
             ops.push_int(0); // todo slot
             ops.push_ref(get_signature_str(
-                class_loader.clone(),
                 constructor.signature(),
             )); // signature
             let mut data: Vec<u8> = vec![0, 20];
             ops.push_ref(Some(boxed(
-                to_byte_arr(class_loader.clone(), Some((data))).unwrap(),
+                to_byte_arr(Some((data))).unwrap(),
             )));
             let mut data: Vec<u8> = vec![0, 20]; // annotations
             ops.push_ref(Some(boxed(
-                to_byte_arr(class_loader.clone(), Some(data)).unwrap(),
+                to_byte_arr(Some(data)).unwrap(),
             ))); // parameterAnnotations
 
             let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
@@ -397,9 +391,7 @@ pub fn get_declared_fields0(frame: &mut Frame) {
     let fields = (*class).borrow().get_fields(public_only);
     let field_count = fields.len();
 
-    let class = frame.method().class();
-    let class_loader = (*class).borrow().loader();
-    let field_class = ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Field");
+    let field_class = Jvm::boot_class_loader().find_or_create("java/lang/reflect/Field");
     let field_arr_class = (*field_class).borrow().array_class();
     let field_arr = Class::new_array(&field_arr_class, field_count);
 
@@ -427,20 +419,18 @@ pub fn get_declared_fields0(frame: &mut Frame) {
             ops.push_ref(object); // this
             ops.push_ref(Some(class_obj.clone())); // declaringClass
             ops.push_ref(Some(StringPool::java_string(
-                class_loader.clone(),
                 (*field).borrow().name().to_string(),
             ))); // name
             ops.push_ref((*(*field).borrow().r#type()).borrow().get_java_class()); // type
             ops.push_int((*field).borrow().access_flags() as i32); // modifiers
             ops.push_int((*field).borrow().slot_id() as i32); // slot
             ops.push_ref(get_signature_str(
-                class_loader.clone(),
                 (*field).borrow().signature(),
             )); // signature
             let mut data: Vec<u8> = vec![0, 20];
 
             ops.push_ref(Some(boxed(
-                to_byte_arr(class_loader.clone(), Some(data)).unwrap(),
+                to_byte_arr(Some(data)).unwrap(),
             ))); // annotations
 
             let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
@@ -453,11 +443,10 @@ pub fn get_declared_fields0(frame: &mut Frame) {
 }
 
 fn get_signature_str(
-    loader: Rc<RefCell<ClassLoader>>,
     signature: &str,
 ) -> Option<Rc<RefCell<Object>>> {
     if signature != "" {
-        return Some(StringPool::java_string(loader, signature.to_string()));
+        return Some(StringPool::java_string(signature.to_string()));
     }
     return None;
 }
@@ -476,9 +465,7 @@ pub fn get_declared_methods0(frame: &mut Frame) {
     let methods = (*class).borrow().get_methods(public_only);
     let method_count = methods.len();
 
-    let class = frame.method().class();
-    let class_loader = (*class).borrow().loader();
-    let method_class = ClassLoader::load_class(class_loader.clone(), "java/lang/reflect/Method");
+    let method_class = Jvm::boot_class_loader().find_or_create("java/lang/reflect/Method");
     let method_arr_class = (*method_class).borrow().array_class();
     let method_arr = Class::new_array(&method_arr_class, method_count);
 
@@ -507,26 +494,23 @@ pub fn get_declared_methods0(frame: &mut Frame) {
             ops.push_ref(object); // this
             ops.push_ref(Some(class_obj.clone())); // declaringClass
             ops.push_ref(Some(StringPool::java_string(
-                class_loader.clone(),
                 method.name().to_string(),
             ))); // name
             let parameter_types = method.parameter_types().unwrap();
             ops.push_ref(Some(boxed(to_class_arr(
-                class_loader.clone(),
                 &parameter_types,
             )))); // parameterTypes
             ops.push_ref((*method.return_type()).borrow().get_java_class()); // returnType
             let exception_types = method.exception_types().unwrap_or_else(|| Vec::new());
             ops.push_ref(Some(boxed(to_class_arr(
-                class_loader.clone(),
                 &exception_types,
             )))); // checkedExceptions
             ops.push_int(method.access_flags() as i32); // modifiers
             ops.push_int(0); // todo: slot
-            ops.push_ref(get_signature_str(class_loader.clone(), method.signature())); // signature
+            ops.push_ref(get_signature_str(method.signature())); // signature
             let mut data: Vec<u8> = vec![0, 20];
             ops.push_ref(Some(boxed(
-                to_byte_arr(class_loader.clone(), Some(data)).unwrap(),
+                to_byte_arr(Some(data)).unwrap(),
             ))); // annotations
                  //            ops.push_ref(toByteArr(classLoader, method.ParameterAnnotationData())) // parameterAnnotations
             ops.push_ref(None);

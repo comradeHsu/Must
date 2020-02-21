@@ -1,6 +1,5 @@
 pub mod java_lang_instrument;
 
-use crate::class_loader::class_loader::ClassLoader;
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::{invoke, ReturnType};
 use crate::jvm::Jvm;
@@ -12,8 +11,8 @@ use std::rc::Rc;
 const CONSTRUCTOR_DESC: &str = "(JZZ)V";
 
 pub fn create_instrumentation() -> Rc<RefCell<Object>> {
-    let class = ClassLoader::load_class(
-        Jvm::instance().unwrap().boot_class_loader(),
+    let boot_loader = Jvm::instance().unwrap().boot_class_loader();
+    let class = boot_loader.find_or_create(
         "sun.instrument.InstrumentationImpl",
     );
     let constructor = Class::get_constructor(class, CONSTRUCTOR_DESC);

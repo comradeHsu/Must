@@ -1,4 +1,4 @@
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::native::java::lang::throwable::StackTraceElement;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::field::Field;

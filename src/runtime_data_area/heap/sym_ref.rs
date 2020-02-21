@@ -1,5 +1,5 @@
 use crate::class_file::constant_pool::ConstantClassInfo;
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::cell::RefCell;

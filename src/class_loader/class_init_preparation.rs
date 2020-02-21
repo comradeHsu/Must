@@ -116,7 +116,7 @@ impl ClassPreparation {
                         Constant::Str(v) => v.as_str(),
                         _ => panic!("It's not string"),
                     };
-                    let java_string = StringPool::java_string(loader, mete_str.to_string());
+                    let java_string = StringPool::java_string(mete_str.to_string());
                     vars.set_ref(slot_id, Some(java_string));
                 }
                 _ => {}

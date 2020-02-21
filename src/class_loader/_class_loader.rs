@@ -22,7 +22,7 @@ use std::fmt::{Debug, Error, Formatter};
 use std::rc::Rc;
 use std::thread::Thread;
 
-pub struct ClassLoader {
+struct ClassLoader {
     class_path: Rc<ClassPath>,
     verbose_class: bool,
     class_map: HashMap<String, Rc<RefCell<Class>>>,

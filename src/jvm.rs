@@ -1,4 +1,3 @@
-use crate::class_loader::class_loader::ClassLoader;
 use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
@@ -15,10 +14,12 @@ use crate::utils::boxed;
 use chrono::Local;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 
 pub struct Jvm {
     cmd: Cmd,
-    boot_class_loader: Rc<RefCell<ClassLoader>>,
+    boot_class_loader: BootstrapClassLoader,
     ext_class_loader: Option<Rc<RefCell<Object>>>,
     app_class_loader: Option<Rc<RefCell<Object>>>,
     main_thread: Rc<RefCell<JavaThread>>,
@@ -33,7 +34,7 @@ impl Jvm {
             cp.handle_jar(&mut cmd);
         }
         let class_path = Rc::new(cp);
-        let class_loader = ClassLoader::new(class_path, cmd.verbose_class);
+        let class_loader = BootstrapClassLoader::new(class_path);
         let jvm = Jvm {
             cmd,
             boot_class_loader: class_loader,
@@ -53,8 +54,8 @@ impl Jvm {
     }
 
     #[inline]
-    pub fn boot_class_loader(&self) -> Rc<RefCell<ClassLoader>> {
-        return self.boot_class_loader.clone();
+    pub fn boot_class_loader() -> &'static BootstrapClassLoader {
+        return &Self::instance().unwrap().boot_class_loader;
     }
 
     #[inline]
@@ -67,6 +68,7 @@ impl Jvm {
     pub fn start(&mut self) {
         //        let builder = (*self.main_thread).borrow_mut().std_thread();
         //        let join_handler = builder.spawn(move || {
+        self.boot_class_loader.post_constructor();
         self.init_vm();
         println!("init vm! {:?}", Local::now());
         self.exec_main();
@@ -123,7 +125,6 @@ impl Jvm {
         let java_args = args_arr.mut_references();
         for i in 0..java_args.len() {
             java_args[i] = Some(StringPool::java_string(
-                self.boot_class_loader.clone(),
                 self.cmd.args[i].clone(),
             ));
         }
@@ -131,16 +132,15 @@ impl Jvm {
     }
 
     pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
-        let class = frame.method().class();
-        let class_loader = (*class).borrow().loader();
+        let bootstrap_loader = Self::instance().unwrap().boot_class_loader();
         let class =
-            ClassLoader::load_class(class_loader.clone(), class_name.replace('.', "/").as_str());
+            bootstrap_loader.find_or_create(class_name.replace('.', "/").as_str());
         let mut object = Class::new_object(&class);
         if msg.is_some() {
             object.set_ref_var(
                 "detailMessage",
                 "Ljava/lang/String;",
-                StringPool::java_string(class_loader, msg.unwrap().to_string()),
+                StringPool::java_string( msg.unwrap().to_string()),
             );
         }
         frame

@@ -3,7 +3,7 @@ use crate::class_file::exceptions_attribute::ExceptionsAttribute;
 use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_member::ClassMember;
@@ -266,10 +266,9 @@ impl Method {
             let param_class_name = PrimitiveTypes::instance()
                 .unwrap()
                 .to_class_name(param_type.as_str());
-            param_classes.push(ClassLoader::load_class(
-                class_loader.clone(),
-                param_class_name.as_str(),
-            ));
+            /// todo
+            let param_type = (*class_loader).borrow().find_class(param_class_name.as_str());
+            param_classes.push(param_type.expect("The param class not loaded"));
         }
 
         return Some(param_classes);
@@ -298,13 +297,15 @@ impl Method {
         return Some(ex_classes);
     }
 
+    /// todo this impl is hack, and has bug
     pub fn return_type(&self) -> Rc<RefCell<Class>> {
         let return_type = self.method_desc.return_type();
         let return_class_name = PrimitiveTypes::instance()
             .unwrap()
             .to_class_name(return_type);
         let class_loader = (*self.class()).borrow().loader();
-        return ClassLoader::load_class(class_loader, return_class_name.as_str());
+        let return_type = (*class_loader).borrow().find_class(return_class_name.as_str());
+        return return_type.expect("The return class not loaded");
     }
 
     pub fn shim_return_method() -> Method {

@@ -13,6 +13,7 @@ mod jvm;
 mod native;
 mod runtime_data_area;
 mod utils;
+mod global_config;
 
 fn main() {
     let cmd = Cmd::parse_cmd();

@@ -2,7 +2,7 @@ use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
 use crate::class_file::class_file::ClassFile;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::access_flags::{
     AccessFlag, ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
 };
@@ -20,6 +20,7 @@ use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::jvm::Jvm;
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -128,12 +129,11 @@ impl Class {
     #[inline]
     pub fn new_array_class(loader: Rc<RefCell<ClassLoader>>, class_name: &str) -> Class {
         let mut interfaces = Vec::new();
-        interfaces.push(ClassLoader::load_class(
-            loader.clone(),
+        let bootstrap_loader = Jvm::instance().unwrap().boot_class_loader();
+        interfaces.push(bootstrap_loader.find_or_create(
             "java/lang/Cloneable",
         ));
-        interfaces.push(ClassLoader::load_class(
-            loader.clone(),
+        interfaces.push(bootstrap_loader.find_or_create(
             "java/io/Serializable",
         ));
         let class = Class {
@@ -145,7 +145,7 @@ impl Class {
             fields: vec![],
             methods: vec![],
             loader: Some(loader.clone()),
-            super_class: Some(ClassLoader::load_class(loader.clone(), "java/lang/Object")),
+            super_class: Some(bootstrap_loader.find_or_create("java/lang/Object")),
             interfaces: Some(interfaces),
             instance_slot_count: 0,
             static_slot_count: 0,
@@ -159,7 +159,8 @@ impl Class {
     }
 
     #[inline]
-    pub fn primitive_class(loader: Rc<RefCell<ClassLoader>>, class_name: &str) -> Class {
+    pub fn primitive_class(class_name: &str) -> Class {
+        let boot_loader = Jvm::instance().unwrap().boot_class_loader().basic_loader();
         return Class {
             access_flags: PUBLIC,
             name: class_name.to_string(),
@@ -168,7 +169,7 @@ impl Class {
             constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
             fields: vec![],
             methods: vec![],
-            loader: Some(loader),
+            loader: Some(boot_loader),
             super_class: None,
             interfaces: None,
             instance_slot_count: 0,

@@ -1,10 +1,11 @@
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::utils::boxed;
 use std::{thread, time};
+use crate::jvm::Jvm;
 
 pub fn init() {
     Registry::register(
@@ -22,16 +23,16 @@ pub fn init() {
 
 pub fn current_thread(frame: &mut Frame) {
     let class = frame.method().class();
-    let loader = (*class).borrow().loader();
-    let thread_class = ClassLoader::load_class(loader.clone(), "java/lang/Thread");
+    let loader = Jvm::boot_class_loader();
+    let thread_class = loader.find_or_create("java/lang/Thread");
     let mut java_thread = Class::new_object(&thread_class);
     java_thread.set_ref_var(
         "name",
         "Ljava/lang/String;",
-        StringPool::java_string(loader.clone(), "Main".to_string()),
+        StringPool::java_string( "Main".to_string()),
     );
 
-    let thread_group_class = ClassLoader::load_class(loader.clone(), "java/lang/ThreadGroup");
+    let thread_group_class = loader.find_or_create("java/lang/ThreadGroup");
     let mut java_thread_group = Class::new_object(&thread_group_class);
     java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", boxed(java_thread_group));
     java_thread.set_int_var("priority", "I", 1);

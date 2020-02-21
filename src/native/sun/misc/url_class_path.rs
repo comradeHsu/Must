@@ -1,8 +1,9 @@
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::utils::boxed;
+use crate::jvm::Jvm;
 
 pub fn init() {
     Registry::register(
@@ -18,9 +19,8 @@ pub fn init() {
 pub fn get_lookup_cache_urls(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let java_loader = vars.get_ref(0);
-    let class = frame.method().class();
-    let class_loader = (*class).borrow().loader();
-    let url_class = ClassLoader::load_class(class_loader.clone(), "java/net/URL");
+
+    let url_class = Jvm::boot_class_loader().find_or_create( "java/net/URL");
     let array_class = (*url_class).borrow().array_class();
     let array = Class::new_array(&array_class, 0);
     frame

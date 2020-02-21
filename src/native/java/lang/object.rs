@@ -1,9 +1,10 @@
-use crate::class_loader::class_loader::ClassLoader;
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::object::Object;
 use crate::utils::boxed;
 use std::ops::Deref;
+use crate::jvm::Jvm;
 
 pub fn init() {
     Registry::register(
@@ -52,8 +53,7 @@ pub fn clone(frame: &mut Frame) {
         .get_this()
         .unwrap();
     let this_class = (*this).borrow().class();
-    let loader = (*this_class).borrow().loader();
-    let cloneable = ClassLoader::load_class(loader, "java/lang/Cloneable");
+    let cloneable = Jvm::boot_class_loader().find_or_create("java/lang/Cloneable");
 
     let borrow = cloneable.borrow();
     if !(*this_class).borrow().is_implements(borrow.deref()) {
