@@ -8,34 +8,34 @@ use std::cell::RefCell;
 use std::borrow::Borrow;
 
 #[derive(Debug)]
-pub struct SymRef {
-    constant_pool:Rc<RefCell<ConstantPool>>,
+pub struct SymbolRef {
+    holder:Option<Rc<RefCell<Class>>>,
     class_name:String,
     class:Option<Rc<RefCell<Class>>>
 }
 
-impl SymRef {
+impl SymbolRef {
     #[inline]
-    pub fn new() -> SymRef{
-        return SymRef{
-            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+    pub fn new() -> SymbolRef {
+        return SymbolRef {
+            holder: None,
             class_name: "".to_string(),
             class: None
         };
     }
 
     #[inline]
-    pub fn with_pool(pool:Rc<RefCell<ConstantPool>>) -> SymRef{
-        return SymRef{
-            constant_pool: pool,
+    pub fn with_holder(holder:Rc<RefCell<Class>>) -> SymbolRef {
+        return SymbolRef {
+            holder: Some(holder),
             class_name: "".to_string(),
             class: None
         };
     }
 
-    pub fn new_sym_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantClassInfo) -> SymRef {
-        return SymRef{
-            constant_pool: cp,
+    pub fn new_sym_ref(holder:Rc<RefCell<Class>>,info:&ConstantClassInfo) -> SymbolRef {
+        return SymbolRef {
+            holder: Some(holder),
             class_name: info.name().to_string(),
             class: None
         };
@@ -65,6 +65,7 @@ impl SymRef {
     }
 
     pub fn resolved_class_ref(&mut self,class:Rc<RefCell<Class>>) {
+        let class = (*self.constant_pool).borrow().class();
         let class_loader = (*class).borrow().loader();
         let ref_class = ClassLoader::load_class(class_loader,self.class_name.as_str());
         if !(*ref_class).borrow().is_accessible_to((*class).borrow().deref()) {

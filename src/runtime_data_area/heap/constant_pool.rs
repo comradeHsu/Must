@@ -8,6 +8,7 @@ use core::mem;
 use crate::runtime_data_area::heap::field_ref::FieldRef;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 use crate::runtime_data_area::heap::interface_method_ref::InterfaceMethodRef;
+use crate::runtime_data_area::heap::field::Field;
 
 #[derive(Debug)]
 pub struct ConstantPool {
@@ -129,4 +130,14 @@ pub enum Constant {
     FieldReference(FieldRef),
     MethodReference(MethodRef),
     InterfaceMethodReference(InterfaceMethodRef)
+}
+
+impl Constant {
+    pub fn resolved_field(&mut self,class:Rc<RefCell<Class>>) -> Option<&Rc<RefCell<Field>>> {
+        let field = match self {
+            FieldReference(c) => c.resolved_field(class),
+            _ => panic!("Unknown constant type")
+        };
+        return field;
+    }
 }

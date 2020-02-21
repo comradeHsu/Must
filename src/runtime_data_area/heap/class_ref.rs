@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::sym_ref::SymRef;
+use crate::runtime_data_area::heap::sym_ref::SymbolRef;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use std::rc::Rc;
 use crate::class_file::constant_pool::ConstantClassInfo;
@@ -7,12 +7,12 @@ use crate::runtime_data_area::heap::class::Class;
 
 #[derive(Debug)]
 pub struct ClassRef {
-    sym_ref:SymRef
+    sym_ref: SymbolRef
 }
 
 impl ClassRef {
-    pub fn new_class_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantClassInfo) -> ClassRef {
-        return ClassRef{sym_ref:SymRef::new_sym_ref(cp,info)}
+    pub fn new_class_ref(holder:Rc<RefCell<Class>>,info:&ConstantClassInfo) -> ClassRef {
+        return ClassRef{sym_ref: SymbolRef::new_sym_ref(holder, info)}
     }
 
     #[inline]

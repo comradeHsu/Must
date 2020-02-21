@@ -15,9 +15,9 @@ pub struct FieldRef {
 }
 
 impl FieldRef {
-    pub fn new_field_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantFieldRefInfo) -> FieldRef {
+    pub fn new_field_ref(holder:Rc<RefCell<Class>>,info:&ConstantFieldRefInfo) -> FieldRef {
         let mut field_ref = FieldRef{
-            member_ref: MemberRef::with_pool(cp),
+            member_ref: MemberRef::with_holder(holder),
             field: None
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());

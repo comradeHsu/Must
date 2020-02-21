@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::sym_ref::SymRef;
+use crate::runtime_data_area::heap::sym_ref::SymbolRef;
 use crate::class_file::constant_pool::ConstantMemberRefInfo;
 use std::rc::Rc;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
@@ -7,7 +7,7 @@ use crate::runtime_data_area::heap::class::Class;
 
 #[derive(Debug)]
 pub struct MemberRef {
-    sym_ref:SymRef,
+    sym_ref: SymbolRef,
     name:String,
     descriptor:String
 }
@@ -15,9 +15,9 @@ pub struct MemberRef {
 impl MemberRef {
 
     #[inline]
-    pub fn with_pool(pool:Rc<RefCell<ConstantPool>>) -> MemberRef {
+    pub fn with_holder(holder:Rc<RefCell<Class>>) -> MemberRef {
         return MemberRef{
-            sym_ref: SymRef::with_pool(pool),
+            sym_ref: SymbolRef::with_holder(holder),
             name: "".to_string(),
             descriptor: "".to_string()
         };
