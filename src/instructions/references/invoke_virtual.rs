@@ -55,7 +55,7 @@ impl Instruction for InvokeVirtual {
             MethodReference(c) => c,
             _ => panic!("Unknown constant type"),
         };
-        let resolved_method = method_ref.resolved_method(current_class.clone()).unwrap();
+        let resolved_method = method_ref.resolved_method().unwrap();
         if resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }

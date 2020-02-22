@@ -1,8 +1,8 @@
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use crate::instructions::base::class_init_logic::init_class;
 
 pub struct PutStatic(ConstantPoolInstruction);
 
@@ -22,25 +22,20 @@ impl Instruction for PutStatic {
         let current_method = frame.method();
         let current_class = current_method.class();
         let cp = (*current_class).borrow().constant_pool();
-        let mut borrow_pool = (*cp).borrow_mut();
-        let constant = borrow_pool.get_constant(self.0.index());
-        let field_ref = match constant {
-            FieldReference(c) => c,
-            _ => panic!("Unknown constant type"),
-        };
-        let field_option = field_ref.resolved_field(current_class.clone());
-        let field = (*field_option.unwrap()).borrow();
+
+        let field_option = (*cp).borrow_mut().resolve_field_ref(self.0.index()).unwrap();
+        let field = (*field_option).borrow();
         let class = field.parent().class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(frame.thread(),class.clone());
             return;
         }
-        if !field.parent().is_static() {
+        if  !field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
         if field.parent().is_final() {
-            if current_class != class || current_method.name() != "<clinit>" {
+            if current_class != class || current_method.name() != "<clinit>"{
                 panic!("java.lang.IllegalAccessError");
             }
         }
@@ -51,11 +46,11 @@ impl Instruction for PutStatic {
         let stack = frame.operand_stack().expect("stack is none");
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z' | 'B' | 'C' | 'S' | 'I' => slots.set_int(slot_id, stack.pop_int()),
-            'F' => slots.set_float(slot_id, stack.pop_float()),
-            'J' => slots.set_long(slot_id, stack.pop_long()),
-            'D' => slots.set_double(slot_id, stack.pop_double()),
-            'L' | '[' => slots.set_ref(slot_id, stack.pop_ref()),
+            'Z'|'B'|'C'|'S'|'I' => slots.set_int(slot_id,stack.pop_int()),
+            'F' => slots.set_float(slot_id,stack.pop_float()),
+            'J' => slots.set_long(slot_id,stack.pop_long()),
+            'D' => slots.set_double(slot_id,stack.pop_double()),
+            'L' | '[' => slots.set_ref(slot_id,stack.pop_ref()),
             _ => {}
         }
     }

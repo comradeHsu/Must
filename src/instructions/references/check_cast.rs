@@ -32,7 +32,7 @@ impl Instruction for CheckCast {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type"),
         };
-        let class = class_ref.resolved_class(c);
+        let class = class_ref.resolved_class();
         if !(*reference.unwrap()).borrow().is_instance_of(class) {
             panic!("java.lang.ClassCastException");
         }

@@ -1,42 +1,33 @@
+use crate::runtime_data_area::heap::sym_ref::SymbolRef;
 use crate::class_file::constant_pool::ConstantMemberRefInfo;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use crate::runtime_data_area::heap::sym_ref::SymRef;
-use std::cell::RefCell;
 use std::rc::Rc;
+use crate::runtime_data_area::heap::constant_pool::ConstantPool;
+use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 
 #[derive(Debug)]
 pub struct MemberRef {
-    sym_ref: SymRef,
-    name: String,
-    descriptor: String,
+    symbol_ref: SymbolRef,
+    name:String,
+    descriptor:String
 }
 
 impl MemberRef {
+
     #[inline]
-    pub fn with_pool(pool: Rc<RefCell<ConstantPool>>) -> MemberRef {
-        return MemberRef {
-            sym_ref: SymRef::with_pool(pool),
+    pub fn new() -> MemberRef {
+        return MemberRef{
+            symbol_ref: SymbolRef::new(),
             name: "".to_string(),
-            descriptor: "".to_string(),
+            descriptor: "".to_string()
         };
     }
 
-    pub fn copy_member_info(&mut self, info: &ConstantMemberRefInfo) {
-        self.sym_ref.set_class_name(info.class_name().to_string());
-        let (name, desc) = info.name_and_descriptor();
+    pub fn copy_member_info(&mut self,info:&ConstantMemberRefInfo) {
+        self.symbol_ref.set_class_name(info.class_name().to_string());
+        let (name,desc) = info.name_and_descriptor();
         self.name = name.to_string();
         self.descriptor = desc.to_string();
-    }
-
-    #[inline]
-    pub fn set_constant_pool(&mut self, pool: Rc<RefCell<ConstantPool>>) {
-        self.sym_ref.set_constant_pool(pool);
-    }
-
-    #[inline]
-    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
-        return self.sym_ref.constant_pool();
     }
 
     #[inline]
@@ -50,7 +41,17 @@ impl MemberRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self, pool_class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        return self.sym_ref.resolved_class(pool_class);
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.symbol_ref.resolved_class();
+    }
+
+    #[inline]
+    pub fn set_holder(&mut self, holder:Rc<RefCell<Class>>) {
+        self.symbol_ref.holder = Some(holder);
+    }
+
+    #[inline]
+    pub fn holder(&self) -> Rc<RefCell<Class>>{
+        return self.symbol_ref.holder.clone().unwrap();
     }
 }

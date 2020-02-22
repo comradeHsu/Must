@@ -1,12 +1,12 @@
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::class::Class;
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
-use crate::utils::boxed;
-use std::cell::RefCell;
+use crate::runtime_data_area::heap::class::Class;
 use std::rc::Rc;
+use std::cell::RefCell;
+use crate::instructions::base::class_init_logic::init_class;
+use crate::utils::boxed;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -25,29 +25,17 @@ impl Instruction for New {
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
         let pool = (*class).borrow().constant_pool();
-        let mut borrow_pool = (*pool).borrow_mut();
-        let constant = borrow_pool.get_constant(self.0.index());
-        let class_ref = match constant {
-            ClassReference(c) => c,
-            _ => panic!("Unknown constant type"),
-        };
-        let class = class_ref.resolved_class(class.clone());
+        let class = (*pool).borrow_mut().resolve_class_ref(self.0.index());
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(frame.thread(),class.clone());
             return;
         }
-        let ref_class = (*class).borrow();
-        if ref_class.is_interface() || ref_class.is_abstract() {
+        let ref_class= (*class).borrow();
+        if ref_class.is_interface() || ref_class.is_abstract(){
             panic!("java.lang.InstantiationError")
         }
-        let object = match ref_class.is_class_loader() {
-            true => Class::new_class_loader_object(&class),
-            false => Class::new_object(&class),
-        };
-        frame
-            .operand_stack()
-            .expect("")
-            .push_ref(Some(boxed(object)));
+        let object = Class::new_object(&class);
+        frame.operand_stack().expect("").push_ref(Some(boxed(object)));
     }
 }

@@ -21,14 +21,13 @@ impl Instruction for InvokeStatic {
 
     fn execute(&mut self, frame: &mut Frame) {
         let cp = (*frame.method().class()).borrow().constant_pool();
-        let pool_class = (*cp).borrow().class();
         let mut borrow_cp = (*cp).borrow_mut();
         let constant = borrow_cp.get_constant(self.0.index());
         let method_ref = match constant {
             MethodReference(c) => c,
             _ => panic!("Unknown constant type"),
         };
-        let resolved_method = method_ref.resolved_method(pool_class).unwrap();
+        let resolved_method = method_ref.resolved_method().unwrap();
         if !resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }

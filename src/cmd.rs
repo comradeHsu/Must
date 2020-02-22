@@ -3,12 +3,12 @@ use crate::utils::vecs::flat_map;
 pub struct Cmd {
     pub help_flag: bool,
     pub version_flag: bool,
-    pub verbose_class: bool,
+    pub verbose_class:bool,
     pub cp_option: Vec<String>,
-    pub x_jre_option: String,
+    pub x_jre_option:String,
     pub class: String,
     pub args: Vec<String>,
-    pub exec_jar_path: Option<String>,
+    exec_jar_path:Option<String>
 }
 
 impl Cmd {
@@ -19,19 +19,19 @@ impl Cmd {
             verbose_class: false,
             cp_option: vec![],
             x_jre_option: String::new(),
-            class: "".to_string(),
+            class: String::new(),
             args: Vec::new(),
-            exec_jar_path: None,
+            exec_jar_path: None
         };
     }
 
     pub fn parse_cmd() -> Cmd {
-        let mut args: Vec<String> = std::env::args().collect();
-        let mut cmd: Cmd = Cmd::new();
+        let mut args:Vec<String> = std::env::args().collect();
+        let mut cmd:Cmd = Cmd::new();
         for mut index in 0..args.len() {
             let arg = args.get(index).unwrap();
             if arg.starts_with("-Xjre") {
-                let mut array: Vec<&str> = arg.split(':').collect();
+                let mut array:Vec<&str> = arg.split(':').collect();
                 cmd.x_jre_option = array.remove(1).to_string();
             }
             match arg.as_str() {
@@ -43,23 +43,21 @@ impl Cmd {
                 "class" => cmd.class = arg.clone(),
                 "-cp" | "-classpath" => {
                     let null_ptr = "".to_string();
-                    let mut param = args.get(index + 1).unwrap_or_else(|| &null_ptr);
+                    let mut param = args.get(index+1).unwrap_or_else(||{&null_ptr});
                     if param.starts_with("-") {
                         param = &null_ptr;
                     } else {
                         index += 1;
                     }
-                    let array: Vec<&str> = param.split(';').collect();
-                    let mut cps = flat_map::<String, &str>(array);
+                    let array:Vec<&str> = param.split(';').collect();
+                    let mut cps = flat_map::<String,&str>(array);
                     cmd.cp_option.append(&mut cps);
-                }
+                },
                 "-jar" => {
-                    let param = args
-                        .get(index + 1)
-                        .expect("-jar requires jar file specification");
+                    let param = args.get(index+1).expect("-jar requires jar file specification");
                     cmd.exec_jar_path = Some(param.clone())
-                }
-                _ => cmd.args.push(arg.clone()),
+                },
+                _ => cmd.args.push(arg.clone())
             }
         }
         cmd.class = cmd.args.remove(1);
@@ -89,7 +87,7 @@ impl Cmd {
     }
 
     #[inline]
-    pub fn set_class(&mut self, class: String) {
+    pub fn set_class(&mut self,class:String) {
         self.class = class;
     }
 
