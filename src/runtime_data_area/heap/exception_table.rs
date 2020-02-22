@@ -58,9 +58,7 @@ impl ExceptionTable {
                     return Some(handler);
                 }
                 let mut class_ref = handler.catch_type.clone().unwrap();
-                let pool = class_ref.constant_pool();
-                let pool_class = (*pool).borrow().class();
-                let catch_class = class_ref.resolved_class(pool_class);
+                let catch_class = class_ref.resolved_class();
                 if catch_class == class
                     || (*catch_class)
                         .borrow()

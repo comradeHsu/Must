@@ -1,3 +1,5 @@
+use crate::class_loader::app_class_loader::ClassLoader;
+use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
 use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
@@ -14,8 +16,6 @@ use crate::utils::boxed;
 use chrono::Local;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
-use crate::class_loader::app_class_loader::ClassLoader;
 
 pub struct Jvm {
     cmd: Cmd,
@@ -77,20 +77,18 @@ impl Jvm {
     }
 
     fn init_vm(&mut self) {
-        let vm_class = ClassLoader::load_class(self.boot_class_loader.clone(), "sun/misc/VM");
+        let vm_class = self.boot_class_loader.find_or_create("sun/misc/VM");
         init_class(self.main_thread.clone(), vm_class);
         interpret(self.main_thread.clone());
 
-        let ext_class = ClassLoader::load_class(
-            self.boot_class_loader.clone(),
-            "sun/misc/Launcher$ExtClassLoader",
-        );
+        let ext_class = self
+            .boot_class_loader
+            .find_or_create("sun/misc/Launcher$ExtClassLoader");
         init_class(self.main_thread.clone(), ext_class.clone());
 
-        let app_class = ClassLoader::load_class(
-            self.boot_class_loader.clone(),
-            "sun/misc/Launcher$AppClassLoader",
-        );
+        let app_class = self
+            .boot_class_loader
+            .find_or_create("sun/misc/Launcher$AppClassLoader");
         init_class(self.main_thread.clone(), app_class.clone());
 
         interpret(self.main_thread.clone());
@@ -101,7 +99,7 @@ impl Jvm {
     fn exec_main(&self) {
         let class_name = self.cmd.class.clone().replace('.', "/");
         let main_class =
-            ClassLoader::load_class(self.boot_class_loader.clone(), class_name.as_str());
+            ClassLoader::load_class(self.app_class_loader.clone(), class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
         if main_method.is_none() {
             println!("Main method not found in class {}", self.cmd.class.as_str());
@@ -118,29 +116,25 @@ impl Jvm {
     }
 
     fn create_args_array(&self) -> Rc<RefCell<Object>> {
-        let string_class =
-            ClassLoader::load_class(self.boot_class_loader.clone(), "java/lang/String");
+        let string_class = self.boot_class_loader.find_or_create("java/lang/String");
         let args_arr_class = (*string_class).borrow().array_class();
         let mut args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
         let java_args = args_arr.mut_references();
         for i in 0..java_args.len() {
-            java_args[i] = Some(StringPool::java_string(
-                self.cmd.args[i].clone(),
-            ));
+            java_args[i] = Some(StringPool::java_string(self.cmd.args[i].clone()));
         }
         return boxed(args_arr);
     }
 
     pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
-        let bootstrap_loader = Self::instance().unwrap().boot_class_loader();
-        let class =
-            bootstrap_loader.find_or_create(class_name.replace('.', "/").as_str());
+        let bootstrap_loader = Self::boot_class_loader();
+        let class = bootstrap_loader.find_or_create(class_name.replace('.', "/").as_str());
         let mut object = Class::new_object(&class);
         if msg.is_some() {
             object.set_ref_var(
                 "detailMessage",
                 "Ljava/lang/String;",
-                StringPool::java_string( msg.unwrap().to_string()),
+                StringPool::java_string(msg.unwrap().to_string()),
             );
         }
         frame

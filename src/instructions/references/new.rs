@@ -1,12 +1,12 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::runtime_data_area::heap::class::Class;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::instructions::base::class_init_logic::init_class;
+use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -28,14 +28,17 @@ impl Instruction for New {
         let class = (*pool).borrow_mut().resolve_class_ref(self.0.index());
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(),class.clone());
+            init_class(frame.thread(), class.clone());
             return;
         }
-        let ref_class= (*class).borrow();
-        if ref_class.is_interface() || ref_class.is_abstract(){
+        let ref_class = (*class).borrow();
+        if ref_class.is_interface() || ref_class.is_abstract() {
             panic!("java.lang.InstantiationError")
         }
         let object = Class::new_object(&class);
-        frame.operand_stack().expect("").push_ref(Some(boxed(object)));
+        frame
+            .operand_stack()
+            .expect("")
+            .push_ref(Some(boxed(object)));
     }
 }

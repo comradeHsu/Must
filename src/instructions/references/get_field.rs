@@ -1,6 +1,6 @@
+use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
-use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
 
 pub struct GetField(ConstantPoolInstruction);
@@ -20,7 +20,10 @@ impl Instruction for GetField {
     fn execute(&mut self, frame: &mut Frame) {
         let c = frame.method().class();
         let cp = (*c).borrow().constant_pool();
-        let field_option = (*cp).borrow_mut().resolve_field_ref(self.0.index()).unwrap();
+        let field_option = (*cp)
+            .borrow_mut()
+            .resolve_field_ref(self.0.index())
+            .unwrap();
         let field = (*field_option).borrow();
         let class = field.parent().class();
         if field.parent().is_static() {
@@ -33,11 +36,13 @@ impl Instruction for GetField {
         }
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
-        let mut borrow_class = (*class).borrow_mut();
-        let slots = borrow_class.mut_static_vars().expect("slots is none");
+
+        let object = reference.unwrap();
+        let borrow_object = (*object).borrow();
+        let slots = borrow_object.fields_immutable();
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z'|'B'|'C'|'S'|'I' => stack.push_int(slots.get_int(slot_id)),
+            'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
             'F' => stack.push_float(slots.get_float(slot_id)),
             'J' => stack.push_long(slots.get_long(slot_id)),
             'D' => stack.push_double(slots.get_double(slot_id)),

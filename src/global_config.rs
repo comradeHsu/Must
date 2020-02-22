@@ -1,27 +1,25 @@
-use std::env::consts::OS;
 use crate::cmd::Cmd;
+use std::env::consts::OS;
 
 pub struct GlobalConfig {
-    boot_lib_path:String,
-    os:&'static str,
-
+    boot_lib_path: String,
+    os: &'static str,
 }
 
-pub static mut GLOBAL_CONFIG:Option<GlobalConfig> = None;
+pub static mut GLOBAL_CONFIG: Option<GlobalConfig> = None;
 
 impl GlobalConfig {
-
-    fn new(cmd:&Cmd) -> GlobalConfig {
-        return GlobalConfig{
+    fn new(cmd: &Cmd) -> GlobalConfig {
+        return GlobalConfig {
             boot_lib_path: "".to_string(),
-            os: OS
+            os: OS,
         };
     }
 
-    pub fn init(cmd:&Cmd) {
+    pub fn init(cmd: &Cmd) {
         unsafe {
             if GLOBAL_CONFIG.is_none() {
-                GLOBAL_CONFIG = Some(Self::new())
+                GLOBAL_CONFIG = Some(Self::new(cmd))
             }
         }
     }

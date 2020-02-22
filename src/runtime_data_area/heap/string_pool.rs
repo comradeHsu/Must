@@ -1,3 +1,4 @@
+use crate::jvm::Jvm;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::DataType::Chars;
 use crate::runtime_data_area::heap::object::Object;
@@ -5,7 +6,6 @@ use crate::utils::{boxed, java_str_to_rust_str};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::jvm::Jvm;
 
 pub struct StringPool {
     pool: HashMap<String, Rc<RefCell<Object>>>,
@@ -42,11 +42,10 @@ impl StringPool {
             return pool_str.unwrap().clone();
         }
         let chars: Vec<u16> = string.encode_utf16().collect();
-        let bootstrap_loader = Jvm::instance().unwrap().boot_class_loader();
-        let java_chars =
-            Object::from_data(bootstrap_loader.find_or_create( "[C"), Chars(chars));
+        let bootstrap_loader = Jvm::boot_class_loader();
+        let java_chars = Object::from_data(bootstrap_loader.find_or_create("[C"), Chars(chars));
         let mut java_string =
-            Class::new_object(&bootstrap_loader.find_or_create( "java/lang/String"));
+            Class::new_object(&bootstrap_loader.find_or_create("java/lang/String"));
         java_string.set_ref_var("value", "[C", boxed(java_chars));
         let target = boxed(java_string);
         StringPool::mut_instance()

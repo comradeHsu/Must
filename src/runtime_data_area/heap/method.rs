@@ -267,7 +267,9 @@ impl Method {
                 .unwrap()
                 .to_class_name(param_type.as_str());
             /// todo
-            let param_type = (*class_loader).borrow().find_class(param_class_name.as_str());
+            let param_type = (*class_loader)
+                .borrow()
+                .find_class(param_class_name.as_str());
             param_classes.push(param_type.expect("The param class not loaded"));
         }
 
@@ -286,12 +288,7 @@ impl Method {
 
         for i in 0..self.exceptions.len() {
             let ex_index = self.exceptions[i];
-            let constant = borrow.get_constant(ex_index as usize);
-            let class_ref = match constant {
-                ClassReference(reff) => reff,
-                _ => panic!("Not ClassReference"),
-            };
-            ex_classes.push(class_ref.resolved_class(class.clone()));
+            ex_classes.push(borrow.resolve_class_ref(ex_index as usize));
         }
 
         return Some(ex_classes);
@@ -304,7 +301,9 @@ impl Method {
             .unwrap()
             .to_class_name(return_type);
         let class_loader = (*self.class()).borrow().loader();
-        let return_type = (*class_loader).borrow().find_class(return_class_name.as_str());
+        let return_type = (*class_loader)
+            .borrow()
+            .find_class(return_class_name.as_str());
         return return_type.expect("The return class not loaded");
     }
 

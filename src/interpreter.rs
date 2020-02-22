@@ -27,7 +27,7 @@ pub fn circulate(mut thread: Rc<RefCell<JavaThread>>) {
         (*thread).borrow_mut().set_pc(pc);
         let method = (*current_frame).borrow().method_ptr();
         let bytecode = method.code();
-        //       println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
+               println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);

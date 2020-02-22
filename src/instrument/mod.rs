@@ -11,10 +11,8 @@ use std::rc::Rc;
 const CONSTRUCTOR_DESC: &str = "(JZZ)V";
 
 pub fn create_instrumentation() -> Rc<RefCell<Object>> {
-    let boot_loader = Jvm::instance().unwrap().boot_class_loader();
-    let class = boot_loader.find_or_create(
-        "sun.instrument.InstrumentationImpl",
-    );
+    let boot_loader = Jvm::boot_class_loader();
+    let class = boot_loader.find_or_create("sun.instrument.InstrumentationImpl");
     let constructor = Class::get_constructor(class, CONSTRUCTOR_DESC);
     let parameters = vec![
         Parameter::Long(0),

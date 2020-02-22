@@ -5,6 +5,7 @@ mod class_file;
 mod class_loader;
 mod class_path;
 mod cmd;
+mod global_config;
 mod instructions;
 mod instrument;
 mod interpreter;
@@ -13,7 +14,6 @@ mod jvm;
 mod native;
 mod runtime_data_area;
 mod utils;
-mod global_config;
 
 fn main() {
     let cmd = Cmd::parse_cmd();
@@ -41,7 +41,7 @@ mod tests {
             verbose_class: false,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testJava.CLassLoaderTest".to_string(),
+            class: "testJava.BubbleSortTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

@@ -1,11 +1,11 @@
 use crate::class_loader::app_class_loader::ClassLoader;
+use crate::jvm::Jvm;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::utils::boxed;
 use std::{thread, time};
-use crate::jvm::Jvm;
 
 pub fn init() {
     Registry::register(
@@ -29,7 +29,7 @@ pub fn current_thread(frame: &mut Frame) {
     java_thread.set_ref_var(
         "name",
         "Ljava/lang/String;",
-        StringPool::java_string( "Main".to_string()),
+        StringPool::java_string("Main".to_string()),
     );
 
     let thread_group_class = loader.find_or_create("java/lang/ThreadGroup");

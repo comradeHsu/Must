@@ -1,5 +1,5 @@
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::jvm::{JVM, Jvm};
+use crate::jvm::{Jvm, JVM};
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::utils::java_str_to_rust_str;
@@ -99,37 +99,14 @@ pub fn define_class1(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let this = vars.get_ref(0).unwrap();
     let java_string = vars.get_ref(1);
-    let byte_array = vars.get_ref(2).expect("buff is null");
+    let byte_array = vars.get_ref(2);
     let offset = vars.get_int(3) as usize;
     let length = vars.get_int(4) as usize;
     let protection_domain = vars.get_ref(5);
     let source = vars.get_ref(6);
 
-    let clone = byte_array.clone();
-    let mut borrow = (*clone).borrow_mut();
-    let mut_bytes = borrow.mut_bytes();
-    let slice = &mut_bytes[offset..(offset + length)];
-    let mut str_s = "__JVM_DefineClass__".to_string();
-    if source.is_some() {
-        str_s = java_str_to_rust_str(source.unwrap());
-    }
-    println!(
-        "slice:{:?},offset:{},length:{},source:{}",
-        slice, offset, length, str_s
-    );
-    let mut bytes = vec![0u8; length];
-    for i in 0..length {
-        bytes[i] = slice[i] as u8;
-    }
-
     let class_name = java_str_to_rust_str(java_string.unwrap());
-    let class = ClassLoader::load_class_by_bytes(
-        this,
-        class_name.as_str(),
-        protection_domain,
-        bytes,
-        Some(byte_array),
-    );
+    let class = ClassLoader::define_class_internal(class_name.as_str(),byte_array,offset,length,this,protection_domain);
     let java_class = (*class).borrow().get_java_class();
 
     frame

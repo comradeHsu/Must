@@ -1,10 +1,10 @@
 use crate::class_loader::app_class_loader::ClassLoader;
+use crate::jvm::Jvm;
 use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::object::Object;
 use crate::utils::boxed;
 use std::ops::Deref;
-use crate::jvm::Jvm;
 
 pub fn init() {
     Registry::register(

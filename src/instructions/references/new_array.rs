@@ -1,11 +1,12 @@
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
+use crate::jvm::Jvm;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::class_loader::app_class_loader::ClassLoader;
 
 const AT_BOOLEAN: u8 = 4;
 const AT_CHAR: u8 = 5;
@@ -33,29 +34,28 @@ impl Instruction for NewArray {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let class = frame.method().class();
         let stack = frame.operand_stack().expect("stack is none");
         let count = stack.pop_int();
         if count < 0 {
             panic!("java.lang.NegativeArraySizeException")
         }
-        let class_loader = (*class).borrow().loader();
-        let array_class = get_primitive_array_class(class_loader, self.atype);
+        let array_class = get_primitive_array_class(self.atype);
         let array_object = Class::new_array(&array_class, count as usize);
         stack.push_ref(Some(boxed(array_object)));
     }
 }
 
-fn get_primitive_array_class(loader: Rc<RefCell<ClassLoader>>, atype: u8) -> Rc<RefCell<Class>> {
+fn get_primitive_array_class(atype: u8) -> Rc<RefCell<Class>> {
+    let boot_loader = Jvm::boot_class_loader();
     match atype {
-        AT_BOOLEAN => ClassLoader::load_class(loader, "[Z"),
-        AT_CHAR => ClassLoader::load_class(loader, "[C"),
-        AT_FLOAT => ClassLoader::load_class(loader, "[F"),
-        AT_DOUBLE => ClassLoader::load_class(loader, "[D"),
-        AT_BYTE => ClassLoader::load_class(loader, "[B"),
-        AT_SHORT => ClassLoader::load_class(loader, "[S"),
-        AT_INT => ClassLoader::load_class(loader, "[I"),
-        AT_LONG => ClassLoader::load_class(loader, "[J"),
+        AT_BOOLEAN => boot_loader.find_or_create("[Z"),
+        AT_CHAR => boot_loader.find_or_create("[C"),
+        AT_FLOAT => boot_loader.find_or_create("[F"),
+        AT_DOUBLE => boot_loader.find_or_create("[D"),
+        AT_BYTE => boot_loader.find_or_create("[B"),
+        AT_SHORT => boot_loader.find_or_create("[S"),
+        AT_INT => boot_loader.find_or_create("[I"),
+        AT_LONG => boot_loader.find_or_create("[J"),
         _ => panic!("Invalid atype!"),
     }
 }

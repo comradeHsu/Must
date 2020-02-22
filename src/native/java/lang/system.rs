@@ -115,11 +115,10 @@ pub fn init_properties(frame: &mut Frame) {
         "setProperty",
         "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
     );
-    let loader = (*frame.method().class()).borrow().loader();
     let thread = frame.thread();
     for (key, val) in _sys_props() {
-        let j_key = StringPool::java_string(loader.clone(), key);
-        let j_val = StringPool::java_string(loader.clone(), val);
+        let j_key = StringPool::java_string(key);
+        let j_val = StringPool::java_string(val);
         let mut ops = OperandStack::new(3).unwrap();
         ops.push_ref(props.clone());
         ops.push_ref(Some(j_key));
@@ -225,10 +224,8 @@ pub fn map_library_name(frame: &mut Frame) {
     let name = frame.local_vars().expect("vars is none").get_ref(0);
     let mut rust_name = java_str_to_rust_str(name.clone().unwrap());
     rust_name.push_str(".dll");
-    let class = frame.method_by_clone().class();
-    let loader = (*class).borrow().loader();
     let stack = frame.operand_stack().expect("stack is none");
-    stack.push_ref(Some(StringPool::java_string(loader, rust_name)));
+    stack.push_ref(Some(StringPool::java_string(rust_name)));
 }
 
 /// public static native long nanoTime();

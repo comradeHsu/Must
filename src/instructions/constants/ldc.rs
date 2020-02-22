@@ -87,14 +87,14 @@ fn ldc(frame: &mut Frame, index: usize) {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),
         Str(v) => {
-            let string = StringPool::java_string((*class).borrow().loader(), v.clone());
+            let string = StringPool::java_string(v.clone());
             frame
                 .operand_stack()
                 .expect("stack is none")
                 .push_ref(Some(string))
         }
         ClassReference(v) => {
-            let class = v.resolved_class(class);
+            let class = v.resolved_class();
             let borrow = (*class).borrow();
             let obj = borrow.java_class();
             frame

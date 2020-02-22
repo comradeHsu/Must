@@ -348,7 +348,6 @@ mod memory_size_map {
 
 #[cfg(test)]
 mod java_unsafe {
-    use crate::class_loader::_class_loader::ClassLoader;
     use crate::class_path::class_path::ClassPath;
     use crate::cmd::Cmd;
     use crate::runtime_data_area::heap::class::Class;
@@ -402,38 +401,38 @@ mod java_unsafe {
         }
     }
 
-    #[test]
-    fn test_int_array_offset() {
-        let cmd = Cmd {
-            help_flag: false,
-            version_flag: false,
-            verbose_class: false,
-            cp_option: vec!["D:/workspace/rust-jvm".to_string()],
-            x_jre_option: "".to_string(),
-            class: "java.ParseIntTest".to_string(),
-            args: vec![],
-            exec_jar_path: None,
-        };
-        let cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
-        let class_path = Rc::new(cp);
-        let class_loader = ClassLoader::new(class_path, cmd.verbose_class);
-        let class = ClassLoader::load_class(class_loader, "[I");
-        let object = Class::new_array(&class, 10);
-        let ptr = boxed(object);
-        let ptr = (*ptr).borrow();
-        let bytes = ptr.ints();
-        let first = bytes.get(0).unwrap();
-        let first_ref = first as *const i32;
-        let ptr = ptr.deref() as *const Object;
-        let hash = ptr as usize;
-        let first_ptr = first_ref as usize;
-        println!(
-            "object ptr:{}, first element ptr:{},差距:{}",
-            hash,
-            first_ptr,
-            first_ptr - hash
-        );
-    }
+//    #[test]
+//    fn test_int_array_offset() {
+//        let cmd = Cmd {
+//            help_flag: false,
+//            version_flag: false,
+//            verbose_class: false,
+//            cp_option: vec!["D:/workspace/rust-jvm".to_string()],
+//            x_jre_option: "".to_string(),
+//            class: "java.ParseIntTest".to_string(),
+//            args: vec![],
+//            exec_jar_path: None,
+//        };
+//        let cp = ClassPath::parse(&cmd.x_jre_option, &cmd.cp_option);
+//        let class_path = Rc::new(cp);
+//        let class_loader = ClassLoader::new(class_path, cmd.verbose_class);
+//        let class = ClassLoader::load_class(class_loader, "[I");
+//        let object = Class::new_array(&class, 10);
+//        let ptr = boxed(object);
+//        let ptr = (*ptr).borrow();
+//        let bytes = ptr.ints();
+//        let first = bytes.get(0).unwrap();
+//        let first_ref = first as *const i32;
+//        let ptr = ptr.deref() as *const Object;
+//        let hash = ptr as usize;
+//        let first_ptr = first_ref as usize;
+//        println!(
+//            "object ptr:{}, first element ptr:{},差距:{}",
+//            hash,
+//            first_ptr,
+//            first_ptr - hash
+//        );
+//    }
 
     #[test]
     fn test_byte_array_offset() {

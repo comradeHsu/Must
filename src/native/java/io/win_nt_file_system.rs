@@ -33,8 +33,7 @@ pub fn canonicalize0(frame: &mut Frame) {
     if file_path.is_ok() {
         path = file_path.unwrap().to_str().unwrap().to_string();
     }
-    let loader = (*frame.method().class()).borrow().loader();
-    let java_string = StringPool::java_string(loader, path);
+    let java_string = StringPool::java_string(path);
     frame
         .operand_stack()
         .expect("stack is none")

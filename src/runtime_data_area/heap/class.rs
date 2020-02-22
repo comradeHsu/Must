@@ -3,6 +3,7 @@ use crate::class_file::class_file::ClassFile;
 use crate::class_file::member_info::MemberInfo;
 use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
+use crate::jvm::Jvm;
 use crate::runtime_data_area::heap::access_flags::{
     AccessFlag, ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
 };
@@ -20,7 +21,7 @@ use crate::runtime_data_area::slot::Slot;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use crate::jvm::Jvm;
+use crate::utils::boxed;
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -93,15 +94,24 @@ impl Class {
         };
         //        println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
+
         (*point)
             .borrow_mut()
             .constant_pool
             .borrow_mut()
             .set_class(point.clone());
+
+        (*point)
+            .borrow_mut()
+            .constant_pool
+            .borrow_mut()
+            .lazy_init_for_constants(&point);
+
         (*point).borrow_mut().methods = Method::new_methods(point.clone(), class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(), class_file.fields());
         return point;
     }
+
 
     fn get_source_file(class_file: &ClassFile) -> Option<String> {
         let attr = class_file.source_file_attribute();
@@ -129,13 +139,9 @@ impl Class {
     #[inline]
     pub fn new_array_class(loader: Rc<RefCell<ClassLoader>>, class_name: &str) -> Class {
         let mut interfaces = Vec::new();
-        let bootstrap_loader = Jvm::instance().unwrap().boot_class_loader();
-        interfaces.push(bootstrap_loader.find_or_create(
-            "java/lang/Cloneable",
-        ));
-        interfaces.push(bootstrap_loader.find_or_create(
-            "java/io/Serializable",
-        ));
+        let bootstrap_loader = Jvm::boot_class_loader();
+        interfaces.push(bootstrap_loader.find_or_create("java/lang/Cloneable"));
+        interfaces.push(bootstrap_loader.find_or_create("java/io/Serializable"));
         let class = Class {
             access_flags: PUBLIC,
             name: class_name.to_string(),
@@ -160,7 +166,7 @@ impl Class {
 
     #[inline]
     pub fn primitive_class(class_name: &str) -> Class {
-        let boot_loader = Jvm::instance().unwrap().boot_class_loader().basic_loader();
+        let boot_loader = Jvm::boot_class_loader().basic_loader();
         return Class {
             access_flags: PUBLIC,
             name: class_name.to_string(),
@@ -429,9 +435,9 @@ impl Class {
     #[inline]
     pub fn new_class_loader_object(class: &Rc<RefCell<Class>>) -> Object {
         let mut object = Object::new(class.clone());
-        object.set_meta_data(MetaData::ClassLoader(ClassLoader::non_bootstrap_loader(
+        object.set_meta_data(MetaData::ClassLoader(boxed(ClassLoader::with_verbose(
             false,
-        )));
+        ))));
         return object;
     }
 
@@ -748,14 +754,26 @@ impl Class {
         let array_class_name = PrimitiveTypes::instance()
             .unwrap()
             .get_array_class_name(self.name.as_str());
-        return ClassLoader::load_class(self.loader().clone(), array_class_name.as_str());
+        let class_loader = self.get_class_loader();
+        return ClassLoader::load_class(class_loader, array_class_name.as_str());
     }
 
     pub fn component_class(&self) -> Rc<RefCell<Class>> {
         let component_class_name = PrimitiveTypes::instance()
             .unwrap()
             .get_component_class_name(self.name.as_str());
-        return ClassLoader::load_class(self.loader().clone(), component_class_name.as_str());
+        let class_loader = self.get_class_loader();
+        return ClassLoader::load_class(class_loader, component_class_name.as_str());
+    }
+
+    fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
+        let java_class = self.get_java_class();
+        if java_class.is_none() {
+            return None;
+        }
+        return (*java_class.unwrap())
+            .borrow()
+            .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
     }
 }
 
