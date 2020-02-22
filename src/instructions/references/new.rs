@@ -31,7 +31,7 @@ impl Instruction for New {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let class = class_ref.resolved_class(class.clone());
+        let class = class_ref.resolved_class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
             init_class(frame.thread(),class.clone());

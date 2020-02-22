@@ -15,25 +15,25 @@ pub struct FieldRef {
 }
 
 impl FieldRef {
-    pub fn new_field_ref(holder:Rc<RefCell<Class>>,info:&ConstantFieldRefInfo) -> FieldRef {
+    pub fn new_field_ref(info:&ConstantFieldRefInfo) -> FieldRef {
         let mut field_ref = FieldRef{
-            member_ref: MemberRef::with_holder(holder),
+            member_ref: MemberRef::new(),
             field: None
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
     }
 
-    pub fn resolved_field(&mut self,class:Rc<RefCell<Class>>) -> Option<&Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
         if self.field.is_none(){
-            self.resolve_field_ref(class)
+            self.resolve_field_ref()
         }
         return self.field.as_ref();
     }
 
     // jvms 5.4.3.2
-    fn resolve_field_ref(&mut self,class:Rc<RefCell<Class>>) {
-        let resolved_class = self.member_ref.resolved_class(class.clone());
+    fn resolve_field_ref(&mut self) {
+        let resolved_class = self.member_ref.resolved_class();
         let field = FieldRef::lookup_field(&resolved_class,
                                            self.member_ref.name(),
                                            self.member_ref.descriptor());
@@ -41,7 +41,7 @@ impl FieldRef {
             panic!("java.lang.NoSuchFieldError");
         }
         let rc_field = field.unwrap().clone();
-        if !(*rc_field).borrow().is_accessible_to((*class).borrow().deref()) {
+        if !(*rc_field).borrow().is_accessible_to((*self.member_ref.holder()).borrow().deref()) {
             panic!("java.lang.IllegalAccessError")
         }
 
@@ -75,7 +75,7 @@ impl FieldRef {
     }
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
-        self.member_ref.set_constant_pool(pool);
+    pub fn set_holder(&mut self, holder:Rc<RefCell<Class>>) {
+        self.member_ref.set_holder(holder);
     }
 }

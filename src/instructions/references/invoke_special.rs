@@ -24,16 +24,15 @@ impl Instruction for InvokeSpecial {
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
         let cp = (*class).borrow().constant_pool();
-        let pool_class = (*cp).borrow().class();
         let mut borrow_cp = (*cp).borrow_mut();
         let constant = borrow_cp.get_constant(self.0.index());
         let method_ref = match constant {
             MethodReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let resolved_class = method_ref.resolved_class(class.clone());
+        let resolved_class = method_ref.resolved_class();
 
-        let resolved_method = method_ref.resolved_method(pool_class).unwrap();
+        let resolved_method = method_ref.resolved_method().unwrap();
         println!("resolved_method class:{}",(*resolved_method.class()).borrow().name());
         if resolved_method.name() == "<init>" && resolved_method.class() != resolved_class  {
             panic!("java.lang.NoSuchMethodError")

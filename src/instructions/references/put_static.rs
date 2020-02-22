@@ -28,7 +28,7 @@ impl Instruction for PutStatic {
             FieldReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let field_option = field_ref.resolved_field(current_class.clone());
+        let field_option = field_ref.resolved_field();
         let field = (*field_option.unwrap()).borrow();
         let class = field.parent().class();
         if !(*class).borrow().initialized() {

@@ -15,9 +15,9 @@ pub struct InterfaceMethodRef {
 }
 
 impl InterfaceMethodRef {
-    pub fn new_method_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantInterfaceMethodRefInfo) -> InterfaceMethodRef {
+    pub fn new_method_ref(info:&ConstantInterfaceMethodRefInfo) -> InterfaceMethodRef {
         let mut field_ref = InterfaceMethodRef{
-            member_ref: MemberRef::with_pool(cp),
+            member_ref: MemberRef::new(),
             method: None
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());
@@ -32,9 +32,7 @@ impl InterfaceMethodRef {
     }
 
     pub fn resolved_interface_method_ref(&mut self) {
-        let pool = self.member_ref.constant_pool();
-        let c = (*pool).borrow().class();
-        let class = self.member_ref.resolved_class(c);
+        let class = self.member_ref.resolved_class();
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -64,8 +62,8 @@ impl InterfaceMethodRef {
 
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
-        self.member_ref.set_constant_pool(pool);
+    pub fn set_holder(&mut self, holder:Rc<RefCell<Class>>) {
+        self.member_ref.set_holder(holder);
     }
 
     #[inline]
@@ -79,7 +77,7 @@ impl InterfaceMethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        return self.member_ref.resolved_class(class);
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class();
     }
 }

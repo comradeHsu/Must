@@ -67,7 +67,7 @@ impl Instruction for MultiANewArray {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let array_class = class_ref.resolved_class(current_class);
+        let array_class = class_ref.resolved_class();
         let counts = MultiANewArray::pop_and_check_counts(frame,self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts,array_class);
         frame.operand_stack().expect("stack is none").push_ref(Some(boxed(arr)));

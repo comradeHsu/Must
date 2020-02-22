@@ -45,7 +45,7 @@ impl Instruction for InvokeInterface {
             panic!("java.lang.NullPointerException") // todo
         }
         let object_class = (*object.unwrap()).borrow().class();
-        let interface = method_ref.resolved_class(current_class.clone());
+        let interface = method_ref.resolved_class();
         if !(*object_class).borrow().is_implements((*interface).borrow().deref()) {
             panic!("java.lang.IncompatibleClassChangeError")
         }

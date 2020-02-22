@@ -15,9 +15,10 @@ pub struct MethodRef {
 }
 
 impl MethodRef {
-    pub fn new_method_ref(cp:Rc<RefCell<ConstantPool>>,info:&ConstantMethodRefInfo) -> MethodRef {
+    #[inline]
+    pub fn new_method_ref(info:&ConstantMethodRefInfo) -> MethodRef {
         let mut field_ref = MethodRef{
-            member_ref: MemberRef::with_pool(cp),
+            member_ref: MemberRef::new(),
             method: None
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());
@@ -35,24 +36,19 @@ impl MethodRef {
     }
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
-        self.member_ref.set_constant_pool(pool);
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class();
     }
 
-    #[inline]
-    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        return self.member_ref.resolved_class(class);
-    }
-
-    pub fn resolved_method(&mut self,pool_class:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
+    pub fn resolved_method(&mut self) -> Option<Rc<Method>> {
         if self.method.is_none() {
-            self.resolved_method_ref(pool_class);
+            self.resolved_method_ref();
         }
         return self.method.clone();
     }
 
-    pub fn resolved_method_ref(&mut self,pool_class:Rc<RefCell<Class>>) {
-        let class = self.member_ref.resolved_class(pool_class);
+    pub fn resolved_method_ref(&mut self) {
+        let class = self.member_ref.resolved_class();
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -108,5 +104,10 @@ impl MethodRef {
             }
         }
         return None;
+    }
+
+    #[inline]
+    pub fn set_holder(&mut self, holder:Rc<RefCell<Class>>) {
+        self.member_ref.set_holder(holder);
     }
 }

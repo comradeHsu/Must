@@ -33,7 +33,7 @@ impl Instruction for InstanceOf {
             ClassReference(c) => c,
             _ => panic!("Unknown constant type")
         };
-        let class = class_ref.resolved_class(class);
+        let class = class_ref.resolved_class();
         if (*reference.unwrap()).borrow().is_instance_of(class) {
             frame.operand_stack().expect("stack is none").push_int(1);
         } else {

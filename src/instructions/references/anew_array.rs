@@ -28,7 +28,7 @@ impl Instruction for ANewArray {
             ClassReference(refe) => refe,
             _ => panic!("Unknown constant type")
         };
-        let component_class = class_ref.resolved_class(class);
+        let component_class = class_ref.resolved_class();
         let stack = frame.operand_stack().expect("stack is none");
         let count = stack.pop_int();
         if count < 0 {

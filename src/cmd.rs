@@ -8,7 +8,7 @@ pub struct Cmd {
     pub x_jre_option:String,
     pub class: String,
     pub args: Vec<String>,
-    exec_jar_path:Option<String>
+    pub exec_jar_path:Option<String>
 }
 
 impl Cmd {

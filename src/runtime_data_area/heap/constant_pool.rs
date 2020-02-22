@@ -40,16 +40,16 @@ impl ConstantPool {
                 ConstantInfoEnum::Double(info) => Double(info.val()),
                 ConstantInfoEnum::Str(info) => Str(info.string().to_string()),
                 ConstantInfoEnum::Class(info) => {
-                    ClassReference(ClassRef::new_class_ref(cp.clone(),info))
+                    ClassReference(ClassRef::new_class_ref(info))
                 },
                 ConstantInfoEnum::FieldRef(info) => {
-                    FieldReference(FieldRef::new_field_ref(cp.clone(),info))
+                    FieldReference(FieldRef::new_field_ref(info))
                 },
                 ConstantInfoEnum::MethodRef(info) => {
-                    MethodReference(MethodRef::new_method_ref(cp.clone(),info))
+                    MethodReference(MethodRef::new_method_ref(info))
                 },
                 ConstantInfoEnum::InterfaceMethodRef(info) => {
-                    InterfaceMethodReference(InterfaceMethodRef::new_method_ref(cp.clone(),info))
+                    InterfaceMethodReference(InterfaceMethodRef::new_method_ref(info))
                 },
                 _ => None
             };
@@ -67,18 +67,16 @@ impl ConstantPool {
         let mut pool = Rc::new(RefCell::new(
             ConstantPool{ class, constants }
         ));
-        let clone = pool.clone();
-        (*pool).borrow_mut().lazy_init_for_constants(&clone);
         return pool;
     }
 
-    fn lazy_init_for_constants(&mut self,pool:&Rc<RefCell<ConstantPool>>) {
+    pub fn lazy_init_for_constants(&mut self,class:&Rc<RefCell<Class>>) {
         for constant in &mut self.constants {
             match constant {
-                ClassReference(c) => c.set_constant_pool(pool.clone()),
-                FieldReference(c) => c.set_constant_pool(pool.clone()),
-                MethodReference(c) => c.set_constant_pool(pool.clone()),
-                InterfaceMethodReference(c) => c.set_constant_pool(pool.clone()),
+                ClassReference(c) => c.set_holder(class.clone()),
+                FieldReference(c) => c.set_holder(class.clone()),
+                MethodReference(c) => c.set_holder(class.clone()),
+                InterfaceMethodReference(c) => c.set_holder(class.clone()),
                 _ => {}
             }
         }
@@ -133,9 +131,9 @@ pub enum Constant {
 }
 
 impl Constant {
-    pub fn resolved_field(&mut self,class:Rc<RefCell<Class>>) -> Option<&Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
         let field = match self {
-            FieldReference(c) => c.resolved_field(class),
+            FieldReference(c) => c.resolved_field(),
             _ => panic!("Unknown constant type")
         };
         return field;

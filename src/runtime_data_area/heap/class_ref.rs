@@ -7,21 +7,21 @@ use crate::runtime_data_area::heap::class::Class;
 
 #[derive(Debug)]
 pub struct ClassRef {
-    sym_ref: SymbolRef
+    symbol_ref: SymbolRef
 }
 
 impl ClassRef {
-    pub fn new_class_ref(holder:Rc<RefCell<Class>>,info:&ConstantClassInfo) -> ClassRef {
-        return ClassRef{sym_ref: SymbolRef::new_sym_ref(holder, info)}
+    pub fn new_class_ref(info:&ConstantClassInfo) -> ClassRef {
+        return ClassRef{symbol_ref: SymbolRef::with_info(info)}
     }
 
     #[inline]
-    pub fn resolved_class(&mut self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        return self.sym_ref.resolved_class(class);
+    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
+        return self.symbol_ref.resolved_class();
     }
 
     #[inline]
-    pub fn set_constant_pool(&mut self,pool:Rc<RefCell<ConstantPool>>) {
-        self.sym_ref.set_constant_pool(pool);
+    pub fn set_holder(&mut self, holder:Rc<RefCell<Class>>) {
+        self.symbol_ref.holder = Some(holder);
     }
 }

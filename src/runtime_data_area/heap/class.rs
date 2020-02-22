@@ -80,9 +80,14 @@ impl Class {
         println!("class:{:?}",class.name.as_str());
         let mut point = Rc::new(RefCell::new(class));
         (*point).borrow_mut().constant_pool.borrow_mut().set_class(point.clone());
+        Self::reference_init(point.clone());
         (*point).borrow_mut().methods = Method::new_methods(point.clone(),class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(),class_file.fields());
         return point;
+    }
+
+    fn reference_init(this:Rc<RefCell<Self>>) {
+        (*this).borrow_mut().constant_pool.borrow_mut().lazy_init_for_constants(&this);
     }
 
     #[inline]
