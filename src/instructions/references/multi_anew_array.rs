@@ -61,13 +61,8 @@ impl Instruction for MultiANewArray {
     fn execute(&mut self, frame: &mut Frame) {
         let current_class = frame.method().class();
         let cp = (*current_class).borrow().constant_pool();
-        let mut borrow_pool = (*cp).borrow_mut();
-        let constant = borrow_pool.get_constant(self.index as usize);
-        let class_ref = match constant {
-            ClassReference(c) => c,
-            _ => panic!("Unknown constant type")
-        };
-        let array_class = class_ref.resolved_class();
+
+        let array_class = (*cp).borrow_mut().resolve_class_ref(self.index as usize);
         let counts = MultiANewArray::pop_and_check_counts(frame,self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts,array_class);
         frame.operand_stack().expect("stack is none").push_ref(Some(boxed(arr)));

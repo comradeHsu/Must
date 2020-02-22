@@ -24,11 +24,11 @@ impl FieldRef {
         return field_ref;
     }
 
-    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self) -> Option<Rc<RefCell<Field>>> {
         if self.field.is_none(){
             self.resolve_field_ref()
         }
-        return self.field.as_ref();
+        return self.field.clone();
     }
 
     // jvms 5.4.3.2

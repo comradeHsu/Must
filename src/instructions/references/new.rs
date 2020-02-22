@@ -25,13 +25,7 @@ impl Instruction for New {
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
         let pool = (*class).borrow().constant_pool();
-        let mut borrow_pool = (*pool).borrow_mut();
-        let constant = borrow_pool.get_constant(self.0.index());
-        let class_ref = match constant {
-            ClassReference(c) => c,
-            _ => panic!("Unknown constant type")
-        };
-        let class = class_ref.resolved_class();
+        let class = (*pool).borrow_mut().resolve_class_ref(self.0.index());
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
             init_class(frame.thread(),class.clone());

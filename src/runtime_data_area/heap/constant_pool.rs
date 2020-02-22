@@ -114,6 +114,26 @@ impl ConstantPool {
     pub fn size(&self) -> usize {
         return self.constants.len();
     }
+
+    #[inline]
+    pub fn resolve_class_ref(&mut self, index:usize) -> Rc<RefCell<Class>> {
+        let constant = self.get_constant(index);
+        let class_ref = match constant {
+            ClassReference(refe) => refe,
+            _ => panic!("Unknown constant type")
+        };
+        return class_ref.resolved_class();
+    }
+
+    #[inline]
+    pub fn resolve_field_ref(&mut self, index:usize) -> Option<Rc<RefCell<Field>>> {
+        let constant = self.get_constant(index);
+        let field_ref = match constant {
+            FieldReference(refe) => refe,
+            _ => panic!("Unknown constant type")
+        };
+        return field_ref.resolved_field();
+    }
 }
 
 #[derive(Debug)]
@@ -128,14 +148,4 @@ pub enum Constant {
     FieldReference(FieldRef),
     MethodReference(MethodRef),
     InterfaceMethodReference(InterfaceMethodRef)
-}
-
-impl Constant {
-    pub fn resolved_field(&mut self) -> Option<&Rc<RefCell<Field>>> {
-        let field = match self {
-            FieldReference(c) => c.resolved_field(),
-            _ => panic!("Unknown constant type")
-        };
-        return field;
-    }
 }

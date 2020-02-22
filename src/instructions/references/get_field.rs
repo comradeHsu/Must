@@ -20,15 +20,8 @@ impl Instruction for GetField {
     fn execute(&mut self, frame: &mut Frame) {
         let c = frame.method().class();
         let cp = (*c).borrow().constant_pool();
-        let mut borrow_cp = (*cp).borrow_mut();
-        let constant = borrow_cp.get_constant(self.0.index());
-        let field_ref = match constant {
-            FieldReference(c) => c,
-            _ => panic!("Unknown constant type")
-        };
-        let field_option = field_ref.resolved_field();
-//        let field_option = (*cp).borrow_mut().get_constant(self.0.index()).resolved_field(c);
-        let field = (*field_option.unwrap()).borrow();
+        let field_option = (*cp).borrow_mut().resolve_field_ref(self.0.index()).unwrap();
+        let field = (*field_option).borrow();
         let class = field.parent().class();
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
