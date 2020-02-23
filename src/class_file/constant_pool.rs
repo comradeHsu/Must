@@ -17,7 +17,7 @@ impl ConstantPool {
 
     pub fn read_constant_pool(reader: &mut ClassReader) -> Rc<RefCell<ConstantPool>> {
         let cp_count = reader.read_u16();
-        let mut cp = Rc::new(RefCell::new(ConstantPool::new()));
+        let cp = Rc::new(RefCell::new(ConstantPool::new()));
         let mut vec: Vec<ConstantInfoEnum> = Vec::new();
         let mut i = 1;
         while i < cp_count {
@@ -40,7 +40,7 @@ impl ConstantPool {
             vec.push(constant_info);
             i += 1;
         }
-        let mut c = Rc::new(RefCell::new(ConstantPool { vec }));
+        let c = Rc::new(RefCell::new(ConstantPool { vec }));
         ConstantPool::post_constant_pool(c.clone());
         return c;
     }
@@ -72,7 +72,7 @@ impl ConstantPool {
 
     pub fn get_name_and_type(&self, index: usize) -> (&str, &str) {
         let info = self.get_constant_info(index);
-        let mut inf = match info {
+        let inf = match info {
             NameAndType(name_and_type) => name_and_type,
             _ => panic!("info is not NameAndType"),
         };
@@ -83,7 +83,7 @@ impl ConstantPool {
 
     pub fn get_class_name(&self, index: usize) -> &str {
         let info = self.get_constant_info(index);
-        let mut class = match info {
+        let class = match info {
             Class(class) => class,
             _ => panic!("info is not NameAndType"),
         };

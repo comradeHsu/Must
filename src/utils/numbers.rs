@@ -25,7 +25,7 @@ pub fn i64_to_f64(val: i64) -> f64 {
 #[inline]
 pub fn i64_back_bytes_to_i32(val: i64) -> i32 {
     let bytes: [u8; 8] = val.to_be_bytes();
-    let (front, back) = bytes.split_at(4);
+    let (_front, back) = bytes.split_at(4);
     let mut back_array = [0; 4];
     back_array.copy_from_slice(back);
     return i32::from_be_bytes(back_array);

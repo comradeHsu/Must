@@ -25,7 +25,6 @@ impl Instruction for GetField {
             .resolve_field_ref(self.0.index())
             .unwrap();
         let field = (*field_option).borrow();
-        let class = field.parent().class();
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }

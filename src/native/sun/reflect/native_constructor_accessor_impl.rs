@@ -85,7 +85,7 @@ fn _get_method(method_obj: Rc<RefCell<Object>>, is_constructor: bool) -> Rc<Meth
 // Object[] -> []interface{}
 fn convert_args(
     this: Rc<RefCell<Object>>,
-    arg_arr: Rc<RefCell<Object>>,
+    _arg_arr: Rc<RefCell<Object>>,
     method: Rc<Method>,
 ) -> Option<OperandStack> {
     if method.arg_slot_count() == 0 {

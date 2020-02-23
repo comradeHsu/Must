@@ -18,7 +18,7 @@ pub fn init() {
 ///(Ljava/lang/ClassLoader;)[Ljava/net/URL;
 pub fn get_lookup_cache_urls(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
-    let java_loader = vars.get_ref(0);
+    let _java_loader = vars.get_ref(0);
 
     let url_class = Jvm::boot_class_loader().find_or_create("java/net/URL");
     let array_class = (*url_class).borrow().array_class();

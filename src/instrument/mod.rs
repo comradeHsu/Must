@@ -21,7 +21,7 @@ pub fn create_instrumentation() -> Rc<RefCell<Object>> {
     ];
     let instrument = invoke(
         constructor.unwrap(),
-        Parameters::with_parameters(parameters),
+        Some(Parameters::with_parameters(parameters)),
         ReturnType::Object,
     )
     .object();

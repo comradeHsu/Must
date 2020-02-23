@@ -32,7 +32,7 @@ impl ConstantPool {
         let size = borrow_pool.len();
         let mut constants = Vec::with_capacity(size);
         let mut index = 0usize;
-        let mut cp = Rc::new(RefCell::new(ConstantPool::none()));
+
         while index < size {
             let info_enum = borrow_pool.get_info(index).unwrap();
             let constant = match info_enum {

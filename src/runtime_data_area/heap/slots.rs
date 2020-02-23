@@ -12,10 +12,6 @@ pub struct Slots {
 }
 
 impl Slots {
-    pub fn new(slots: Vec<Slot>) -> Slots {
-        return Slots { slots };
-    }
-
     pub fn with_capacity(capacity: usize) -> Slots {
         let mut vec = Vec::new();
         vec.resize_with(capacity, || return Slot::new());

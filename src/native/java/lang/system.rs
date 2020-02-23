@@ -140,7 +140,7 @@ fn _sys_props() -> HashMap<String, String> {
     map.insert("java.class.version".to_owned(), "52.0".to_owned());
     map.insert(
         "java.class.path".to_owned(),
-        "D:/java8/JDK/lib;D:/java8/JDK/lib/tools.jar;.;".to_owned(),
+        "D:/java8/JDK/lib;D:/java8/JDK/lib/tools.jar;.;D:/workspace/rust-jvm;".to_owned(),
     );
     //    map.insert(
     //        "java.library.path".to_owned(),
@@ -155,7 +155,7 @@ fn _sys_props() -> HashMap<String, String> {
     map.insert("os.arch".to_owned(), std::env::consts::ARCH.to_owned());
     map.insert("os.version".to_owned(), "".to_owned());
     map.insert("file.separator".to_owned(), "/".to_owned());
-    map.insert("path.separator".to_owned(), ":".to_owned());
+    map.insert("path.separator".to_owned(), ";".to_owned());
     map.insert("line.separator".to_owned(), "\n".to_owned());
     map.insert("user.name".to_owned(), "".to_owned());
     map.insert("user.home".to_owned(), "".to_owned());

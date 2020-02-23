@@ -5,9 +5,9 @@ use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_member::ClassMember;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use crate::runtime_data_area::heap::object::Object;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::runtime_data_area::heap::object::Object;
 
 #[derive(Debug)]
 pub struct Field {
@@ -117,7 +117,7 @@ impl Field {
             .unwrap()
             .to_class_name(self.descriptor());
         let loader = self.get_class_loader();
-        return ClassLoader::load_class(loader,class_name.as_str());
+        return ClassLoader::load_class(loader, class_name.as_str());
     }
 
     #[inline]
@@ -132,9 +132,7 @@ impl Field {
 
     #[inline]
     fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
-        let class_object = (*self.class_member.class())
-            .borrow()
-            .get_java_class();
+        let class_object = (*self.class_member.class()).borrow().get_java_class();
         if class_object.is_some() {
             return (*class_object.unwrap())
                 .borrow()

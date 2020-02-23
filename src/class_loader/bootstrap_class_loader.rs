@@ -57,7 +57,7 @@ impl BootstrapClassLoader {
     }
 
     fn load_primitive_class(&self, class_name: &str) {
-        let mut class = Class::primitive_class(class_name);
+        let class = Class::primitive_class(class_name);
         let class_class = self.find_or_create("java/lang/Class");
         let mut class_object = Class::new_object(&class_class);
         let boxed_class = boxed(class);
@@ -110,7 +110,7 @@ impl BootstrapClassLoader {
     }
 
     fn define_class(&self, data: Vec<u8>) -> Rc<RefCell<Class>> {
-        let mut class = ClassLoader::parse_class(data);
+        let class = ClassLoader::parse_class(data);
         (*class)
             .borrow_mut()
             .set_class_loader(self.class_loader.clone());

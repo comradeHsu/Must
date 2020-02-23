@@ -33,10 +33,6 @@ impl Instruction for InvokeSpecial {
         let resolved_class = method_ref.resolved_class();
 
         let resolved_method = method_ref.resolved_method().unwrap();
-        println!(
-            "resolved_method class:{}",
-            (*resolved_method.class()).borrow().name()
-        );
         if resolved_method.name() == "<init>" && resolved_method.class() != resolved_class {
             panic!("java.lang.NoSuchMethodError")
         }

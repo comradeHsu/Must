@@ -95,12 +95,6 @@ impl LocalVars {
     pub fn get_this(&self) -> Option<Rc<RefCell<Object>>> {
         return self.get_ref(0);
     }
-
-    #[inline]
-    pub fn set_this(&mut self, val: Option<Rc<RefCell<Object>>>) {
-        let slot = self.vars.get_mut(0).expect("index is wrong");
-        slot.set_ref(val);
-    }
 }
 
 #[cfg(test)]

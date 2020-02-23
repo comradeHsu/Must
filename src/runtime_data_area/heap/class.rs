@@ -18,10 +18,10 @@ use crate::runtime_data_area::heap::object::DataType::{
 use crate::runtime_data_area::heap::object::{MetaData, Object};
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
+use crate::utils::boxed;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use crate::utils::boxed;
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -111,7 +111,6 @@ impl Class {
         (*point).borrow_mut().fields = Field::new_fields(point.clone(), class_file.fields());
         return point;
     }
-
 
     fn get_source_file(class_file: &ClassFile) -> Option<String> {
         let attr = class_file.source_file_attribute();

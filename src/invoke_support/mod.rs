@@ -16,13 +16,17 @@ use std::rc::Rc;
 pub mod parameter;
 pub mod return_value;
 
-pub fn invoke(method: Rc<Method>, params: Parameters, return_type: ReturnType) -> ReturnValue {
+pub fn invoke(
+    method: Rc<Method>,
+    params: Option<Parameters>,
+    return_type: ReturnType,
+) -> ReturnValue {
     let thread = create_execute_env(method, params);
     let return_value = executable(thread, return_type);
     return return_value;
 }
 
-fn create_execute_env(method: Rc<Method>, params: Parameters) -> Rc<RefCell<JavaThread>> {
+fn create_execute_env(method: Rc<Method>, params: Option<Parameters>) -> Rc<RefCell<JavaThread>> {
     let thread = boxed(JavaThread::new_thread());
     let mut dummy_frame = JavaThread::new_frame(thread.clone(), method.clone());
     let mut frame = JavaThread::new_frame(thread.clone(), method);
@@ -32,20 +36,23 @@ fn create_execute_env(method: Rc<Method>, params: Parameters) -> Rc<RefCell<Java
     return thread;
 }
 
-fn prepare_parameter(frame: &mut Frame, params: Parameters) {
-    let vars = frame.local_vars().expect("LocalVars is none");
-    for index in 0..params.size() {
-        let parameter = params.get_parameter(index);
-        match parameter {
-            Parameter::Boolean(value) => vars.set_boolean(index, *value),
-            Parameter::Byte(value) => vars.set_int(index, *value as i32),
-            Parameter::Short(value) => vars.set_int(index, *value as i32),
-            Parameter::Int(value) => vars.set_int(index, *value),
-            Parameter::Long(value) => vars.set_long(index, *value),
-            Parameter::Float(value) => vars.set_float(index, *value),
-            Parameter::Double(value) => vars.set_double(index, *value),
-            Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
-            Parameter::Object(value) => vars.set_ref(index, value.clone()),
+fn prepare_parameter(frame: &mut Frame, params: Option<Parameters>) {
+    if params.is_some() {
+        let vars = frame.local_vars().expect("LocalVars is none");
+        let params = params.unwrap();
+        for index in 0..params.size() {
+            let parameter = params.get_parameter(index);
+            match parameter {
+                Parameter::Boolean(value) => vars.set_boolean(index, *value),
+                Parameter::Byte(value) => vars.set_int(index, *value as i32),
+                Parameter::Short(value) => vars.set_int(index, *value as i32),
+                Parameter::Int(value) => vars.set_int(index, *value),
+                Parameter::Long(value) => vars.set_long(index, *value),
+                Parameter::Float(value) => vars.set_float(index, *value),
+                Parameter::Double(value) => vars.set_double(index, *value),
+                Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
+                Parameter::Object(value) => vars.set_ref(index, value.clone()),
+            }
         }
     }
 }

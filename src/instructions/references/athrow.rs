@@ -58,7 +58,7 @@ impl AThrow {
 
     fn handle_uncaught_exception(thread: Rc<RefCell<JavaThread>>, object: Rc<RefCell<Object>>) {
         (*thread).borrow_mut().clear_stack();
-        let java_msg = (*object)
+        let _java_msg = (*object)
             .borrow()
             .get_ref_var("detailMessage", "Ljava/lang/String;");
         //        let rust_msg = java_str_to_rust_str(java_msg.unwrap());

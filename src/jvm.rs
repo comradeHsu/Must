@@ -7,12 +7,14 @@ use crate::instructions::base::instruction::Instruction;
 use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::instructions::references::athrow::AThrow;
 use crate::interpreter::{interpret, invoke_java_method};
+use crate::invoke_support::parameter::{Parameter, Parameters};
+use crate::invoke_support::{invoke, ReturnType};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::thread::JavaThread;
-use crate::utils::boxed;
+use crate::utils::{boxed, java_str_to_rust_str};
 use chrono::Local;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -98,6 +100,7 @@ impl Jvm {
 
     fn exec_main(&self) {
         let class_name = self.cmd.class.clone().replace('.', "/");
+
         let main_class =
             ClassLoader::load_class(self.app_class_loader.clone(), class_name.as_str());
         let main_method = (*main_class).borrow().get_main_method();
@@ -151,12 +154,8 @@ impl Jvm {
             "getExtClassLoader",
             "()Lsun/misc/Launcher$ExtClassLoader;",
         );
-        let mut dummy_frame =
-            JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
-        let mut frame = JavaThread::new_frame(self.main_thread.clone(), method.unwrap());
-        (*self.main_thread).borrow_mut().push_frame(dummy_frame);
-        (*self.main_thread).borrow_mut().push_frame(frame);
-        return invoke_java_method(self.main_thread.clone());
+        let value = invoke(method.unwrap(), None, ReturnType::Object);
+        return value.object();
     }
 
     fn create_app_loader(&self, app_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
@@ -165,15 +164,39 @@ impl Jvm {
             "getAppClassLoader",
             "(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;",
         );
-        let mut dummy_frame =
-            JavaThread::new_frame(self.main_thread.clone(), method.clone().unwrap());
-        let mut frame = JavaThread::new_frame(self.main_thread.clone(), method.unwrap());
-        frame
-            .local_vars()
-            .expect("LocalVars is none")
-            .set_ref(0, self.ext_class_loader.clone());
-        (*self.main_thread).borrow_mut().push_frame(dummy_frame);
-        (*self.main_thread).borrow_mut().push_frame(frame);
-        return invoke_java_method(self.main_thread.clone());
+        let value = invoke(method.unwrap(), None, ReturnType::Object).object();
+        return value;
+    }
+}
+
+#[warn(unused)]
+fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
+    let obj = class_loader.unwrap();
+    let ucp = (*obj)
+        .borrow()
+        .get_ref_var("ucp", "Lsun/misc/URLClassPath;");
+    let boot_loader = Jvm::boot_class_loader();
+    let class = boot_loader.find_or_create("java/net/URL");
+    let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();
+    if ucp.is_some() {
+        let ucp = ucp.unwrap();
+        let path = (*ucp)
+            .borrow()
+            .get_ref_var("path", "Ljava/util/ArrayList;")
+            .unwrap();
+        let data = (*path)
+            .borrow()
+            .get_ref_var("elementData", "[Ljava/lang/Object;")
+            .unwrap();
+        let bor = (*data).borrow();
+        let objs = bor.references();
+        for ob in objs {
+            if ob.is_some() {
+                let param = Parameters::with_parameters(vec![Parameter::Object(ob.clone())]);
+                let string = invoke(method.clone(), Some(param), ReturnType::Object).object();
+                let rust_str = java_str_to_rust_str(string.unwrap());
+                println!("URL:{}", rust_str);
+            }
+        }
     }
 }

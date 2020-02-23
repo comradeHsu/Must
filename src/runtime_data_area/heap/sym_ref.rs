@@ -47,7 +47,6 @@ impl SymbolRef {
     }
 
     pub fn resolved_class_ref(&mut self) {
-        let class_loader = (*self.holder()).borrow().get_java_class();
         let ref_class = self.resolve_load();
         if !(*ref_class)
             .borrow()
@@ -70,6 +69,6 @@ impl SymbolRef {
         let class_loader = (*class_object)
             .borrow()
             .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
-        return ClassLoader::load_class(class_loader,self.class_name.as_str());
+        return ClassLoader::load_class(class_loader, self.class_name.as_str());
     }
 }

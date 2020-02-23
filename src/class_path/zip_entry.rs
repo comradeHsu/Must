@@ -25,7 +25,7 @@ impl ZipEntry {
         let mut zip = zip::ZipArchive::new(zip_file).unwrap();
         let mut size_map = HashMap::with_capacity(zip.len());
         for i in 0..zip.len() {
-            let mut file: ZipFile = zip.by_index(i).unwrap();
+            let file: ZipFile = zip.by_index(i).unwrap();
             size_map.insert(file.name().to_string(), i);
         }
         let cache = FileCache::new(zip, size_map);
@@ -48,8 +48,8 @@ impl ZipEntry {
     }
 
     pub fn get_main_class(&self) -> Option<String> {
-        let mut jar_file_data = self.find_manifest().expect("This Jar Not Find MANIFEST.MF");
-        let mut data = String::from_utf8(jar_file_data).expect("get_main_class FromUtf8Error");
+        let jar_file_data = self.find_manifest().expect("This Jar Not Find MANIFEST.MF");
+        let data = String::from_utf8(jar_file_data).expect("get_main_class FromUtf8Error");
         let lines = data.lines();
         for line in lines {
             let (key, value) = line.split_at(line.find(':').unwrap_or(0));

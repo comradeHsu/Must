@@ -27,7 +27,7 @@ impl ClassLoader {
     }
 
     #[inline]
-    pub fn with_verbose(verbose:bool) -> ClassLoader {
+    pub fn with_verbose(verbose: bool) -> ClassLoader {
         return ClassLoader {
             verbose_class: verbose,
             class_map: Default::default(),
@@ -70,20 +70,20 @@ impl ClassLoader {
         ];
         let rs = invoke(
             method,
-            Parameters::with_parameters(params),
+            Some(Parameters::with_parameters(params)),
             ReturnType::Object,
         )
         .object();
         if rs.is_some() {
             byte_array = rs;
         }
-        let data = Self::extract_data(byte_array.unwrap(),offset,length);
-        return Self::define_class(class_loader,data);
+        let data = Self::extract_data(byte_array.unwrap(), offset, length);
+        return Self::define_class(class_loader, data);
     }
 
     fn define_class(java_loader: Rc<RefCell<Object>>, data: Vec<u8>) -> Rc<RefCell<Class>> {
         let loader = (*java_loader).borrow().get_class_loader();
-        let mut class = Self::parse_class(data);
+        let class = Self::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
         Self::resolve_super_class(java_loader.clone(), class.clone());
         Self::resolve_interfaces(java_loader, class.clone());
@@ -114,8 +114,10 @@ impl ClassLoader {
         let mut class = (*class).borrow_mut();
         let super_class_name = class.super_class_name();
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
-            let super_class =
-                Self::load_class(Some(java_loader.clone()), super_class_name.unwrap().as_str());
+            let super_class = Self::load_class(
+                Some(java_loader.clone()),
+                super_class_name.unwrap().as_str(),
+            );
             class.set_super_class(super_class);
         }
     }
@@ -133,7 +135,10 @@ impl ClassLoader {
         }
     }
 
-    pub fn load_class(loader_object: Option<Rc<RefCell<Object>>>, class_name: &str) -> Rc<RefCell<Class>> {
+    pub fn load_class(
+        loader_object: Option<Rc<RefCell<Object>>>,
+        class_name: &str,
+    ) -> Rc<RefCell<Class>> {
         if loader_object.is_none() {
             let bootstrap_loader = Jvm::boot_class_loader();
             return bootstrap_loader.find_or_create(class_name);
@@ -181,7 +186,7 @@ impl ClassLoader {
             Parameter::Object(Some(loader)),
             Parameter::Object(Some(java_name)),
         ]);
-        let return_value = invoke(method.unwrap(), params, ReturnType::Object).object();
+        let return_value = invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return (*return_value.unwrap()).borrow().meta();
     }
 

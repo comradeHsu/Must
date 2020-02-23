@@ -8,7 +8,7 @@ type CompositeEntry = Vec<Box<dyn Entry>>;
 
 pub fn new(paths: &String) -> CompositeEntry {
     let mut composites = Vec::new();
-    let mut mut_paths = paths.clone();
+    let mut_paths = paths.clone();
     let ps: Vec<&str> = mut_paths.as_str().split(PATH_LIST_SEPARATOR).collect();
     for s in ps {
         composites.push(super::class_path::new_entry(&String::from(s)));

@@ -38,9 +38,8 @@ impl Instruction for AReturn {
 
     fn execute(&mut self, frame: &mut Frame) {
         let thread = frame.thread();
-        let mut current_frame = (*thread).borrow_mut().pop_frame();
-        let mut borrow = (*thread).borrow_mut();
-        let invoke_frame = borrow.current_frame();
+        let _current_frame = (*thread).borrow_mut().pop_frame();
+        let invoke_frame = (*thread).borrow().current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_ref();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -68,9 +67,8 @@ impl Instruction for DReturn {
 
     fn execute(&mut self, frame: &mut Frame) {
         let thread = frame.thread();
-        let mut current_frame = (*thread).borrow_mut().pop_frame();
-        let mut borrow = (*thread).borrow_mut();
-        let invoke_frame = borrow.current_frame();
+        let _current_frame = (*thread).borrow_mut().pop_frame();
+        let invoke_frame = (*thread).borrow().current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_double();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -97,9 +95,8 @@ impl Instruction for FReturn {
 
     fn execute(&mut self, frame: &mut Frame) {
         let thread = frame.thread();
-        let mut current_frame = (*thread).borrow_mut().pop_frame();
-        let mut borrow = (*thread).borrow_mut();
-        let invoke_frame = borrow.current_frame();
+        let _current_frame = (*thread).borrow_mut().pop_frame();
+        let invoke_frame = (*thread).borrow().current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_float();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -126,9 +123,8 @@ impl Instruction for IReturn {
 
     fn execute(&mut self, frame: &mut Frame) {
         let thread = frame.thread();
-        let mut current_frame = (*thread).borrow_mut().pop_frame();
-        let mut borrow = (*thread).borrow_mut();
-        let invoke_frame = borrow.current_frame();
+        let _current_frame = (*thread).borrow_mut().pop_frame();
+        let invoke_frame = (*thread).borrow().current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_int();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -155,9 +151,8 @@ impl Instruction for LReturn {
 
     fn execute(&mut self, frame: &mut Frame) {
         let thread = frame.thread();
-        let mut current_frame = (*thread).borrow_mut().pop_frame();
-        let mut borrow = (*thread).borrow_mut();
-        let invoke_frame = borrow.current_frame();
+        let _current_frame = (*thread).borrow_mut().pop_frame();
+        let invoke_frame = (*thread).borrow().current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_long();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();

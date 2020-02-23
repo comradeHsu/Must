@@ -26,7 +26,7 @@ impl Cmd {
     }
 
     pub fn parse_cmd() -> Cmd {
-        let mut args: Vec<String> = std::env::args().collect();
+        let args: Vec<String> = std::env::args().collect();
         let mut cmd: Cmd = Cmd::new();
         for mut index in 0..args.len() {
             let arg = args.get(index).unwrap();

@@ -106,7 +106,14 @@ pub fn define_class1(frame: &mut Frame) {
     let source = vars.get_ref(6);
 
     let class_name = java_str_to_rust_str(java_string.unwrap());
-    let class = ClassLoader::define_class_internal(class_name.as_str(),byte_array,offset,length,this,protection_domain);
+    let class = ClassLoader::define_class_internal(
+        class_name.as_str(),
+        byte_array,
+        offset,
+        length,
+        this,
+        protection_domain,
+    );
     let java_class = (*class).borrow().get_java_class();
 
     frame
