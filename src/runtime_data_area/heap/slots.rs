@@ -1,8 +1,6 @@
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::slot::Slot;
-use crate::utils::numbers::{
-    f32_to_i32, f64_to_i64, i32_to_f32, i64_back_bytes_to_i32, i64_to_f64,
-};
+use crate::utils::numbers::{f32_to_i32, f64_to_i64, i32_to_f32, i64_back_bytes_to_i32, i64_to_f64, i64_from_bytes};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -40,9 +38,9 @@ impl Slots {
     }
 
     pub fn get_long(&self, index: usize) -> i64 {
-        let low = self.slots[index].num as i64;
+        let low = self.slots[index].num as i32;
         let high = self.slots[index + 1].num as i64;
-        return (high << 32) | low;
+        return (high << 32) | i64_from_bytes(low);
     }
 
     pub fn set_double(&mut self, index: usize, val: f64) {
@@ -59,5 +57,17 @@ impl Slots {
 
     pub fn get_ref(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
         return self.slots[index].reference.clone();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::runtime_data_area::heap::slots::Slots;
+
+    #[test]
+    fn split_long() {
+        let mut slots = Slots::with_capacity(10);
+        slots.set_long(0,2507424867904i64);
+        assert_eq!(2507424867904i64,slots.get_long(0),"error")
     }
 }

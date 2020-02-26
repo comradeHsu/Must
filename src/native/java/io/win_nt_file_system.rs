@@ -2,9 +2,9 @@ use crate::native::registry::Registry;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::utils::java_str_to_rust_str;
-use std::path::Path;
-use std::fs::File;
 use chrono::Local;
+use std::fs::File;
+use std::path::Path;
 use std::time::UNIX_EPOCH;
 
 pub fn init() {
@@ -101,13 +101,17 @@ fn is_hidden(filename: &str) -> bool {
 pub fn get_last_modified_time(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let java_file = vars.get_ref(1).expect("java.lang.NullPointerException");
-    let java_path = (*java_file).borrow().get_ref_var("path", "Ljava/lang/String;");
+    let java_path = (*java_file)
+        .borrow()
+        .get_ref_var("path", "Ljava/lang/String;");
     let rust_path = java_str_to_rust_str(java_path.unwrap());
     let path = Path::new(&rust_path);
     let file = File::open(path).expect("can not find file");
     let meta_data = file.metadata().unwrap();
     let modify_time = meta_data.modified().unwrap();
-    let time = modify_time.duration_since(UNIX_EPOCH).expect("Time went backwards");
+    let time = modify_time
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
     frame
         .operand_stack()
         .expect("stack is none")

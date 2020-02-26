@@ -40,6 +40,7 @@ impl Instruction for GetField {
         let borrow_object = (*object).borrow();
         let slots = borrow_object.fields_immutable();
         let first_char = desc.chars().next().unwrap();
+
         match first_char {
             'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
             'F' => stack.push_float(slots.get_float(slot_id)),

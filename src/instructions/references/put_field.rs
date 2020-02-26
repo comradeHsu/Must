@@ -38,6 +38,7 @@ impl Instruction for PutField {
         }
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
+
         let stack = frame.operand_stack().expect("stack is none");
 
         let first_char = desc.chars().next().unwrap();

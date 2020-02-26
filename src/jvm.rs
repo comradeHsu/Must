@@ -9,6 +9,7 @@ use crate::instructions::references::athrow::AThrow;
 use crate::interpreter::{interpret, invoke_java_method};
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::{invoke, ReturnType};
+use crate::prims::perf_data::Variability;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::object::Object;
@@ -169,7 +170,6 @@ impl Jvm {
     }
 }
 
-#[warn(unused)]
 fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
     let obj = class_loader.unwrap();
     let ucp = (*obj)

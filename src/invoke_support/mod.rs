@@ -40,19 +40,27 @@ fn prepare_parameter(frame: &mut Frame, params: Option<Parameters>) {
     if params.is_some() {
         let vars = frame.local_vars().expect("LocalVars is none");
         let params = params.unwrap();
-        for index in 0..params.size() {
-            let parameter = params.get_parameter(index);
+        let mut index = 0;
+        for i in 0..params.size() {
+            let parameter = params.get_parameter(i);
             match parameter {
                 Parameter::Boolean(value) => vars.set_boolean(index, *value),
                 Parameter::Byte(value) => vars.set_int(index, *value as i32),
                 Parameter::Short(value) => vars.set_int(index, *value as i32),
                 Parameter::Int(value) => vars.set_int(index, *value),
-                Parameter::Long(value) => vars.set_long(index, *value),
+                Parameter::Long(value) => {
+                    vars.set_long(index, *value);
+                    index += 1;
+                },
                 Parameter::Float(value) => vars.set_float(index, *value),
-                Parameter::Double(value) => vars.set_double(index, *value),
+                Parameter::Double(value) => {
+                    vars.set_double(index, *value);
+                    index += 1;
+                },
                 Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
                 Parameter::Object(value) => vars.set_ref(index, value.clone()),
             }
+            index += 1;
         }
     }
 }
@@ -65,6 +73,7 @@ fn executable(mut thread: Rc<RefCell<JavaThread>>, return_type: ReturnType) -> R
         (*thread).borrow_mut().set_pc(pc);
         let method = (*current_frame).borrow().method_ptr();
         let bytecode = method.code();
+        //println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
         let mut inst = new_instruction(opcode);

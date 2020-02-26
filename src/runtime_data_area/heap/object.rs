@@ -163,6 +163,16 @@ impl Object {
         return slots.get_int((*field.unwrap()).borrow().slot_id());
     }
 
+    pub fn get_long_var(&self, name: &str, descriptor: &str) -> i64 {
+        let field = Class::get_field(Some(self.class.clone()), name, descriptor, false);
+        let fields = &self.data;
+        let slots = match fields {
+            StandardObject(data) => data.as_ref().unwrap(),
+            _ => panic!("The Object is array"),
+        };
+        return slots.get_long((*field.unwrap()).borrow().slot_id());
+    }
+
     pub fn get_ref_var_by_slot_id(&self, slot_id: usize) -> Option<Rc<RefCell<Object>>> {
         let slots = match &self.data {
             StandardObject(data) => data.as_ref().unwrap(),

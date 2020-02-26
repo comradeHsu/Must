@@ -10,8 +10,10 @@ mod instructions;
 mod instrument;
 mod interpreter;
 mod invoke_support;
+mod jni;
 mod jvm;
 mod native;
+mod prims;
 mod runtime_data_area;
 mod utils;
 

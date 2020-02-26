@@ -4,6 +4,7 @@ use std::env::consts::OS;
 pub struct GlobalConfig {
     boot_lib_path: String,
     os: &'static str,
+    verbose: bool,
 }
 
 pub static mut GLOBAL_CONFIG: Option<GlobalConfig> = None;
@@ -13,6 +14,7 @@ impl GlobalConfig {
         return GlobalConfig {
             boot_lib_path: "".to_string(),
             os: OS,
+            verbose: cmd.verbose_class,
         };
     }
 
