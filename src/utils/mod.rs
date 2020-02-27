@@ -32,3 +32,14 @@ pub fn jstr_to_utf_nullable(j_string: JString) -> String {
     let target = String::from_utf16(string).expect("u16 seqs has mistake");
     target
 }
+
+
+pub fn jbytes_to_u8s(jbytes:Rc<RefCell<Object>>) -> Vec<u8> {
+    let borrow = (*jbytes).borrow();
+    let bytes = borrow.bytes();
+    let mut data = Vec::with_capacity(bytes.len());
+    for byte in bytes {
+        data.push(*byte as u8);
+    }
+    return data;
+}
