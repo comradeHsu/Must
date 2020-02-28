@@ -31,6 +31,12 @@ pub fn init() {
         "(J[BZ)J",
         get_entry,
     );
+    Registry::register(
+        "java/util/zip/ZipFile",
+        "getEntryFlag",
+        "(J)I",
+        get_entry_flag,
+    );
 }
 
 pub fn init_ids(_frame: &mut Frame) {}
@@ -85,40 +91,49 @@ pub fn get_entry(frame:&mut Frame) {
     let add_slash = vars.get_boolean(3);
     let bytes = jbytes_to_u8s(name_bytes);
     let name = String::from_utf8(bytes).unwrap();
-    let zip_file = zip_file_cache::get_mut(address).expect("the file is not open");
-//    for i in 0..zip_file.file.len() {
-//        let file = zip_file.file.by_index(i).unwrap();
-//        println!("zip file:{}",file.name());
-//    }
-    let file = zip_file.file.by_name(name.as_str());
-    if file.is_err() {
+    let zip_file = zip_file_cache::get(address).expect("the file is not open");
+    let index = zip_file.indexes.get(name.as_str());
+    if index.is_none() {
         println!("The file is not exist");
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(0);
-        return;
     }
-    let file = file.unwrap();
+    let index = index.unwrap_or(&0);
     frame
         .operand_stack()
         .expect("stack is none")
-        .push_long(0);
+        .push_long(*index as i64);
 }
 
-mod zip_file_cache {
+/// private static native int getEntryFlag(long jzentry);
+/// (J)I
+pub fn get_entry_flag(frame:&mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let address = vars.get_long(0);
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_int(8);
+}
+
+pub mod zip_file_cache {
     use std::collections::HashMap;
     use zip::ZipArchive;
     use std::fs::{File, Metadata};
+    use std::io::Read;
 
     pub struct ZipFile {
         pub metadata:Metadata,
-        pub file:ZipArchive<File>
+        pub file:ZipArchive<File>,
+        pub indexes:HashMap<String,usize>,
     }
 
     impl ZipFile {
-        pub fn new(metadata:Metadata, file:ZipArchive<File>) -> ZipFile {
-            return ZipFile{ metadata, file };
+        pub fn new(metadata:Metadata, mut file:ZipArchive<File>) -> ZipFile {
+            let mut indexes = HashMap::new();
+            for index in 0..file.len() {
+                let file = file.by_index(index).unwrap();
+                indexes.insert(file.name().to_string(),index);
+            }
+            return ZipFile{ metadata, file, indexes };
         }
     }
 
