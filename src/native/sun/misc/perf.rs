@@ -1,6 +1,6 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
 use crate::prims::perf::Perf;
+use crate::runtime_data_area::frame::Frame;
 
 pub fn init() {
     Registry::register(
@@ -19,6 +19,9 @@ pub fn create_long(frame: &mut Frame) {
     let variability = vars.get_int(2);
     let units = vars.get_int(3);
     let value = vars.get_long(4);
-    let byte_buffer = Perf::create_long(perf,name,variability,units,value);
-    frame.operand_stack().expect("stack is none").push_ref(byte_buffer);
+    let byte_buffer = Perf::create_long(perf, name, variability, units, value);
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_ref(byte_buffer);
 }

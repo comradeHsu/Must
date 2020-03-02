@@ -51,12 +51,12 @@ fn prepare_parameter(frame: &mut Frame, params: Option<Parameters>) {
                 Parameter::Long(value) => {
                     vars.set_long(index, *value);
                     index += 1;
-                },
+                }
                 Parameter::Float(value) => vars.set_float(index, *value),
                 Parameter::Double(value) => {
                     vars.set_double(index, *value);
                     index += 1;
-                },
+                }
                 Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
                 Parameter::Object(value) => vars.set_ref(index, value.clone()),
             }

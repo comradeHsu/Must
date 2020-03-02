@@ -1,6 +1,8 @@
 use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::slot::Slot;
-use crate::utils::numbers::{f32_to_i32, f64_to_i64, i32_to_f32, i64_back_bytes_to_i32, i64_to_f64, i64_from_bytes};
+use crate::utils::numbers::{
+    f32_to_i32, f64_to_i64, i32_to_f32, i64_back_bytes_to_i32, i64_from_bytes, i64_to_f64,
+};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -67,7 +69,7 @@ mod test {
     #[test]
     fn split_long() {
         let mut slots = Slots::with_capacity(10);
-        slots.set_long(0,2507424867904i64);
-        assert_eq!(2507424867904i64,slots.get_long(0),"error")
+        slots.set_long(0, 2507424867904i64);
+        assert_eq!(2507424867904i64, slots.get_long(0), "error")
     }
 }

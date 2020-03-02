@@ -321,13 +321,16 @@ pub fn ensure_class_initialized(frame: &mut Frame) {
 
 /// public native long getLong(long var1);
 /// (J)J
-pub fn get_long(frame:&mut Frame) {
+pub fn get_long(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let address = vars.get_long(1) as usize;
     let ptr = address as *mut i64;
     unsafe {
         let value = *ptr;
-        frame.operand_stack().expect("stack is none").push_long(value);
+        frame
+            .operand_stack()
+            .expect("stack is none")
+            .push_long(value);
     }
 }
 mod memory_size_map {

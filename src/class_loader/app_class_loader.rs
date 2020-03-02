@@ -153,7 +153,7 @@ impl ClassLoader {
         if class_name.starts_with('[') {
             class = Some(Self::load_array_class(class_loader.clone(), class_name));
         } else {
-            println!("\t will load :{}",class_name);
+            println!("\t will load :{}", class_name);
             class = Self::invoke_load_class(loader, class_name);
         }
         let value = class.unwrap();

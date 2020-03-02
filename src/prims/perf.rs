@@ -4,9 +4,9 @@ use crate::jni::{JObject, JString};
 use crate::jvm::Jvm;
 use crate::prims::perf_data::{PerfDataManager, Units, Variability};
 use crate::runtime_data_area::heap::class::Class;
-use crate::utils::{jstr_to_utf_nullable, boxed};
-use std::mem::size_of;
 use crate::runtime_data_area::heap::object::Object;
+use crate::utils::{boxed, jstr_to_utf_nullable};
+use std::mem::size_of;
 
 pub struct Perf();
 
@@ -43,7 +43,7 @@ impl Perf {
             ),
         };
         let pointer = pl.get_address();
-        return Self::new_direct_byte_buffer(pointer,size_of::<i64>());
+        return Self::new_direct_byte_buffer(pointer, size_of::<i64>());
     }
 
     fn new_direct_byte_buffer(pointer: usize, size_long: usize) -> JObject {

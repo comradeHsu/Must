@@ -34,9 +34,9 @@ pub fn i64_back_bytes_to_i32(val: i64) -> i32 {
 #[inline]
 pub fn i64_from_bytes(val: i32) -> i64 {
     let bytes: [u8; 4] = val.to_be_bytes();
-    let mut raw_data = [0u8;8];
+    let mut raw_data = [0u8; 8];
     for index in 0..4usize {
-        raw_data[4+index] = bytes[index];
+        raw_data[4 + index] = bytes[index];
     }
     return i64::from_be_bytes(raw_data);
 }

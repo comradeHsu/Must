@@ -1,8 +1,8 @@
+use crate::prims::perf_data::PerfDataValue::JavaLong;
 use crate::prims::perf_data::Units::Hertz;
 use crate::prims::perf_data::Variability::Variable;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::prims::perf_data::PerfDataValue::JavaLong;
 
 #[derive(PartialEq)]
 pub enum Variability {
@@ -111,7 +111,10 @@ impl PerfDataManager {
         if self.all.is_none() {
             self.all = Some(PerfDataList::new(100));
         }
-        assert!(!self.all.as_ref().unwrap().contains(p.name.as_str()), "duplicate name added");
+        assert!(
+            !self.all.as_ref().unwrap().contains(p.name.as_str()),
+            "duplicate name added"
+        );
         self.all.as_mut().unwrap().append(p.clone());
         if p.variability == Variability::Constant {
             if self.constants.is_none() {
@@ -193,7 +196,8 @@ impl PerfDataList {
 
     pub fn append(&mut self, data: Rc<PerfData>) {
         self.data_array.push(data.clone());
-        self.cache.insert(data.name.clone(), self.data_array.len() - 1);
+        self.cache
+            .insert(data.name.clone(), self.data_array.len() - 1);
     }
 
     pub fn remove(&mut self, data: Rc<PerfData>) {
@@ -217,7 +221,7 @@ pub struct PerfData {
     units: Units,
     //on_c_heap:bool
     flags: Flags,
-    value:PerfDataValue
+    value: PerfDataValue,
 }
 
 impl PerfData {
@@ -227,7 +231,7 @@ impl PerfData {
             variability: Variability::Constant,
             units,
             flags: Flags::None,
-            value: JavaLong(value)
+            value: JavaLong(value),
         };
     }
 
@@ -237,7 +241,7 @@ impl PerfData {
             variability: Variability::Monotonic,
             units,
             flags: Flags::None,
-            value: JavaLong(value)
+            value: JavaLong(value),
         };
     }
 
@@ -247,7 +251,7 @@ impl PerfData {
             variability: Variability::Variable,
             units,
             flags: Flags::None,
-            value: JavaLong(value)
+            value: JavaLong(value),
         };
     }
 
@@ -258,7 +262,7 @@ impl PerfData {
 }
 
 enum PerfDataValue {
-    JavaLong(i64)
+    JavaLong(i64),
 }
 
 pub enum CounterNS {
