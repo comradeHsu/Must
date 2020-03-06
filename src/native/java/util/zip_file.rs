@@ -10,7 +10,7 @@ use chrono::{DateTime, Utc};
 use podio::ReadPodExt;
 use rc_zip::{Archive, ReadZip, StoredEntry};
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, ErrorKind};
 use std::time::SystemTime;
 use zip::ZipArchive;
 
@@ -85,6 +85,7 @@ pub fn open(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let java_name = vars.get_ref(0);
     let name = java_str_to_rust_str(java_name.unwrap());
+    println!("jar name:{}",name);
     let zip_file = File::open(&name).unwrap();
     let metadata = zip_file.metadata().expect("not metadata");
     let zip = zip_file.read_zip().expect("This File not ZIP");
@@ -131,9 +132,10 @@ pub fn get_entry(frame: &mut Frame) {
     let zip_file = zip_file_cache::get(address).expect("the file is not open");
     let index = zip_file.indexes.get(name.as_str());
     if index.is_none() {
-        println!("The file is not exist");
+        println!("The file is not exist:{}",name);
         frame.operand_stack().expect("stack is none").push_long(0);
     } else {
+        println!("The file name:{}",name);
         let index = index.unwrap();
         let entry = zip_file.file.entries().get(*index).unwrap();
         let address = entry as *const StoredEntry as usize;
@@ -296,16 +298,17 @@ pub fn read(frame: &mut Frame) {
         let pointer = entry_address as *const StoredEntry;
         &*pointer
     };
-    let length = zip_read(zip_file, entry, position, &mut buff, len as usize);
-    println!("length:{}", length);
+    let length = zip_read(zip_file, entry, position, &mut buff, len as isize);
+    println!("entry:{}, length:{},data:{:?}", entry.name(),length,&buff[0..100]);
     if length != -1 {
+        println!("offset:{},position:{},len:{}",offset,position,len);
         set_byte_array_region(buf, offset, length as usize, &buff);
     }
 
     frame
         .operand_stack()
         .expect("stack is none")
-        .push_int(length);
+        .push_int(length as i32);
 }
 
 fn zip_read(
@@ -313,8 +316,8 @@ fn zip_read(
     entry: &StoredEntry,
     position: i64,
     buf: &mut [u8],
-    mut len: usize,
-) -> i32 {
+    mut len: isize,
+) -> isize {
     let entry_size = match entry.compressed_size != 0 {
         true => entry.compressed_size,
         false => entry.uncompressed_size,
@@ -329,10 +332,22 @@ fn zip_read(
     if len < 0 {
         return 0;
     }
-    if len > (entry_size - position) as usize {
-        len = (entry_size - position) as usize;
+    if len > (entry_size - position) as isize {
+        len = (entry_size - position) as isize;
     }
-    let mut buff = [0u8; 8192];
+    if read_fully(zip, entry, buf, len as usize) == -1 {
+        //zip->msg = "ZIP_Read: error reading zip file";
+        return -1;
+    }
+    return len;
+}
+
+fn read_fully(
+    zip: &ZipFile,
+    entry: &StoredEntry,
+    mut buf: &mut [u8],
+    mut len: usize,
+) -> isize {
     while len > 0 {
         let limit = (1 << 31) - 1;
         let count = match len < limit {
@@ -341,11 +356,19 @@ fn zip_read(
         };
         let mut reader =
             entry.reader(|offset| positioned_io::Cursor::new_pos(&zip.meta_file, offset));
-        let read_count = reader.read(&mut buff).unwrap();
-        if read_count > 0 {
-            return read_count as i32;
-        } else {
-            return -1;
+        let read_rs = reader.read(buf);
+
+        match read_rs {
+            Ok(size) => {
+                if size > 0 {
+                    buf = &mut buf[size..];
+                    len -= size;
+                }
+            },
+            Err(error) => match error.kind() {
+                ErrorKind::Interrupted => continue,
+                _ => return -1,
+            }
         }
     }
     return 0;
