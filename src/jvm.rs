@@ -97,6 +97,7 @@ impl Jvm {
         interpret(self.main_thread.clone());
         self.ext_class_loader = self.create_ext_loader(ext_class);
         self.app_class_loader = self.create_app_loader(app_class);
+        display_loader_url(self.app_class_loader.clone());
     }
 
     fn exec_main(&self) {

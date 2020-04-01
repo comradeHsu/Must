@@ -12,6 +12,7 @@ use crate::utils::boxed;
 use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
+use std::process::exit;
 
 pub mod parameter;
 pub mod return_value;
@@ -82,6 +83,9 @@ fn executable(mut thread: Rc<RefCell<JavaThread>>, return_type: ReturnType) -> R
         inst.execute((*current_frame).borrow_mut().deref_mut());
         if (*thread).borrow().stack_size() == 1 {
             break;
+        }
+        if (*thread).borrow().is_stack_empty() {
+            exit(101);
         }
     }
     let value_frame = (*thread).borrow_mut().pop_frame();

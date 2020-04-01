@@ -42,6 +42,11 @@ impl AThrow {
                 break;
             }
             let frame = (*thread).borrow().current_frame();
+            /**
+            **/
+            let method = (*frame).borrow().method_ptr();
+            println!("last method:{}",method.name());
+            /**/
             let handler_pc = get_handler_pc(frame.clone(), object.clone());
             if handler_pc > 0 {
                 let mut mut_borrow = (*frame).borrow_mut();
@@ -94,7 +99,11 @@ impl Instruction for AThrow {
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
 
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
-            Self::handle_uncaught_exception(thread, object);
+            Self::handle_uncaught_exception(thread.clone(), object);
+        } else {
+            let frame = (*thread).borrow().current_frame();
+            let method = (*frame).borrow().method_ptr();
+            println!("handle method:{}", method.name());
         }
     }
 }

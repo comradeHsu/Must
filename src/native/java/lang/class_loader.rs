@@ -61,6 +61,7 @@ pub fn find_loaded_class0(frame: &mut Frame) {
     let name = vars.get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = (*loader).borrow().find_class(class_name.as_str());
+    println!("CLass Is {}", class_name);
     if class.is_none() {
         println!("None CLass Is {}", class_name);
         frame.operand_stack().expect("stack is none").push_ref(None);
@@ -81,6 +82,7 @@ pub fn find_bootstrap_class(frame: &mut Frame) {
     let name = frame.local_vars().expect("vars is none").get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = loader.find_class(class_name.as_str());
+    println!("CLass Is {}", class_name);
     if class.is_none() {
         println!("None CLass Is {}", class_name);
         frame.operand_stack().expect("stack is none").push_ref(None);
