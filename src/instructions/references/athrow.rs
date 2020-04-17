@@ -6,6 +6,7 @@ use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::ops::Deref;
 
 pub struct AThrow(NoOperandsInstruction);
 
@@ -26,6 +27,9 @@ impl AThrow {
         }
 
         let thread = frame.thread();
+
+        display_frame(frame);
+
         let pc = frame
             .method()
             .find_exception_handler((*object).borrow().class(), frame.next_pc() - 1);
@@ -34,6 +38,7 @@ impl AThrow {
             stack.clear();
             stack.push_ref(Some(object.clone()));
             frame.set_next_pc(pc);
+            println!("handle_pc:{}",pc);
             return true;
         }
         (*thread).borrow_mut().pop_frame();
@@ -44,8 +49,10 @@ impl AThrow {
             let frame = (*thread).borrow().current_frame();
             /**
             **/
-            let method = (*frame).borrow().method_ptr();
-            println!("last method:{}",method.name());
+            {
+                let fra = (*frame).borrow();
+                display_frame(fra.deref());
+            }
             /**/
             let handler_pc = get_handler_pc(frame.clone(), object.clone());
             if handler_pc > 0 {
@@ -54,6 +61,7 @@ impl AThrow {
                 stack.clear();
                 stack.push_ref(Some(object.clone()));
                 mut_borrow.set_next_pc(handler_pc);
+                println!("handle_pc:{}",pc);
                 return true;
             }
             (*thread).borrow_mut().pop_frame();
@@ -97,13 +105,27 @@ impl Instruction for AThrow {
 
         //        let meta = (*object).borrow().meta();
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
-
+        {
+            let method = frame.method_ptr();
+            println!("frame method:{},next_pc:{}", method.name(),frame.next_pc());
+            let meta = (*object).borrow().meta();
+            if meta.is_some() {
+                println!("ex class : {}", (*meta.unwrap()).borrow().java_name());
+            }
+        }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(thread.clone(), object);
-        } else {
-            let frame = (*thread).borrow().current_frame();
-            let method = (*frame).borrow().method_ptr();
-            println!("handle method:{}", method.name());
         }
+    }
+}
+
+fn display_frame(frame:&Frame) {
+    let method = frame.method_ptr();
+    if method.name() == "loadClass" && method.descriptor() == "(Ljava/lang/String;Z)Ljava/lang/Class;"{
+        let vars = frame.immutable_local_vars().unwrap();
+        let this = vars.get_this().unwrap();
+        let class = (*this).borrow().class();
+        let name = (*class).borrow().java_name();
+        println!("java class:{}",name);
     }
 }

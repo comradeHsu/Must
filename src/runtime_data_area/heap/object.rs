@@ -144,7 +144,8 @@ impl Object {
             StandardObject(data) => data.as_ref().unwrap(),
             _ => panic!("The Object is array"),
         };
-        return slots.get_ref((*field.unwrap()).borrow().slot_id());
+        let field = field.unwrap();
+        return slots.get_ref((*field).borrow().slot_id());
     }
 
     pub fn set_int_var(&mut self, name: &str, descriptor: &str, val: i32) {

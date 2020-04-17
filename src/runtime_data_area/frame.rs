@@ -99,6 +99,11 @@ impl Frame {
             next_pc: 0,
         };
     }
+
+    #[inline]
+    pub fn immutable_local_vars(&self) -> Option<&LocalVars> {
+        return self.local_vars.as_ref();
+    }
 }
 
 #[cfg(test)]

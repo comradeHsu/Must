@@ -13,6 +13,7 @@ use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
 use std::process::exit;
+use std::thread::sleep_ms;
 
 pub mod parameter;
 pub mod return_value;
@@ -74,9 +75,9 @@ fn executable(mut thread: Rc<RefCell<JavaThread>>, return_type: ReturnType) -> R
         (*thread).borrow_mut().set_pc(pc);
         let method = (*current_frame).borrow().method_ptr();
         let bytecode = method.code();
-        //println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
+        //println!("method:{}, {}, {},inst:{}",method.name(),method.descriptor(),(*method.class()).borrow().name(),opcode);
         let mut inst = new_instruction(opcode);
         inst.fetch_operands(&mut reader);
         (*current_frame).borrow_mut().set_next_pc(reader.pc());
@@ -87,6 +88,7 @@ fn executable(mut thread: Rc<RefCell<JavaThread>>, return_type: ReturnType) -> R
         if (*thread).borrow().is_stack_empty() {
             exit(101);
         }
+        //sleep_ms(500);
     }
     let value_frame = (*thread).borrow_mut().pop_frame();
     let mut frame_borrow = (*value_frame).borrow_mut();

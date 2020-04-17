@@ -19,6 +19,7 @@ use crate::utils::{boxed, java_str_to_rust_str};
 use chrono::Local;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::borrow::Borrow;
 
 pub struct Jvm {
     cmd: Cmd,
@@ -96,12 +97,13 @@ impl Jvm {
 
         interpret(self.main_thread.clone());
         self.ext_class_loader = self.create_ext_loader(ext_class);
-        self.app_class_loader = self.create_app_loader(app_class);
+        self.app_class_loader = self.create_app_loader(app_class, self.ext_class_loader.clone());
         display_loader_url(self.app_class_loader.clone());
     }
 
     fn exec_main(&self) {
         let class_name = self.cmd.class.clone().replace('.', "/");
+        //let class_name = self.cmd.class.clone();
 
         let main_class =
             ClassLoader::load_class(self.app_class_loader.clone(), class_name.as_str());
@@ -160,13 +162,14 @@ impl Jvm {
         return value.object();
     }
 
-    fn create_app_loader(&self, app_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
+    fn create_app_loader(&self, app_class: Rc<RefCell<Class>>, parent: Option<Rc<RefCell<Object>>>) -> Option<Rc<RefCell<Object>>> {
         let method = Class::get_static_method(
             app_class,
             "getAppClassLoader",
             "(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;",
         );
-        let value = invoke(method.unwrap(), None, ReturnType::Object).object();
+        let params = Parameters::with_parameters(vec![Parameter::Object(parent)]);
+        let value = invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return value;
     }
 }
@@ -176,6 +179,15 @@ fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
     let ucp = (*obj)
         .borrow()
         .get_ref_var("ucp", "Lsun/misc/URLClassPath;");
+
+    let parent = (*obj)
+        .borrow()
+        .get_ref_var("parent", "Ljava/lang/ClassLoader;");
+    if parent.is_some() {
+        let parent = (*parent.unwrap()).borrow().class();
+        println!("parent:{}",(*parent).borrow().java_name());
+    }
+
     let boot_loader = Jvm::boot_class_loader();
     let class = boot_loader.find_or_create("java/net/URL");
     let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();

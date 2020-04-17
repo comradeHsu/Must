@@ -21,7 +21,7 @@ impl ClassLoader {
     #[inline]
     pub fn new() -> ClassLoader {
         return ClassLoader {
-            verbose_class: false,
+            verbose_class: true,
             class_map: Default::default(),
         };
     }
@@ -154,7 +154,7 @@ impl ClassLoader {
             class = Some(Self::load_array_class(class_loader.clone(), class_name));
         } else {
             println!("\t will load :{}", class_name);
-            class = Self::invoke_load_class(loader, class_name);
+            class = Self::invoke_load_class(loader, class_name.replace('/',".").as_str());
         }
         let value = class.unwrap();
         Self::setting_class_object(value.clone());
