@@ -21,7 +21,7 @@ impl ClassLoader {
     #[inline]
     pub fn new() -> ClassLoader {
         return ClassLoader {
-            verbose_class: true,
+            verbose_class: false,
             class_map: Default::default(),
         };
     }
