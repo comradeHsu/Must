@@ -11,8 +11,8 @@ use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::ops::DerefMut;
-use std::rc::Rc;
 use std::process::exit;
+use std::rc::Rc;
 use std::thread::sleep_ms;
 
 pub mod parameter;

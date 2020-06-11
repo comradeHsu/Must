@@ -49,7 +49,9 @@ impl Perf {
     fn new_direct_byte_buffer(pointer: usize, size_long: usize) -> JObject {
         assert_ne!(size_long, 0, "size value {}", size_long);
         let boot_loader = Jvm::boot_class_loader();
-        let class = boot_loader.find_or_create("java/nio/DirectByteBuffer");
+        let class = boot_loader
+            .find_or_create("java/nio/DirectByteBuffer")
+            .unwrap();
         let method = Class::get_instance_method(class.clone(), "<init>", "(JI)V");
         let this = boxed(Class::new_object(&class));
         let param = vec![

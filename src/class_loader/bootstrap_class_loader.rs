@@ -33,7 +33,7 @@ impl BootstrapClassLoader {
     }
 
     fn load_basic_classes(&self) {
-        let java_lang_class = self.find_or_create("java/lang/Class");
+        let java_lang_class = self.find_or_create("java/lang/Class").unwrap();
         let borrow = (*self.class_loader).borrow();
         let maps = borrow.class_map_immutable();
         for (k, v) in maps {
@@ -58,7 +58,7 @@ impl BootstrapClassLoader {
 
     fn load_primitive_class(&self, class_name: &str) {
         let class = Class::primitive_class(class_name);
-        let class_class = self.find_or_create("java/lang/Class");
+        let class_class = self.find_or_create("java/lang/Class").unwrap();
         let mut class_object = Class::new_object(&class_class);
         let boxed_class = boxed(class);
         class_object.set_meta(boxed_class.clone());
@@ -71,11 +71,11 @@ impl BootstrapClassLoader {
             .insert(class_name.to_string(), boxed_class);
     }
 
-    pub fn find_or_create(&self, class_name: &str) -> Rc<RefCell<Class>> {
+    pub fn find_or_create(&self, class_name: &str) -> Option<Rc<RefCell<Class>>> {
         let class_op: Option<Rc<RefCell<Class>>> =
             (*self.class_loader).borrow().find_class(class_name);
         if class_op.is_some() {
-            return class_op.unwrap().clone();
+            return class_op;
         }
         let mut class: Option<Rc<RefCell<Class>>> = None;
         if class_name.starts_with('[') {
@@ -88,7 +88,7 @@ impl BootstrapClassLoader {
         }
         let value = class.unwrap();
         ClassLoader::setting_class_object(value.clone());
-        return value;
+        return Some(value);
     }
 
     fn load_non_array_class(&self, class_name: &str) -> Rc<RefCell<Class>> {
@@ -128,7 +128,9 @@ impl BootstrapClassLoader {
         let super_class_name = class.super_class_name();
         //        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
-            let super_class = self.find_or_create(super_class_name.unwrap().as_str());
+            let super_class = self
+                .find_or_create(super_class_name.unwrap().as_str())
+                .unwrap();
             class.set_super_class(super_class);
         }
     }
@@ -140,7 +142,7 @@ impl BootstrapClassLoader {
         if len > 0 {
             let mut interfaces = Vec::with_capacity(len);
             for name in interfaces_name {
-                let interface = self.find_or_create(name);
+                let interface = self.find_or_create(name).unwrap();
                 interfaces.push(interface);
             }
             class.set_interfaces(interfaces);

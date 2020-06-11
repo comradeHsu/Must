@@ -97,7 +97,9 @@ pub fn get_primitive_class(frame: &mut Frame) {
         .unwrap();
     let target = java_str_to_rust_str(name_obj);
 
-    let class = Jvm::boot_class_loader().find_or_create(target.as_str());
+    let class = Jvm::boot_class_loader()
+        .find_or_create(target.as_str())
+        .unwrap();
     let java_class = (*class).borrow().get_java_class();
     frame
         .operand_stack()
@@ -224,7 +226,7 @@ pub fn get_interfaces0(frame: &mut Frame) {
 fn to_class_arr(classes: &Vec<Rc<RefCell<Class>>>) -> ArrayObject {
     let arr_len = classes.len();
     let bootstrap_loader = Jvm::boot_class_loader();
-    let class_arr_class = (*bootstrap_loader.find_or_create("java/lang/Class"))
+    let class_arr_class = (*bootstrap_loader.find_or_create("java/lang/Class").unwrap())
         .borrow()
         .array_class();
     let mut class_arr = Class::new_array(&class_arr_class, arr_len);
@@ -245,7 +247,7 @@ fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
         let j_bytes: Vec<i8> = rbytes.unwrap().iter().map(|x| *x as i8).collect();
         let boot_loader = Jvm::boot_class_loader();
         return Some(ArrayObject::from_data(
-            boot_loader.find_or_create("[B"),
+            boot_loader.find_or_create("[B").unwrap(),
             Bytes(j_bytes),
         ));
     }
@@ -311,8 +313,9 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
     let constructors = (*class).borrow().get_constructors(public_only);
     let constructor_count = constructors.len();
 
-    let constructor_class =
-        Jvm::boot_class_loader().find_or_create("java/lang/reflect/Constructor");
+    let constructor_class = Jvm::boot_class_loader()
+        .find_or_create("java/lang/reflect/Constructor")
+        .unwrap();
 
     let class_arr_class = (*constructor_class).borrow().array_class();
     let constructor_arr = Class::new_array(&class_arr_class, constructor_count);
@@ -377,7 +380,9 @@ pub fn get_declared_fields0(frame: &mut Frame) {
     let fields = (*class).borrow().get_fields(public_only);
     let field_count = fields.len();
 
-    let field_class = Jvm::boot_class_loader().find_or_create("java/lang/reflect/Field");
+    let field_class = Jvm::boot_class_loader()
+        .find_or_create("java/lang/reflect/Field")
+        .unwrap();
     let field_arr_class = (*field_class).borrow().array_class();
     let field_arr = Class::new_array(&field_arr_class, field_count);
 
@@ -445,7 +450,9 @@ pub fn get_declared_methods0(frame: &mut Frame) {
     let methods = (*class).borrow().get_methods(public_only);
     let method_count = methods.len();
 
-    let method_class = Jvm::boot_class_loader().find_or_create("java/lang/reflect/Method");
+    let method_class = Jvm::boot_class_loader()
+        .find_or_create("java/lang/reflect/Method")
+        .unwrap();
     let method_arr_class = (*method_class).borrow().array_class();
     let method_arr = Class::new_array(&method_arr_class, method_count);
 

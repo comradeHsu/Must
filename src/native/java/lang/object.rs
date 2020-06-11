@@ -53,7 +53,9 @@ pub fn clone(frame: &mut Frame) {
         .get_this()
         .unwrap();
     let this_class = (*this).borrow().class();
-    let cloneable = Jvm::boot_class_loader().find_or_create("java/lang/Cloneable");
+    let cloneable = Jvm::boot_class_loader()
+        .find_or_create("java/lang/Cloneable")
+        .unwrap();
 
     let borrow = cloneable.borrow();
     if !(*this_class).borrow().is_implements(borrow.deref()) {

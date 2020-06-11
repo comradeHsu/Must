@@ -47,7 +47,7 @@ impl Instruction for NewArray {
 
 fn get_primitive_array_class(atype: u8) -> Rc<RefCell<Class>> {
     let boot_loader = Jvm::boot_class_loader();
-    match atype {
+    let optional_class = match atype {
         AT_BOOLEAN => boot_loader.find_or_create("[Z"),
         AT_CHAR => boot_loader.find_or_create("[C"),
         AT_FLOAT => boot_loader.find_or_create("[F"),
@@ -57,5 +57,6 @@ fn get_primitive_array_class(atype: u8) -> Rc<RefCell<Class>> {
         AT_INT => boot_loader.find_or_create("[I"),
         AT_LONG => boot_loader.find_or_create("[J"),
         _ => panic!("Invalid atype!"),
-    }
+    };
+    return optional_class.unwrap();
 }

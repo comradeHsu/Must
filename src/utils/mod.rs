@@ -18,8 +18,8 @@ pub fn java_str_to_rust_str(name_obj: Rc<RefCell<Object>>) -> String {
     let borrow = (*mete_str).borrow();
     let string = borrow.chars();
     let mut target = String::from_utf16(string).expect("u16 seqs has mistake");
-    target = target.replace("%5c","\\");
-    target.replace("%3f","?")
+    target = target.replace("%5c", "\\");
+    target.replace("%3f", "?")
 }
 
 pub fn jstr_to_utf_nullable(j_string: JString) -> String {
@@ -49,8 +49,8 @@ mod test {
 
     #[test]
     fn test_utf16_to_str() {
-        let seq = [21704u16,21704u16,47u16,25105u16];
+        let seq = [21704u16, 21704u16, 47u16, 25105u16];
         let target = String::from_utf16(&seq).expect("u16 seqs has mistake");
-        println!("{}",target)
+        println!("{}", target)
     }
 }

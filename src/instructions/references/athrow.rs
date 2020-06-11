@@ -5,8 +5,8 @@ use crate::runtime_data_area::heap::object::Object;
 use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::ops::Deref;
+use std::rc::Rc;
 
 pub struct AThrow(NoOperandsInstruction);
 
@@ -38,7 +38,7 @@ impl AThrow {
             stack.clear();
             stack.push_ref(Some(object.clone()));
             frame.set_next_pc(pc);
-            println!("handle_pc:{}",pc);
+            println!("handle_pc:{}", pc);
             return true;
         }
         (*thread).borrow_mut().pop_frame();
@@ -48,7 +48,7 @@ impl AThrow {
             }
             let frame = (*thread).borrow().current_frame();
             /**
-            **/
+             **/
             {
                 let fra = (*frame).borrow();
                 display_frame(fra.deref());
@@ -61,7 +61,7 @@ impl AThrow {
                 stack.clear();
                 stack.push_ref(Some(object.clone()));
                 mut_borrow.set_next_pc(handler_pc);
-                println!("handle_pc:{}",pc);
+                println!("handle_pc:{}", pc);
                 return true;
             }
             (*thread).borrow_mut().pop_frame();
@@ -107,7 +107,7 @@ impl Instruction for AThrow {
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
         {
             let method = frame.method_ptr();
-            println!("frame method:{},next_pc:{}", method.name(),frame.next_pc());
+            println!("frame method:{},next_pc:{}", method.name(), frame.next_pc());
             let meta = (*object).borrow().meta();
             if meta.is_some() {
                 println!("ex class : {}", (*meta.unwrap()).borrow().java_name());
@@ -119,13 +119,15 @@ impl Instruction for AThrow {
     }
 }
 
-fn display_frame(frame:&Frame) {
+fn display_frame(frame: &Frame) {
     let method = frame.method_ptr();
-    if method.name() == "loadClass" && method.descriptor() == "(Ljava/lang/String;Z)Ljava/lang/Class;"{
+    if method.name() == "loadClass"
+        && method.descriptor() == "(Ljava/lang/String;Z)Ljava/lang/Class;"
+    {
         let vars = frame.immutable_local_vars().unwrap();
         let this = vars.get_this().unwrap();
         let class = (*this).borrow().class();
         let name = (*class).borrow().java_name();
-        println!("java class:{}",name);
+        println!("java class:{}", name);
     }
 }

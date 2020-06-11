@@ -20,7 +20,9 @@ pub fn get_lookup_cache_urls(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let _java_loader = vars.get_ref(0);
 
-    let url_class = Jvm::boot_class_loader().find_or_create("java/net/URL");
+    let url_class = Jvm::boot_class_loader()
+        .find_or_create("java/net/URL")
+        .unwrap();
     let array_class = (*url_class).borrow().array_class();
     let array = Class::new_array(&array_class, 0);
     frame

@@ -139,8 +139,16 @@ impl Class {
     pub fn new_array_class(loader: Rc<RefCell<ClassLoader>>, class_name: &str) -> Class {
         let mut interfaces = Vec::new();
         let bootstrap_loader = Jvm::boot_class_loader();
-        interfaces.push(bootstrap_loader.find_or_create("java/lang/Cloneable"));
-        interfaces.push(bootstrap_loader.find_or_create("java/io/Serializable"));
+        interfaces.push(
+            bootstrap_loader
+                .find_or_create("java/lang/Cloneable")
+                .unwrap(),
+        );
+        interfaces.push(
+            bootstrap_loader
+                .find_or_create("java/io/Serializable")
+                .unwrap(),
+        );
         let class = Class {
             access_flags: PUBLIC,
             name: class_name.to_string(),
@@ -150,7 +158,7 @@ impl Class {
             fields: vec![],
             methods: vec![],
             loader: Some(loader.clone()),
-            super_class: Some(bootstrap_loader.find_or_create("java/lang/Object")),
+            super_class: Some(bootstrap_loader.find_or_create("java/lang/Object").unwrap()),
             interfaces: Some(interfaces),
             instance_slot_count: 0,
             static_slot_count: 0,

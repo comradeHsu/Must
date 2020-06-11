@@ -17,9 +17,9 @@ use crate::runtime_data_area::heap::string_pool::StringPool;
 use crate::runtime_data_area::thread::JavaThread;
 use crate::utils::{boxed, java_str_to_rust_str};
 use chrono::Local;
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::borrow::Borrow;
 
 pub struct Jvm {
     cmd: Cmd,
@@ -81,18 +81,23 @@ impl Jvm {
     }
 
     fn init_vm(&mut self) {
-        let vm_class = self.boot_class_loader.find_or_create("sun/misc/VM");
+        let vm_class = self
+            .boot_class_loader
+            .find_or_create("sun/misc/VM")
+            .unwrap();
         init_class(self.main_thread.clone(), vm_class);
         interpret(self.main_thread.clone());
 
         let ext_class = self
             .boot_class_loader
-            .find_or_create("sun/misc/Launcher$ExtClassLoader");
+            .find_or_create("sun/misc/Launcher$ExtClassLoader")
+            .unwrap();
         init_class(self.main_thread.clone(), ext_class.clone());
 
         let app_class = self
             .boot_class_loader
-            .find_or_create("sun/misc/Launcher$AppClassLoader");
+            .find_or_create("sun/misc/Launcher$AppClassLoader")
+            .unwrap();
         init_class(self.main_thread.clone(), app_class.clone());
 
         interpret(self.main_thread.clone());
@@ -123,7 +128,10 @@ impl Jvm {
     }
 
     fn create_args_array(&self) -> Rc<RefCell<Object>> {
-        let string_class = self.boot_class_loader.find_or_create("java/lang/String");
+        let string_class = self
+            .boot_class_loader
+            .find_or_create("java/lang/String")
+            .unwrap();
         let args_arr_class = (*string_class).borrow().array_class();
         let mut args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
         let java_args = args_arr.mut_references();
@@ -135,7 +143,9 @@ impl Jvm {
 
     pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
         let bootstrap_loader = Self::boot_class_loader();
-        let class = bootstrap_loader.find_or_create(class_name.replace('.', "/").as_str());
+        let class = bootstrap_loader
+            .find_or_create(class_name.replace('.', "/").as_str())
+            .unwrap();
         let mut object = Class::new_object(&class);
         if msg.is_some() {
             object.set_ref_var(
@@ -162,7 +172,11 @@ impl Jvm {
         return value.object();
     }
 
-    fn create_app_loader(&self, app_class: Rc<RefCell<Class>>, parent: Option<Rc<RefCell<Object>>>) -> Option<Rc<RefCell<Object>>> {
+    fn create_app_loader(
+        &self,
+        app_class: Rc<RefCell<Class>>,
+        parent: Option<Rc<RefCell<Object>>>,
+    ) -> Option<Rc<RefCell<Object>>> {
         let method = Class::get_static_method(
             app_class,
             "getAppClassLoader",
@@ -185,11 +199,11 @@ fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
         .get_ref_var("parent", "Ljava/lang/ClassLoader;");
     if parent.is_some() {
         let parent = (*parent.unwrap()).borrow().class();
-        println!("parent:{}",(*parent).borrow().java_name());
+        println!("parent:{}", (*parent).borrow().java_name());
     }
 
     let boot_loader = Jvm::boot_class_loader();
-    let class = boot_loader.find_or_create("java/net/URL");
+    let class = boot_loader.find_or_create("java/net/URL").unwrap();
     let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();
     if ucp.is_some() {
         let ucp = ucp.unwrap();

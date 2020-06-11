@@ -33,8 +33,8 @@ fn main() {
 mod tests {
     use crate::cmd::Cmd;
     use crate::jvm::Jvm;
-    use std::time::SystemTime;
     use std::mem::size_of;
+    use std::time::SystemTime;
 
     #[test]
     fn start_jvm() {
@@ -51,7 +51,7 @@ mod tests {
         let vec = "ha哈哈";
         let s: Vec<u16> = vec.encode_utf16().collect();
         println!("vec {:?}", s);
-//        Jvm::new(cmd).start();
+        Jvm::new(cmd).start();
         println!("char {:?}", size_of::<char>());
         println!("i32 {:?}", size_of::<i32>());
     }

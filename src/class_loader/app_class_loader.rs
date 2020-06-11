@@ -141,7 +141,7 @@ impl ClassLoader {
     ) -> Rc<RefCell<Class>> {
         if loader_object.is_none() {
             let bootstrap_loader = Jvm::boot_class_loader();
-            return bootstrap_loader.find_or_create(class_name);
+            return bootstrap_loader.find_or_create(class_name).unwrap();
         }
         let loader = loader_object.unwrap();
         let class_loader = (*loader).borrow().get_class_loader();
@@ -154,7 +154,7 @@ impl ClassLoader {
             class = Some(Self::load_array_class(class_loader.clone(), class_name));
         } else {
             println!("\t will load :{}", class_name);
-            class = Self::invoke_load_class(loader, class_name.replace('/',".").as_str());
+            class = Self::invoke_load_class(loader, class_name.replace('/', ".").as_str());
         }
         let value = class.unwrap();
         Self::setting_class_object(value.clone());

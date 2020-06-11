@@ -140,13 +140,10 @@ fn _sys_props() -> HashMap<String, String> {
     map.insert("java.class.version".to_owned(), "52.0".to_owned());
     map.insert(
         "java.class.path".to_owned(),
-//        "D:/java8/JDK/lib;D:/java8/JDK/lib/tools.jar;.;D:/workspace/rust-jvm/;".to_owned(),
+        //        "D:/java8/JDK/lib;D:/java8/JDK/lib/tools.jar;.;D:/workspace/rust-jvm/;".to_owned(),
         "D:/workspace/rust-jvm/".to_owned(),
     );
-    map.insert(
-        "sun.misc.URLClassPath.debug".to_owned(),
-        "true".to_owned(),
-    );
+    map.insert("sun.misc.URLClassPath.debug".to_owned(), "true".to_owned());
     //    map.insert(
     //        "java.library.path".to_owned(),
     //        "D:\\java8\\JDK\\bin;C:\\WINDOWS\\Sun\\Java\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\ProgramData\\Oracle\\Java\\javapath;C:\\Program Files\\Docker\\Docker\\Resources\\bin;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Intel\\iCLS Client\\;C:\\windows\\system32;C:\\windows;C:\\windows\\System32\\Wbem;C:\\windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;D:\\MinGw\\bin;D:\\Git\\cmd;D:\\NodeJs\\;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;D:\\Maven\\apache-maven-3.5.3\\bin;C:\\WINDOWS\\System32\\OpenSSH\\;D:\\androidSDK\\Sdk\\platform-tools;D:\\androidSDK\\Sdk\\tools;D:\\Gradle\\gradle-5.6.3\\bin;D:\\java8\\JDK\\bin;D:\\java8\\JDK\\jre\\bin;D:\\Rust\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\Microsoft SQL Server\\130\\Tools\\Binn\\;C:\\Program Files\\Microsoft SQL Server\\Client SDK\\ODBC\\170\\Tools\\Binn\\;C:\\Users\\xuhui\\.cargo\\bin;D:\\Python\\Scripts\\;D:\\Python\\;C:\\Users\\xuhui\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\xuhui\\AppData\\Roaming\\npm;D:\\NodeJs\\node_global;C:\\Users\\xuhui\\AppData\\Local\\BypassRuntm;D:\\VSCode\\Microsoft VS Code\\bin;C:\\Users\\xuhui\\AppData\\Local\\Microsoft\\WindowsApps;;.

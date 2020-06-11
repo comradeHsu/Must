@@ -24,7 +24,7 @@ pub fn init() {
 pub fn current_thread(frame: &mut Frame) {
     let class = frame.method().class();
     let loader = Jvm::boot_class_loader();
-    let thread_class = loader.find_or_create("java/lang/Thread");
+    let thread_class = loader.find_or_create("java/lang/Thread").unwrap();
     let mut java_thread = Class::new_object(&thread_class);
     java_thread.set_ref_var(
         "name",
@@ -32,7 +32,7 @@ pub fn current_thread(frame: &mut Frame) {
         StringPool::java_string("Main".to_string()),
     );
 
-    let thread_group_class = loader.find_or_create("java/lang/ThreadGroup");
+    let thread_group_class = loader.find_or_create("java/lang/ThreadGroup").unwrap();
     let mut java_thread_group = Class::new_object(&thread_group_class);
     java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", boxed(java_thread_group));
     java_thread.set_int_var("priority", "I", 1);
