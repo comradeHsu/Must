@@ -141,7 +141,11 @@ impl ClassLoader {
     ) -> Rc<RefCell<Class>> {
         if loader_object.is_none() {
             let bootstrap_loader = Jvm::boot_class_loader();
-            return bootstrap_loader.find_or_create(class_name).unwrap();
+            let class =  bootstrap_loader.find_or_create(class_name);
+            if class.is_none() {
+                println!("class not found {}",class_name);
+            }
+            return class.unwrap();
         }
         let loader = loader_object.unwrap();
         let class_loader = (*loader).borrow().get_class_loader();

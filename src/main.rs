@@ -35,6 +35,7 @@ mod tests {
     use crate::jvm::Jvm;
     use std::mem::size_of;
     use std::time::SystemTime;
+    use std::path::{Path, PathBuf};
 
     #[test]
     fn start_jvm() {
@@ -44,7 +45,7 @@ mod tests {
             verbose_class: false,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testJava.BubbleSortTest".to_string(),
+            class: "testJava.ClassPathTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };
@@ -54,6 +55,15 @@ mod tests {
         Jvm::new(cmd).start();
         println!("char {:?}", size_of::<char>());
         println!("i32 {:?}", size_of::<i32>());
+        let buf = PathBuf::from("D:/workspace/rust-jvm/testJava/BubbleSortTest.class");
+        println!("path {}", buf.to_str().unwrap());
+        let file_path = Path::new("./README.md").canonicalize();
+        if file_path.is_ok() {
+            let path = file_path.unwrap();
+//            assert_eq!(buf, path);
+            println!("canonicalize0:{:?}",path.to_str().unwrap());
+            println!("canonicalize0:{:?}",Path::new(path.to_str().unwrap()).exists());
+        }
     }
 
     #[test]

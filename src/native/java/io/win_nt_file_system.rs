@@ -27,26 +27,46 @@ pub fn init() {
         "(Ljava/io/File;)J",
         get_last_modified_time,
     );
+    Registry::register(
+        "testJava/ClassPathTest",
+        "print",
+        "(Ljava/lang/String;)V",
+        print,
+    );
 }
 
 /// java/io/WinNTFileSystem.initIDs()V
 pub fn init_ids(_frame: &mut Frame) {}
+
+pub fn print(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let java_string = vars.get_ref(0);
+    let string = java_str_to_rust_str(java_string.unwrap());
+    println!("the Java String is {}",string);
+}
 
 /// private native String canonicalize0(String path) throws IOException;
 /// (Ljava/lang/String;)Ljava/lang/String;
 pub fn canonicalize0(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let java_path = vars.get_ref(1);
-    let mut path = java_str_to_rust_str(java_path.unwrap());
-    let file_path = Path::new(&path).canonicalize();
-    if file_path.is_ok() {
-        path = file_path.unwrap().to_str().unwrap().to_string();
+    let mut path = java_str_to_rust_str(java_path.clone().unwrap());
+    let mut java_string = None;
+    let file_path = Path::new(&path);
+    if file_path.is_absolute() {
+        java_string = java_path;
+    } else {
+        let canonicalize_path = file_path.canonicalize();
+        if canonicalize_path.is_ok() {
+            path = canonicalize_path.unwrap().to_str().unwrap().to_string();
+            println!("canonicalize0:{}", path);
+        }
+        java_string = Some(StringPool::java_string(path));
     }
-    let java_string = StringPool::java_string(path);
     frame
         .operand_stack()
         .expect("stack is none")
-        .push_ref(Some(java_string));
+        .push_ref(java_string);
 }
 
 /// @Native public static final int BA_EXISTS    = 0x01;
@@ -76,6 +96,7 @@ pub fn get_boolean_attributes(frame: &mut Frame) {
     if is_hidden(native_path.as_str()) {
         attribute |= 0x08;
     }
+    println!("native_oath :{},exist:{}",path.to_str().unwrap(),path.exists());
     frame
         .operand_stack()
         .expect("stack is none")

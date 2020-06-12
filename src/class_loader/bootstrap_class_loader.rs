@@ -1,6 +1,6 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::class_loader::class_linker::ClassLinker;
-use crate::class_path::class_path::{ClassPath, Entry};
+use crate::class_path::class_path::{ClassPath, Entry, FindClassError, new_entry};
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
 use crate::utils::boxed;
@@ -84,29 +84,46 @@ impl BootstrapClassLoader {
                 class_name,
             ));
         } else {
-            class = Some(self.load_non_array_class(class_name));
+            class = self.load_non_array_class(class_name);
         }
-        let value = class.unwrap();
-        ClassLoader::setting_class_object(value.clone());
-        return Some(value);
+        if class.is_some() {
+            let value = class.clone().unwrap();
+            ClassLoader::setting_class_object(value);
+        }
+        return class;
     }
 
-    fn load_non_array_class(&self, class_name: &str) -> Rc<RefCell<Class>> {
-        let (bytes, entry) = self.read_class(class_name);
+    fn load_non_array_class(&self, class_name: &str) -> Option<Rc<RefCell<Class>>> {
+        let result = self.read_class(class_name);
+        if result.is_err() {
+            return None;
+        }
+        let (bytes, entry) = result.unwrap();
         let class = self.define_class(bytes);
         ClassLinker::link(&class);
         if (*self.class_loader).borrow().verbose_class {
             println!("Loaded {}.class from {}", class_name, entry.to_string());
         }
-        return class;
+        return Some(class);
     }
 
-    fn read_class(&self, class_name: &str) -> (Vec<u8>, Box<dyn Entry>) {
-        let result = self.lib_path.read_class(class_name);
-        if result.is_err() {
-            panic!("java.lang.ClassNotFoundException:{}", class_name);
+    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>, Box<dyn Entry>),FindClassError> {
+        let mut result = self.lib_path.read_class(class_name);
+//        if result.is_err() {
+//            panic!("java.lang.ClassNotFoundException:{}", class_name);
+//        }
+        if class_name == "testJava/ClassPathTest" ||
+            class_name == "testJava/ClassPathTest$FileLoader" ||
+            class_name == "testJava/ClassPathTest$Loader" ||
+            class_name == "testJava/ClassPathTest$FileLoader$1"{
+            let cp = new_entry(&"D:/workspace/rust-jvm/".to_string());
+            let name = class_name.to_string() + ".class";
+            result = cp.read_class(name.as_str());
+            if result.is_err() {
+                panic!("java.lang.ClassNotFoundException:{}", class_name);
+            }
         }
-        return result.unwrap();
+        return result;
     }
 
     fn define_class(&self, data: Vec<u8>) -> Rc<RefCell<Class>> {
