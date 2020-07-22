@@ -115,6 +115,8 @@ impl BootstrapClassLoader {
         if class_name == "testJava/ClassPathTest" ||
             class_name == "testJava/ClassPathTest$FileLoader" ||
             class_name == "testJava/ClassPathTest$Loader" ||
+            class_name == "testJava/ClassPathTest$User" ||
+            class_name == "testJava/ClassPathTest$School" ||
             class_name == "testJava/ClassPathTest$FileLoader$1"{
             let cp = new_entry(&"D:/workspace/rust-jvm/".to_string());
             let name = class_name.to_string() + ".class";

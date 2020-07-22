@@ -36,6 +36,7 @@ mod tests {
     use std::mem::size_of;
     use std::time::SystemTime;
     use std::path::{Path, PathBuf};
+    use std::sync::Mutex;
 
     #[test]
     fn start_jvm() {
@@ -45,7 +46,7 @@ mod tests {
             verbose_class: false,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testJava.ClassPathTest".to_string(),
+            class: "testJava.ClassLoaderTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };
@@ -111,6 +112,7 @@ mod tests {
         let p = &c as *const i32;
         let add = p as usize;
         let t = add as *const i32;
+        let s = Mutex::new(5);
         println!("{}: {}", add, unsafe { *t });
     }
 }

@@ -19,6 +19,7 @@ pub fn init() {
     Registry::register("java/lang/Thread", "start0", "()V", start0);
     Registry::register("java/lang/Thread", "sleep", "(J)V", sleep);
     Registry::register("java/lang/Thread", "yield", "()V", java_yield);
+    Registry::register("java/lang/Thread", "isInterrupted", "(Z)Z", is_interrupted);
 }
 
 pub fn current_thread(frame: &mut Frame) {
@@ -81,4 +82,15 @@ pub fn sleep(frame: &mut Frame) {
 pub fn java_yield(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     thread::yield_now();
+}
+
+// private native boolean isInterrupted(boolean ClearInterrupted);
+// (Z)Z
+/// waiting for impl
+pub fn is_interrupted(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_boolean(false);
 }
