@@ -6,6 +6,7 @@ use chrono::Local;
 use std::fs::File;
 use std::path::Path;
 use std::time::UNIX_EPOCH;
+use std::fs;
 
 pub fn init() {
     Registry::register("java/io/WinNTFileSystem", "initIDs", "()V", init_ids);
@@ -26,6 +27,12 @@ pub fn init() {
         "getLastModifiedTime",
         "(Ljava/io/File;)J",
         get_last_modified_time,
+    );
+    Registry::register(
+        "java/io/WinNTFileSystem",
+        "getLength",
+        "(Ljava/io/File;)J",
+        get_length,
     );
     Registry::register(
         "testJava/ClassPathTest",
@@ -137,4 +144,35 @@ pub fn get_last_modified_time(frame: &mut Frame) {
         .operand_stack()
         .expect("stack is none")
         .push_long(time.as_millis() as i64);
+}
+
+///  public native long getLength(File f);
+/// (Ljava/io/File;)J
+pub fn get_length(frame: &mut Frame) {
+    let vars = frame.local_vars().expect("vars is none");
+    let java_file = vars.get_ref(1).expect("java.lang.NullPointerException");
+    let java_path = (*java_file)
+        .borrow()
+        .get_ref_var("path", "Ljava/lang/String;");
+    let rust_path = java_str_to_rust_str(java_path.unwrap());
+    let metadata = fs::metadata(rust_path);
+    let len = match metadata.is_ok() {
+        true => metadata.unwrap().len(),
+        false => 0
+    };
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_long(len as i64);
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    #[test]
+    fn len() {
+        let metadata = fs::metadata("D:\\vedio").unwrap();
+        println!("the file len:{}",metadata.len());
+    }
 }

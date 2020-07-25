@@ -4,12 +4,14 @@ use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::DataType::StandardObject;
-use crate::runtime_data_area::heap::object::MetaData::{FileOffset, Null};
+use crate::runtime_data_area::heap::object::MetaData::{Null};
 use crate::runtime_data_area::heap::slots::Slots;
 use crate::runtime_data_area::slot::Slot;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::fs::File;
+use crate::utils::boxed;
 
 #[derive(Debug, Clone)]
 pub struct Object {
@@ -111,16 +113,16 @@ impl Object {
     }
 
     #[inline]
-    pub fn file_offset(&self) -> u64 {
+    pub fn file(&self) -> Rc<RefCell<File>> {
         match &self.meta_data {
-            MetaData::FileOffset(offset) => *offset,
+            MetaData::File(file) => file.clone(),
             _ => panic!("The Object isn't file"),
         }
     }
 
     #[inline]
-    pub fn set_file_offset(&mut self, new_offset: u64) {
-        self.set_meta_data(FileOffset(new_offset));
+    pub fn set_file(&mut self, file: File) {
+        self.set_meta_data(MetaData::File(boxed(file)));
     }
 
     #[inline]
@@ -231,7 +233,7 @@ pub enum MetaData {
     Field(Rc<RefCell<Field>>),
     Method(Rc<Method>),
     ClassLoader(Rc<RefCell<ClassLoader>>),
-    FileOffset(u64),
+    File(Rc<RefCell<File>>),
 }
 
 impl MetaData {

@@ -11,6 +11,7 @@ public class ClassLoaderTest {
         cl.getParent();
         try {
             Class clz = cl.loadClass("User") ;
+            System.out.println("load done");
             Constructor constructor = clz.getConstructor(String.class, int.class);
             Object obj = constructor.newInstance("John", 18);
             System.out.println(obj);
