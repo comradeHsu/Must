@@ -20,7 +20,7 @@ impl ExceptionTable {
 
     pub fn new(
         entries: &Vec<ExceptionTableEntry>,
-        pool: Rc<RefCell<ConstantPool>>,
+        pool: &ConstantPool,
     ) -> ExceptionTable {
         let mut table = Vec::with_capacity(entries.len());
         for entry in entries {
@@ -28,18 +28,17 @@ impl ExceptionTable {
                 start_pc: entry.start_pc() as i32,
                 end_pc: entry.end_pc() as i32,
                 handler_pc: entry.handler_pc() as i32,
-                catch_type: Self::get_catch_type(entry.catch_type() as usize, pool.clone()),
+                catch_type: Self::get_catch_type(entry.catch_type() as usize, pool),
             });
         }
         return ExceptionTable { table };
     }
 
-    fn get_catch_type(index: usize, pool: Rc<RefCell<ConstantPool>>) -> Option<ClassRef> {
+    fn get_catch_type(index: usize, pool: &ConstantPool) -> Option<ClassRef> {
         if index == 0 {
             return None;
         }
-        let pool_borrow = (*pool).borrow();
-        let constant = pool_borrow.get_constant_immutable(index);
+        let constant = pool.get_constant_immutable(index);
         let class_ref = match constant {
             ClassReference(r) => r.clone(),
             _ => panic!("this constant isn't ClassReference"),

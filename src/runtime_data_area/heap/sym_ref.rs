@@ -62,13 +62,16 @@ impl SymbolRef {
     }
 
     fn resolve_load(&self) -> Rc<RefCell<Class>> {
-        let class_object = (*self.holder())
-            .borrow()
-            .get_java_class()
-            .expect("class object is null");
-        let class_loader = (*class_object)
-            .borrow()
-            .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
+//        let class_object = (*self.holder())
+//            .borrow()
+//            .get_java_class();
+        let class_object:Option<Rc<RefCell<Object>>> = None;
+        let class_loader = match class_object.is_none() {
+            true => None,
+            false => (*class_object.unwrap())
+                    .borrow()
+                    .get_ref_var("classLoader", "Ljava/lang/ClassLoader;")
+        };
         return ClassLoader::load_class(class_loader, self.class_name.as_str());
     }
 }

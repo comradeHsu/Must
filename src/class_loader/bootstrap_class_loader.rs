@@ -88,7 +88,7 @@ impl BootstrapClassLoader {
         }
         if class.is_some() {
             let value = class.clone().unwrap();
-            ClassLoader::setting_class_object(value);
+            ClassLoader::setting_class_object(None,value);
         }
         return class;
     }

@@ -73,54 +73,6 @@ impl ClassPreparation {
     }
 
     fn init_static_final_var(class: Rc<RefCell<Class>>, field: Rc<RefCell<Field>>) {
-        let pool = (*class).borrow().constant_pool();
-        let loader = (*class).borrow().loader();
-        let mut borrow_class = (*class).borrow_mut();
-        let vars = borrow_class.mut_static_vars().expect("static_vars is none");
-        let cp_index = (*field).borrow().const_value_index();
-        let slot_id = (*field).borrow().slot_id();
-        let borrow_pool = (*pool).borrow();
-        if cp_index > 0 {
-            match (*field).borrow().parent().descriptor() {
-                "Z" | "B" | "C" | "S" | "I" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Integer(v) => vars.set_int(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "J" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Long(v) => vars.set_long(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "F" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Float(v) => vars.set_float(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "D" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    match val {
-                        Constant::Double(v) => vars.set_double(slot_id, *v),
-                        _ => {}
-                    }
-                }
-                "Ljava/lang/String;" => {
-                    let val = borrow_pool.get_constant_immutable(cp_index);
-                    let mete_str = match val {
-                        Constant::Str(v) => v.as_str(),
-                        _ => panic!("It's not string"),
-                    };
-                    let java_string = StringPool::java_string(mete_str.to_string());
-                    vars.set_ref(slot_id, Some(java_string));
-                }
-                _ => {}
-            }
-        }
+        (*class).borrow_mut().init_static_final_variable(field);
     }
 }

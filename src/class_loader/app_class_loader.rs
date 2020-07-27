@@ -86,11 +86,12 @@ impl ClassLoader {
         let class = Self::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
         Self::resolve_super_class(java_loader.clone(), class.clone());
-        Self::resolve_interfaces(java_loader, class.clone());
+        Self::resolve_interfaces(java_loader.clone(), class.clone());
         (*loader)
             .borrow_mut()
             .class_map
             .insert((*class).borrow().name().to_string(), class.clone());
+        Self::setting_class_object(Some(java_loader),class.clone());
         return class;
     }
 
@@ -158,21 +159,37 @@ impl ClassLoader {
             class = Some(Self::load_array_class(class_loader.clone(), class_name));
         } else {
             println!("\t will load :{}", class_name);
-            class = Self::invoke_load_class(loader, class_name.replace('/', ".").as_str());
+            class = Self::invoke_load_class(loader.clone(), class_name.replace('/', ".").as_str());
         }
         let value = class.unwrap();
-        Self::setting_class_object(value.clone());
+        Self::setting_class_object(Some(loader),value.clone());
         return value;
     }
 
-    pub(in crate::class_loader) fn setting_class_object(value: Rc<RefCell<Class>>) {
+    pub(in crate::class_loader) fn setting_class_object(
+        loader_object: Option<Rc<RefCell<Object>>>,
+        value: Rc<RefCell<Class>>) {
         let boot_loader = Jvm::boot_class_loader();
         let class_class = boot_loader.find_class("java/lang/Class");
         if class_class.is_some() {
-            let mut class_object = Class::new_object(&class_class.unwrap());
+            let class_of_class = class_class.unwrap();
+            let mut class_object = Class::new_object(&class_of_class);
             class_object.set_meta(value.clone());
-            let boxed = boxed(class_object);
-            (*value).borrow_mut().set_java_class(Some(boxed));
+            let constructor_desc = "(Ljava/lang/ClassLoader;)V";
+            let constructor = Class::get_constructor(class_of_class.clone(), constructor_desc);
+            let object = Some(boxed(class_object));
+            let parameters = vec![
+                Parameter::Object(object.clone()),
+                Parameter::Object(loader_object)
+            ];
+            invoke(
+                constructor.unwrap(),
+                Some(Parameters::with_parameters(parameters)),
+                ReturnType::Void,
+            );
+            (*value).borrow_mut().set_java_class(object);
+        } else {
+            println!("null class is {}",(*value).borrow().java_name())
         }
     }
 

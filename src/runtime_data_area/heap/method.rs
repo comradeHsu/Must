@@ -283,12 +283,14 @@ impl Method {
 
         let mut ex_classes = Vec::with_capacity(self.exceptions.len());
         let class = self.class();
-        let cp = (*class).borrow().constant_pool();
-        let mut borrow = (*cp).borrow_mut();
+//        let cp = (*class).borrow().constant_pool();
+//        let mut borrow = (*cp).borrow_mut();
+        let mut borrow_class = (*class).borrow_mut();
+        let pool = borrow_class.mut_constant_pool();
 
         for i in 0..self.exceptions.len() {
             let ex_index = self.exceptions[i];
-            ex_classes.push(borrow.resolve_class_ref(ex_index as usize));
+            ex_classes.push(pool.resolve_class_ref(ex_index as usize));
         }
 
         return Some(ex_classes);

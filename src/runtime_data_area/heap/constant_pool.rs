@@ -9,6 +9,7 @@ use crate::runtime_data_area::heap::method_ref::MethodRef;
 use core::mem;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::runtime_data_area::heap::method::Method;
 
 #[derive(Debug)]
 pub struct ConstantPool {
@@ -27,7 +28,7 @@ impl ConstantPool {
     pub fn new_constant_pool(
         class: Option<Rc<RefCell<Class>>>,
         pool: Rc<RefCell<Pool>>,
-    ) -> Rc<RefCell<ConstantPool>> {
+    ) -> ConstantPool {
         let borrow_pool = (*pool).borrow();
         let size = borrow_pool.len();
         let mut constants = Vec::with_capacity(size);
@@ -62,7 +63,7 @@ impl ConstantPool {
             }
             index += 1;
         }
-        let mut pool = Rc::new(RefCell::new(ConstantPool { class, constants }));
+        let mut pool = ConstantPool { class, constants };
         return pool;
     }
 
@@ -128,6 +129,16 @@ impl ConstantPool {
             _ => panic!("Unknown constant type"),
         };
         return field_ref.resolved_field();
+    }
+
+    #[inline]
+    pub fn resolve_method_ref(&mut self, index: usize) -> Option<Rc<Method>> {
+        let constant = self.get_constant(index);
+        let method_ref = match constant {
+            MethodReference(refe) => refe,
+            _ => panic!("Unknown constant type"),
+        };
+        return method_ref.resolved_method();
     }
 }
 

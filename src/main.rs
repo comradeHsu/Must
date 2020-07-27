@@ -43,7 +43,7 @@ mod tests {
         let cmd = Cmd {
             help_flag: false,
             version_flag: false,
-            verbose_class: false,
+            verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
             class: "testJava.ClassLoaderTest".to_string(),

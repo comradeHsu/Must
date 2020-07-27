@@ -7,6 +7,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::instructions::references::ResolveClassRef;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -24,8 +25,8 @@ impl Instruction for New {
 
     fn execute(&mut self, frame: &mut Frame) {
         let class = frame.method().class();
-        let pool = (*class).borrow().constant_pool();
-        let class = (*pool).borrow_mut().resolve_class_ref(self.0.index());
+
+        let class = self.resolve_class_ref(class);
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
             init_class(frame.thread(), class.clone());
@@ -43,5 +44,11 @@ impl Instruction for New {
             .operand_stack()
             .expect("")
             .push_ref(Some(boxed(object)));
+    }
+}
+
+impl ResolveClassRef for New {
+    fn get_index_in_constant_pool(&self) -> usize {
+       return self.0.index();
     }
 }

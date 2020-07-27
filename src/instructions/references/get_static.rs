@@ -3,6 +3,7 @@ use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use crate::instructions::references::ResolveFieldRef;
 
 pub struct GetStatic(ConstantPoolInstruction);
 
@@ -19,13 +20,9 @@ impl Instruction for GetStatic {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let c = frame.method().class();
-        let cp = (*c).borrow().constant_pool();
+        let class = frame.method().class();
 
-        let field_option = (*cp)
-            .borrow_mut()
-            .resolve_field_ref(self.0.index())
-            .unwrap();
+        let field_option = self.resolve_field_ref(class);
         let field = (*field_option).borrow();
         let class = field.parent().class();
         if !(*class).borrow().initialized() {
@@ -50,5 +47,11 @@ impl Instruction for GetStatic {
             'L' | '[' => stack.push_ref(slots.get_ref(slot_id)),
             _ => {}
         }
+    }
+}
+
+impl ResolveFieldRef for GetStatic {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.0.index();
     }
 }

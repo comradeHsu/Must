@@ -63,9 +63,9 @@ impl Instruction for LDC2w {
     fn execute(&mut self, frame: &mut Frame) {
         //        let stack = frame.operand_stack().expect("stack is none");
         let class = frame.method().class();
-        let cp = (*class).borrow().constant_pool();
-        let borrow_cp = cp.borrow();
-        let constant = borrow_cp.get_constant_immutable(self.0.index());
+        let borrow_class = (*class).borrow();
+        let cp = borrow_class.constant_pool();
+        let constant = cp.get_constant_immutable(self.0.index());
         match constant {
             Long(v) => frame.operand_stack().expect("stack is none").push_long(*v),
             Double(v) => frame
@@ -80,9 +80,9 @@ impl Instruction for LDC2w {
 fn ldc(frame: &mut Frame, index: usize) {
     //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
-    let cp = (*class).borrow().constant_pool();
-    let mut borrow_cp = cp.borrow_mut();
-    let constant = borrow_cp.get_constant(index);
+    let mut borrow_class = (*class).borrow_mut();
+    let cp = borrow_class.mut_constant_pool();
+    let constant = cp.get_constant(index);
     match constant {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),

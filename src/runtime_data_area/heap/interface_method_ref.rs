@@ -36,7 +36,7 @@ impl InterfaceMethodRef {
         if !(*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
-        let method = InterfaceMethodRef::look_up_interface_method(
+        let method = Self::look_up_interface_method(
             class.clone(),
             self.name(),
             self.descriptor(),

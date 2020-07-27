@@ -9,7 +9,7 @@ use crate::runtime_data_area::heap::access_flags::{
 };
 use crate::runtime_data_area::heap::array_object::ArrayObject;
 use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
+use crate::runtime_data_area::heap::constant_pool::{ConstantPool, Constant};
 use crate::runtime_data_area::heap::field::Field;
 use crate::runtime_data_area::heap::method::Method;
 use crate::runtime_data_area::heap::object::DataType::{
@@ -22,6 +22,7 @@ use crate::utils::boxed;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::runtime_data_area::heap::string_pool::StringPool;
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -31,7 +32,7 @@ pub struct Class {
     name: String,
     super_class_name: Option<String>,
     interfaces_name: Vec<String>,
-    constant_pool: Rc<RefCell<ConstantPool>>,
+    constant_pool: ConstantPool,
     fields: Vec<Rc<RefCell<Field>>>,
     methods: Vec<Rc<Method>>,
     loader: Option<Rc<RefCell<ClassLoader>>>,
@@ -54,7 +55,7 @@ impl Class {
             name: "".to_string(),
             super_class_name: None,
             interfaces_name: vec![],
-            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+            constant_pool: ConstantPool::none(),
             fields: vec![],
             methods: vec![],
             loader: None,
@@ -98,13 +99,11 @@ impl Class {
         (*point)
             .borrow_mut()
             .constant_pool
-            .borrow_mut()
             .set_class(point.clone());
 
         (*point)
             .borrow_mut()
             .constant_pool
-            .borrow_mut()
             .lazy_init_for_constants(&point);
 
         (*point).borrow_mut().methods = Method::new_methods(point.clone(), class_file.methods());
@@ -154,7 +153,7 @@ impl Class {
             name: class_name.to_string(),
             super_class_name: Some("java/lang/Object".to_string()),
             interfaces_name: vec![],
-            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+            constant_pool: ConstantPool::none(),
             fields: vec![],
             methods: vec![],
             loader: Some(loader.clone()),
@@ -179,7 +178,7 @@ impl Class {
             name: class_name.to_string(),
             super_class_name: None,
             interfaces_name: vec![],
-            constant_pool: Rc::new(RefCell::new(ConstantPool::none())),
+            constant_pool: ConstantPool::none(),
             fields: vec![],
             methods: vec![],
             loader: Some(boot_loader),
@@ -548,8 +547,13 @@ impl Class {
     }
 
     #[inline]
-    pub fn constant_pool(&self) -> Rc<RefCell<ConstantPool>> {
-        return self.constant_pool.clone();
+    pub fn constant_pool(&self) -> &ConstantPool {
+        return &self.constant_pool;
+    }
+
+    #[inline]
+    pub fn mut_constant_pool(&mut self) -> &mut ConstantPool {
+        return &mut self.constant_pool;
     }
 
     #[inline]
@@ -781,6 +785,54 @@ impl Class {
         return (*java_class.unwrap())
             .borrow()
             .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
+    }
+
+    pub fn init_static_final_variable(&mut self, field: Rc<RefCell<Field>>) {
+        let cp_index = (*field).borrow().const_value_index();
+        let slot_id = (*field).borrow().slot_id();
+        let vars = self.static_vars.as_mut().expect("static_vars is none");
+        if cp_index > 0 {
+            match (*field).borrow().parent().descriptor() {
+                "Z" | "B" | "C" | "S" | "I" => {
+                    let val = self.constant_pool.get_constant_immutable(cp_index);
+                    match val {
+                        Constant::Integer(v) => vars.set_int(slot_id, *v),
+                        _ => {}
+                    }
+                }
+                "J" => {
+                    let val = self.constant_pool.get_constant_immutable(cp_index);
+                    match val {
+                        Constant::Long(v) => vars.set_long(slot_id, *v),
+                        _ => {}
+                    }
+                }
+                "F" => {
+                    let val = self.constant_pool.get_constant_immutable(cp_index);
+                    match val {
+                        Constant::Float(v) => vars.set_float(slot_id, *v),
+                        _ => {}
+                    }
+                }
+                "D" => {
+                    let val = self.constant_pool.get_constant_immutable(cp_index);
+                    match val {
+                        Constant::Double(v) => vars.set_double(slot_id, *v),
+                        _ => {}
+                    }
+                }
+                "Ljava/lang/String;" => {
+                    let val = self.constant_pool.get_constant_immutable(cp_index);
+                    let mete_str = match val {
+                        Constant::Str(v) => v.as_str(),
+                        _ => panic!("It's not string"),
+                    };
+                    let java_string = StringPool::java_string(mete_str.to_string());
+                    vars.set_ref(slot_id, Some(java_string));
+                }
+                _ => {}
+            }
+        }
     }
 }
 

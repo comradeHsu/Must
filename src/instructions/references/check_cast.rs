@@ -2,6 +2,7 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
+use crate::instructions::references::ResolveClassRef;
 
 pub struct CheckCast(ConstantPoolInstruction);
 
@@ -25,16 +26,16 @@ impl Instruction for CheckCast {
             return;
         }
         let c = frame.method().class();
-        let cp = (*c).borrow().constant_pool();
-        let mut borrow_cp = (*cp).borrow_mut();
-        let constant = borrow_cp.get_constant(self.0.index());
-        let class_ref = match constant {
-            ClassReference(c) => c,
-            _ => panic!("Unknown constant type"),
-        };
-        let class = class_ref.resolved_class();
+
+        let class = self.resolve_class_ref(c);
         if !(*reference.unwrap()).borrow().is_instance_of(class) {
             panic!("java.lang.ClassCastException");
         }
+    }
+}
+
+impl ResolveClassRef for CheckCast {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.0.index();
     }
 }

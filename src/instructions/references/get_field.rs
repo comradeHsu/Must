@@ -2,6 +2,7 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use crate::instructions::references::ResolveFieldRef;
 
 pub struct GetField(ConstantPoolInstruction);
 
@@ -18,12 +19,9 @@ impl Instruction for GetField {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let c = frame.method().class();
-        let cp = (*c).borrow().constant_pool();
-        let field_option = (*cp)
-            .borrow_mut()
-            .resolve_field_ref(self.0.index())
-            .unwrap();
+        let class = frame.method().class();
+
+        let field_option = self.resolve_field_ref(class);
         let field = (*field_option).borrow();
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
@@ -49,5 +47,11 @@ impl Instruction for GetField {
             'L' | '[' => stack.push_ref(slots.get_ref(slot_id)),
             _ => {}
         }
+    }
+}
+
+impl ResolveFieldRef for GetField {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.0.index();
     }
 }

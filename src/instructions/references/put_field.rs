@@ -2,6 +2,11 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use std::cell::RefCell;
+use std::rc::Rc;
+use crate::runtime_data_area::heap::class::Class;
+use crate::runtime_data_area::heap::field::Field;
+use crate::instructions::references::ResolveFieldRef;
 
 pub struct PutField(ConstantPoolInstruction);
 
@@ -20,12 +25,9 @@ impl Instruction for PutField {
     fn execute(&mut self, frame: &mut Frame) {
         let current_method = frame.method();
         let current_class = current_method.class();
-        let cp = (*current_class).borrow().constant_pool();
 
-        let field_option = (*cp)
-            .borrow_mut()
-            .resolve_field_ref(self.0.index())
-            .unwrap();
+        let field_option = self.resolve_field_ref(current_class.clone());
+
         let field = (*field_option).borrow();
         let class = field.parent().class();
         if field.parent().is_static() {
@@ -100,5 +102,11 @@ impl Instruction for PutField {
             }
             _ => {}
         }
+    }
+}
+
+impl ResolveFieldRef for PutField {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.0.index();
     }
 }

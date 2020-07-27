@@ -5,6 +5,7 @@ use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::InterfaceMethodReference;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 use std::ops::Deref;
+use crate::instructions::references::ResolveMethodRef;
 
 pub struct InvokeInterface {
     index: usize,
@@ -26,14 +27,8 @@ impl Instruction for InvokeInterface {
 
     fn execute(&mut self, frame: &mut Frame) {
         let current_class = frame.method().class();
-        let cp = (*current_class).borrow().constant_pool();
-        let mut borrow_cp = (*cp).borrow_mut();
-        let constant = borrow_cp.get_constant(self.index);
-        let method_ref = match constant {
-            InterfaceMethodReference(c) => c,
-            _ => panic!("Unknown constant type"),
-        };
-        let resolved_method = method_ref.resolved_interface_method().unwrap();
+        let (interface,resolved_method) = self.
+            resolved_method_ref_tuple(current_class);
         if resolved_method.is_static() || resolved_method.is_private() {
             panic!("java.lang.IncompatibleClassChangeError")
         }
@@ -47,7 +42,7 @@ impl Instruction for InvokeInterface {
             panic!("java.lang.NullPointerException") // todo
         }
         let object_class = (*object.unwrap()).borrow().class();
-        let interface = method_ref.resolved_class();
+
         if !(*object_class)
             .borrow()
             .is_implements((*interface).borrow().deref())
@@ -56,8 +51,8 @@ impl Instruction for InvokeInterface {
         }
         let method_to_be_invoked = MethodRef::look_up_method_in_class(
             object_class,
-            method_ref.name(),
-            method_ref.descriptor(),
+            resolved_method.name(),
+            resolved_method.descriptor(),
         );
         if method_to_be_invoked.is_none() || method_to_be_invoked.as_ref().unwrap().is_abstract() {
             panic!("java.lang.AbstractMethodError")
@@ -67,5 +62,11 @@ impl Instruction for InvokeInterface {
         }
 
         invoke_method(frame, method_to_be_invoked.unwrap());
+    }
+}
+
+impl ResolveMethodRef for InvokeInterface {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.index;
     }
 }

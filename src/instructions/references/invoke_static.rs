@@ -4,6 +4,7 @@ use crate::instructions::base::instruction::{ConstantPoolInstruction, Instructio
 use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
+use crate::instructions::references::ResolveMethodRef;
 
 pub struct InvokeStatic(ConstantPoolInstruction);
 
@@ -20,14 +21,9 @@ impl Instruction for InvokeStatic {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let cp = (*frame.method().class()).borrow().constant_pool();
-        let mut borrow_cp = (*cp).borrow_mut();
-        let constant = borrow_cp.get_constant(self.0.index());
-        let method_ref = match constant {
-            MethodReference(c) => c,
-            _ => panic!("Unknown constant type"),
-        };
-        let resolved_method = method_ref.resolved_method().unwrap();
+        let class = frame.method().class();
+
+        let resolved_method = self.resolved_method_ref(class);
         if !resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -38,5 +34,11 @@ impl Instruction for InvokeStatic {
             return;
         }
         invoke_method(frame, resolved_method);
+    }
+}
+
+impl ResolveMethodRef for InvokeStatic {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.0.index();
     }
 }

@@ -108,10 +108,10 @@ impl Instruction for AThrow {
         {
             let method = frame.method_ptr();
             println!("frame method:{},next_pc:{}", method.name(), frame.next_pc());
-            let meta = (*object).borrow().meta();
-            if meta.is_some() {
-                println!("ex class : {}", (*meta.unwrap()).borrow().java_name());
-            }
+            let class = (*object).borrow().class();
+
+            println!("ex class : {}", (*class).borrow().java_name());
+
         }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(thread.clone(), object);

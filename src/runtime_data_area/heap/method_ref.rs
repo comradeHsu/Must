@@ -47,7 +47,7 @@ impl MethodRef {
         return self.method.clone();
     }
 
-    pub fn resolved_method_ref(&mut self) {
+    fn resolved_method_ref(&mut self) {
         let class = self.member_ref.resolved_class();
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");

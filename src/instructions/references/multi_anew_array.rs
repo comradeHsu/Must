@@ -7,6 +7,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::instructions::references::ResolveClassRef;
 
 pub struct MultiANewArray {
     index: u16,
@@ -62,14 +63,19 @@ impl Instruction for MultiANewArray {
 
     fn execute(&mut self, frame: &mut Frame) {
         let current_class = frame.method().class();
-        let cp = (*current_class).borrow().constant_pool();
 
-        let array_class = (*cp).borrow_mut().resolve_class_ref(self.index as usize);
+        let array_class = self.resolve_class_ref(current_class);
         let counts = MultiANewArray::pop_and_check_counts(frame, self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts, array_class);
         frame
             .operand_stack()
             .expect("stack is none")
             .push_ref(Some(boxed(arr)));
+    }
+}
+
+impl ResolveClassRef for MultiANewArray {
+    fn get_index_in_constant_pool(&self) -> usize {
+        return self.index as usize;
     }
 }
