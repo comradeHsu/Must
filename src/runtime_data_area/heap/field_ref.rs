@@ -24,16 +24,16 @@ impl FieldRef {
         return field_ref;
     }
 
-    pub fn resolved_field(&mut self) -> Option<Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self,holder:Rc<RefCell<Class>>) -> Option<Rc<RefCell<Field>>> {
         if self.field.is_none() {
-            self.resolve_field_ref()
+            self.resolve_field_ref(holder)
         }
         return self.field.clone();
     }
 
     // jvms 5.4.3.2
-    fn resolve_field_ref(&mut self) {
-        let resolved_class = self.member_ref.resolved_class();
+    fn resolve_field_ref(&mut self,holder:Rc<RefCell<Class>>) {
+        let resolved_class = self.member_ref.resolved_class(holder.clone());
         let field = FieldRef::lookup_field(
             &resolved_class,
             self.member_ref.name(),
@@ -45,7 +45,7 @@ impl FieldRef {
         let rc_field = field.unwrap().clone();
         if !(*rc_field)
             .borrow()
-            .is_accessible_to((*self.member_ref.holder()).borrow().deref())
+            .is_accessible_to((*holder).borrow().deref())
         {
             panic!("java.lang.IllegalAccessError")
         }
@@ -77,7 +77,6 @@ impl FieldRef {
                 }
             }
         }
-        let borrow_class = (*class).borrow();
         let super_class = borrow_class.super_class();
         if super_class.is_some() {
             return FieldRef::lookup_field(&super_class.unwrap(), name, descriptor);
@@ -85,8 +84,7 @@ impl FieldRef {
         return None;
     }
 
-    #[inline]
-    pub fn set_holder(&mut self, holder: Rc<RefCell<Class>>) {
-        self.member_ref.set_holder(holder);
+    pub fn name(&self) -> &str {
+        return self.member_ref.name();
     }
 }

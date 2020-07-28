@@ -7,6 +7,7 @@ use crate::runtime_data_area::heap::constant_pool::Constant::{
     ClassReference, Double, Float, Integer, Long, Str,
 };
 use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime_data_area::heap::constant_pool::Constant;
 
 pub struct LDC(LocalVarsInstruction);
 
@@ -80,10 +81,8 @@ impl Instruction for LDC2w {
 fn ldc(frame: &mut Frame, index: usize) {
     //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
-    let mut borrow_class = (*class).borrow_mut();
-    let cp = borrow_class.mut_constant_pool();
-    let constant = cp.get_constant(index);
-    match constant {
+    let mut constant = (*class).borrow_mut().mut_constant_pool().take_constant(index);
+    match &mut constant {
         Integer(v) => frame.operand_stack().expect("stack is none").push_int(*v),
         Float(v) => frame.operand_stack().expect("stack is none").push_float(*v),
         Str(v) => {
@@ -94,7 +93,7 @@ fn ldc(frame: &mut Frame, index: usize) {
                 .push_ref(Some(string))
         }
         ClassReference(v) => {
-            let class = v.resolved_class();
+            let class = v.resolved_class(class.clone());
             let borrow = (*class).borrow();
             let obj = borrow.java_class();
             frame
@@ -104,4 +103,8 @@ fn ldc(frame: &mut Frame, index: usize) {
         }
         _ => panic!("todo: ldc!"),
     }
+    (*class)
+        .borrow_mut()
+        .mut_constant_pool()
+        .restoration_constant(index,constant);
 }

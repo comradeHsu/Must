@@ -51,7 +51,7 @@ impl Instruction for GetStatic {
 }
 
 impl ResolveFieldRef for GetStatic {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.0.index();
     }
 }

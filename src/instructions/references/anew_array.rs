@@ -28,14 +28,14 @@ impl Instruction for ANewArray {
         if count < 0 {
             panic!("java.lang.NegativeArraySizeException")
         }
-        let array_class = (*component_class).borrow().array_class();
+        let array_class = Class::create_array_class(component_class);
         let array = Class::new_array(&array_class, count as usize);
         stack.push_ref(Some(boxed(array)));
     }
 }
 
 impl ResolveClassRef for ANewArray {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.0.index();
     }
 }

@@ -41,17 +41,7 @@ impl MemberRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
-        return self.symbol_ref.resolved_class();
-    }
-
-    #[inline]
-    pub fn set_holder(&mut self, holder: Rc<RefCell<Class>>) {
-        self.symbol_ref.holder = Some(holder);
-    }
-
-    #[inline]
-    pub fn holder(&self) -> Rc<RefCell<Class>> {
-        return self.symbol_ref.holder.clone().unwrap();
+    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.symbol_ref.resolved_class(holder);
     }
 }

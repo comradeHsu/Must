@@ -11,6 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Debug, Error, Formatter};
 use std::rc::Rc;
+use crate::class_loader::class_init_preparation::ClassPreparation;
 
 pub struct ClassLoader {
     pub(in crate::class_loader) verbose_class: bool,
@@ -47,6 +48,13 @@ impl ClassLoader {
     pub fn class_map_immutable(&self) -> &HashMap<String, Rc<RefCell<Class>>> {
         return &self.class_map;
     }
+
+    fn link(class: &Rc<RefCell<Class>>) {
+        ClassLoader::verify(class);
+        ClassPreparation::prepare(class);
+    }
+
+    fn verify(class: &Rc<RefCell<Class>>) {}
 
     pub fn define_class_internal(
         class_name: &str,
@@ -87,6 +95,7 @@ impl ClassLoader {
         (*class).borrow_mut().set_class_loader(loader.clone());
         Self::resolve_super_class(java_loader.clone(), class.clone());
         Self::resolve_interfaces(java_loader.clone(), class.clone());
+        Self::link(&class);
         (*loader)
             .borrow_mut()
             .class_map
@@ -162,7 +171,7 @@ impl ClassLoader {
             class = Self::invoke_load_class(loader.clone(), class_name.replace('/', ".").as_str());
         }
         let value = class.unwrap();
-        Self::setting_class_object(Some(loader),value.clone());
+        //Self::setting_class_object(Some(loader),value.clone());
         return value;
     }
 

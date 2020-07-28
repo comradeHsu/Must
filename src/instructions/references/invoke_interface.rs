@@ -5,7 +5,7 @@ use crate::runtime_data_area::frame::Frame;
 use crate::runtime_data_area::heap::constant_pool::Constant::InterfaceMethodReference;
 use crate::runtime_data_area::heap::method_ref::MethodRef;
 use std::ops::Deref;
-use crate::instructions::references::ResolveMethodRef;
+use crate::instructions::references::{ResolveMethodRef, ResolveInterfaceMethodRef};
 
 pub struct InvokeInterface {
     index: usize,
@@ -28,7 +28,7 @@ impl Instruction for InvokeInterface {
     fn execute(&mut self, frame: &mut Frame) {
         let current_class = frame.method().class();
         let (interface,resolved_method) = self.
-            resolved_method_ref_tuple(current_class);
+            resolved_interface_method_ref_tuple(current_class);
         if resolved_method.is_static() || resolved_method.is_private() {
             panic!("java.lang.IncompatibleClassChangeError")
         }
@@ -65,8 +65,8 @@ impl Instruction for InvokeInterface {
     }
 }
 
-impl ResolveMethodRef for InvokeInterface {
-    fn get_index_in_constant_pool(&self) -> usize {
+impl ResolveInterfaceMethodRef for InvokeInterface {
+    fn get_index(&self) -> usize {
         return self.index;
     }
 }

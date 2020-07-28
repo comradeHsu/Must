@@ -67,17 +67,17 @@ impl ConstantPool {
         return pool;
     }
 
-    pub fn lazy_init_for_constants(&mut self, class: &Rc<RefCell<Class>>) {
-        for constant in &mut self.constants {
-            match constant {
-                ClassReference(c) => c.set_holder(class.clone()),
-                FieldReference(c) => c.set_holder(class.clone()),
-                MethodReference(c) => c.set_holder(class.clone()),
-                InterfaceMethodReference(c) => c.set_holder(class.clone()),
-                _ => {}
-            }
-        }
-    }
+//    pub fn lazy_init_for_constants(&mut self, class: &Rc<RefCell<Class>>) {
+//        for constant in &mut self.constants {
+//            match constant {
+//                ClassReference(c) => c.set_holder(class.clone()),
+//                FieldReference(c) => c.set_holder(class.clone()),
+//                MethodReference(c) => c.set_holder(class.clone()),
+//                InterfaceMethodReference(c) => c.set_holder(class.clone()),
+//                _ => {}
+//            }
+//        }
+//    }
 
     pub fn get_constant(&mut self, index: usize) -> &mut Constant {
         let constant = self.constants.get_mut(index - 1);
@@ -85,6 +85,22 @@ impl ConstantPool {
             panic!("No constants at index {}", index);
         }
         return constant.unwrap();
+    }
+
+    pub fn take_constant(&mut self, index: usize) -> Constant {
+        let constant = self.constants.get_mut(index - 1);
+        if constant.is_none() {
+            panic!("No constants at index {}", index);
+        }
+        return constant.unwrap().take();
+    }
+
+    pub fn restoration_constant(&mut self, index: usize, other:Constant) {
+        let constant = self.constants.get_mut(index - 1);
+        if constant.is_none() {
+            panic!("No constants at index {}", index);
+        }
+        constant.unwrap().replace(other);
     }
 
     pub fn get_constant_immutable(&self, index: usize) -> &Constant {
@@ -111,35 +127,6 @@ impl ConstantPool {
         return self.constants.len();
     }
 
-    #[inline]
-    pub fn resolve_class_ref(&mut self, index: usize) -> Rc<RefCell<Class>> {
-        let constant = self.get_constant(index);
-        let class_ref = match constant {
-            ClassReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        return class_ref.resolved_class();
-    }
-
-    #[inline]
-    pub fn resolve_field_ref(&mut self, index: usize) -> Option<Rc<RefCell<Field>>> {
-        let constant = self.get_constant(index);
-        let field_ref = match constant {
-            FieldReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        return field_ref.resolved_field();
-    }
-
-    #[inline]
-    pub fn resolve_method_ref(&mut self, index: usize) -> Option<Rc<Method>> {
-        let constant = self.get_constant(index);
-        let method_ref = match constant {
-            MethodReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        return method_ref.resolved_method();
-    }
 }
 
 #[derive(Debug)]
@@ -154,4 +141,20 @@ pub enum Constant {
     FieldReference(FieldRef),
     MethodReference(MethodRef),
     InterfaceMethodReference(InterfaceMethodRef),
+}
+
+impl Constant {
+    pub fn take(&mut self) -> Constant {
+        return mem::take(self);
+    }
+
+    pub fn replace(&mut self, mut other:Self) {
+        mem::swap(self, &mut other)
+    }
+}
+
+impl Default for Constant {
+    fn default() -> Self {
+        Constant::None
+    }
 }

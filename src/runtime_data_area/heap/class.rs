@@ -23,6 +23,7 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime_data_area::heap::constant_pool::Constant::{FieldReference, ClassReference, MethodReference};
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
@@ -101,10 +102,10 @@ impl Class {
             .constant_pool
             .set_class(point.clone());
 
-        (*point)
-            .borrow_mut()
-            .constant_pool
-            .lazy_init_for_constants(&point);
+//        (*point)
+//            .borrow_mut()
+//            .constant_pool
+//            .lazy_init_for_constants(&point);
 
         (*point).borrow_mut().methods = Method::new_methods(point.clone(), class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(), class_file.fields());
@@ -766,6 +767,15 @@ impl Class {
             .unwrap()
             .get_array_class_name(self.name.as_str());
         let class_loader = self.get_class_loader();
+        return ClassLoader::load_class(class_loader, array_class_name.as_str());
+    }
+
+    pub fn create_array_class(class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        let class_name = (*class).borrow().name.to_string();
+        let array_class_name = PrimitiveTypes::instance()
+            .unwrap()
+            .get_array_class_name(class_name.as_str());
+        let class_loader = (*class).borrow().get_class_loader();
         return ClassLoader::load_class(class_loader, array_class_name.as_str());
     }
 

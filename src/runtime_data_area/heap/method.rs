@@ -14,6 +14,8 @@ use crate::runtime_data_area::heap::method_descriptor::{MethodDescriptor, Method
 use std::cell::RefCell;
 use std::ptr;
 use std::rc::Rc;
+use std::ops::Deref;
+use crate::runtime_data_area::heap::constant_pool::Constant;
 
 #[derive(Debug)]
 pub struct Method {
@@ -285,15 +287,30 @@ impl Method {
         let class = self.class();
 //        let cp = (*class).borrow().constant_pool();
 //        let mut borrow = (*cp).borrow_mut();
-        let mut borrow_class = (*class).borrow_mut();
-        let pool = borrow_class.mut_constant_pool();
 
         for i in 0..self.exceptions.len() {
             let ex_index = self.exceptions[i];
-            ex_classes.push(pool.resolve_class_ref(ex_index as usize));
+            ex_classes.push(Self::resolve_class_ref(ex_index as usize,class.clone()));
         }
 
         return Some(ex_classes);
+    }
+
+    fn resolve_class_ref(index:usize,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        let constant = (*class)
+            .borrow_mut()
+            .mut_constant_pool()
+            .take_constant(index);
+        let mut class_ref = match constant {
+            ClassReference(refe) => refe,
+            _ => panic!("Unknown constant type"),
+        };
+        let resolved_class = class_ref.resolved_class(class.clone());
+        (*class)
+            .borrow_mut()
+            .mut_constant_pool()
+            .restoration_constant(index,Constant::ClassReference(class_ref));
+        return resolved_class;
     }
 
     /// todo this impl is hack, and has bug

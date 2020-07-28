@@ -24,15 +24,15 @@ impl InterfaceMethodRef {
         return field_ref;
     }
 
-    pub fn resolved_interface_method(&mut self) -> Option<Rc<Method>> {
+    pub fn resolved_interface_method(&mut self,holder:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
         if self.method.is_none() {
-            self.resolved_interface_method_ref();
+            self.resolved_interface_method_ref(holder);
         }
         return self.method.clone();
     }
 
-    pub fn resolved_interface_method_ref(&mut self) {
-        let class = self.member_ref.resolved_class();
+    pub fn resolved_interface_method_ref(&mut self,holder:Rc<RefCell<Class>>) {
+        let class = self.member_ref.resolved_class(holder);
         if !(*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -71,11 +71,6 @@ impl InterfaceMethodRef {
     }
 
     #[inline]
-    pub fn set_holder(&mut self, holder: Rc<RefCell<Class>>) {
-        self.member_ref.set_holder(holder);
-    }
-
-    #[inline]
     pub fn name(&self) -> &str {
         return self.member_ref.name();
     }
@@ -86,7 +81,7 @@ impl InterfaceMethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
-        return self.member_ref.resolved_class();
+    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.member_ref.resolved_class(holder);
     }
 }

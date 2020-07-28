@@ -35,7 +35,7 @@ impl Instruction for CheckCast {
 }
 
 impl ResolveClassRef for CheckCast {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.0.index();
     }
 }

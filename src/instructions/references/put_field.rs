@@ -106,7 +106,7 @@ impl Instruction for PutField {
 }
 
 impl ResolveFieldRef for PutField {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.0.index();
     }
 }

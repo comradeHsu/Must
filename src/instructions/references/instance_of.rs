@@ -38,7 +38,7 @@ impl Instruction for InstanceOf {
 }
 
 impl ResolveClassRef for InstanceOf {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.0.index();
     }
 }

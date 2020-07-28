@@ -10,12 +10,13 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct ExceptionTable {
     table: Vec<ExceptionHandler>,
+    holder:Option<Rc<RefCell<Class>>>
 }
 
 impl ExceptionTable {
     #[inline]
     pub fn none() -> ExceptionTable {
-        return ExceptionTable { table: vec![] };
+        return ExceptionTable { table: vec![], holder: None };
     }
 
     pub fn new(
@@ -31,7 +32,7 @@ impl ExceptionTable {
                 catch_type: Self::get_catch_type(entry.catch_type() as usize, pool),
             });
         }
-        return ExceptionTable { table };
+        return ExceptionTable { table, holder: Some(pool.class()) };
     }
 
     fn get_catch_type(index: usize, pool: &ConstantPool) -> Option<ClassRef> {
@@ -57,7 +58,8 @@ impl ExceptionTable {
                     return Some(handler);
                 }
                 let mut class_ref = handler.catch_type.clone().unwrap();
-                let catch_class = class_ref.resolved_class();
+                let holder = self.holder.as_ref().unwrap().clone();
+                let catch_class = class_ref.resolved_class(holder);
                 if catch_class == class
                     || (*catch_class)
                         .borrow()

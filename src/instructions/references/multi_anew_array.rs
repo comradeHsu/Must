@@ -75,7 +75,7 @@ impl Instruction for MultiANewArray {
 }
 
 impl ResolveClassRef for MultiANewArray {
-    fn get_index_in_constant_pool(&self) -> usize {
+    fn get_index(&self) -> usize {
         return self.index as usize;
     }
 }

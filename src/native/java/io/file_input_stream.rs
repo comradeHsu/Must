@@ -35,6 +35,8 @@ pub fn open0(frame: &mut Frame) {
     let path = Path::new(&rust_str);
     if !path.exists() {
         // throws FileNotFoundException;
+        println!("path:{}",path.to_str().unwrap());
+        panic!("FileNotFoundException");
     }
     let file = File::open(path);
     (*this).borrow_mut().set_file(file.unwrap());

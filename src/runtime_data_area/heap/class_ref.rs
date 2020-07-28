@@ -18,12 +18,7 @@ impl ClassRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self) -> Rc<RefCell<Class>> {
-        return self.symbol_ref.resolved_class();
-    }
-
-    #[inline]
-    pub fn set_holder(&mut self, holder: Rc<RefCell<Class>>) {
-        self.symbol_ref.holder = Some(holder);
+    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+        return self.symbol_ref.resolved_class(holder);
     }
 }
