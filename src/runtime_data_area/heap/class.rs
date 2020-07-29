@@ -787,7 +787,7 @@ impl Class {
         return ClassLoader::load_class(class_loader, component_class_name.as_str());
     }
 
-    fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
         let java_class = self.get_java_class();
         if java_class.is_none() {
             return None;

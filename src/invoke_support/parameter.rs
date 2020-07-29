@@ -29,6 +29,11 @@ impl Parameters {
             .get(index)
             .expect("The Parameters hasn't parameter");
     }
+
+    #[inline]
+    pub fn append_parameter(&mut self, parameter: Parameter) {
+        self.parameters.push(parameter)
+    }
 }
 
 pub enum Parameter {

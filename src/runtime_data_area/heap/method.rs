@@ -261,7 +261,7 @@ impl Method {
         if self.arg_slot_count == 0 {
             return None;
         }
-        let class_loader = (*self.class()).borrow().loader();
+        let class_loader = (*self.class()).borrow().get_class_loader();
         let param_types = self.method_desc.parameter_types();
         let mut param_classes = Vec::with_capacity(param_types.len());
         for param_type in param_types {
@@ -269,10 +269,8 @@ impl Method {
                 .unwrap()
                 .to_class_name(param_type.as_str());
             /// todo
-            let param_type = (*class_loader)
-                .borrow()
-                .find_class(param_class_name.as_str());
-            param_classes.push(param_type.expect("The param class not loaded"));
+            let param_type = ClassLoader::load_class(class_loader.clone(),param_class_name.as_str());
+            param_classes.push(param_type);
         }
 
         return Some(param_classes);

@@ -9,6 +9,8 @@ use crate::runtime_data_area::operand_stack::OperandStack;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::invoke_support::parameter::{Parameters, Parameter};
+use crate::invoke_support::{invoke, ReturnType};
 
 pub fn init() {
     Registry::register(
@@ -26,8 +28,7 @@ pub fn new_instance0(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let constructor_obj = vars.get_ref(0).unwrap();
     let arg_arr_obj = vars
-        .get_ref(1)
-        .unwrap_or_else(|| boxed(Object::new(boxed(Class::none()))));
+        .get_ref(1);
 
     let constructor = get_constructor(constructor_obj);
     let class = constructor.class();
@@ -41,16 +42,27 @@ pub fn new_instance0(frame: &mut Frame) {
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_ref(obj.clone());
 
-    // call <init>
-    let ops = convert_args(obj.unwrap(), arg_arr_obj, constructor.clone());
-    let shim_frame = Frame::new_shim_frame(
-        frame.thread(),
-        ops.unwrap_or_else(|| OperandStack::new(0).unwrap()),
-    );
-    let thread = frame.thread();
-    (*thread).borrow_mut().push_frame(shim_frame);
+//    // call <init>
+//    let ops = convert_args(obj.unwrap(), arg_arr_obj, constructor.clone());
+//    let shim_frame = Frame::new_shim_frame(
+//        frame.thread(),
+//        ops.unwrap_or_else(|| OperandStack::new(0).unwrap()),
+//    );
+//    let thread = frame.thread();
+//    (*thread).borrow_mut().push_frame(shim_frame);
+//
+//    hack_invoke_method(thread, constructor);
 
-    hack_invoke_method(thread, constructor);
+    let mut params = Parameters::with_parameters(vec![
+        Parameter::Object(obj.clone()),
+    ]);
+    if arg_arr_obj.is_some() {
+        let arg_array = arg_arr_obj.unwrap();
+        let array_ref = (*arg_array).borrow();
+        let args = array_ref.references();
+        args.iter().for_each(|arg| {params.append_parameter(Parameter::Object(arg.clone()))})
+    }
+    invoke(constructor,Some(params),ReturnType::Void);
 }
 
 fn get_method(method_obj: Rc<RefCell<Object>>) -> Rc<Method> {

@@ -10,7 +10,7 @@ public class ClassLoaderTest {
         ClassLoader cl = new SelfClassLoader() ;
         cl.getParent();
         try {
-            Class clz = cl.loadClass("User") ;
+            Class clz = cl.loadClass("com.example.demo.controller.User") ;
             System.out.println("load done");
             Constructor constructor = clz.getConstructor(String.class, int.class);
             Object obj = constructor.newInstance("John", 18);
@@ -23,8 +23,9 @@ public class ClassLoaderTest {
 
 class SelfClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) {
+        String rename = name.replace('.','/');
         try {
-            String path = "D:\\workspace\\demo\\com\\example\\demo\\controller\\" + name + ".class" ;
+            String path = "D:\\workspace\\demo\\" + rename + ".class" ;
             FileInputStream in = new FileInputStream(path) ;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buf = new byte[1024] ;
@@ -34,8 +35,7 @@ class SelfClassLoader extends ClassLoader {
             }
             in.close();
             byte[] classBytes = baos.toByteArray();
-            System.out.println(classBytes.length);
-            return defineClass("com.example.demo.controller.User",classBytes , 0 , classBytes.length);
+            return defineClass(name,classBytes , 0 , classBytes.length);
         } catch (Exception e) {
             e.printStackTrace();
         }
