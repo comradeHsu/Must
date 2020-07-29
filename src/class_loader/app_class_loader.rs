@@ -167,7 +167,6 @@ impl ClassLoader {
         if class_name.starts_with('[') {
             class = Some(Self::load_array_class(class_loader.clone(), class_name));
         } else {
-            println!("\t will load :{}", class_name);
             class = Self::invoke_load_class(loader.clone(), class_name.replace('/', ".").as_str());
         }
         let value = class.unwrap();
@@ -197,8 +196,6 @@ impl ClassLoader {
                 ReturnType::Void,
             );
             (*value).borrow_mut().set_java_class(object);
-        } else {
-            println!("null class is {}",(*value).borrow().java_name())
         }
     }
 

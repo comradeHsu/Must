@@ -66,7 +66,6 @@ pub fn canonicalize0(frame: &mut Frame) {
         let canonicalize_path = file_path.canonicalize();
         if canonicalize_path.is_ok() {
             path = canonicalize_path.unwrap().to_str().unwrap().to_string();
-            println!("canonicalize0:{}", path);
         }
         java_string = Some(StringPool::java_string(path));
     }
@@ -103,7 +102,7 @@ pub fn get_boolean_attributes(frame: &mut Frame) {
     if is_hidden(native_path.as_str()) {
         attribute |= 0x08;
     }
-    println!("native_oath :{},exist:{}",path.to_str().unwrap(),path.exists());
+
     frame
         .operand_stack()
         .expect("stack is none")

@@ -85,7 +85,6 @@ pub fn open(frame: &mut Frame) {
     let vars = frame.local_vars().expect("vars is none");
     let java_name = vars.get_ref(0);
     let name = java_str_to_rust_str(java_name.unwrap());
-    println!("jar name:{}", name);
     let zip_file = File::open(&name).unwrap();
     let metadata = zip_file.metadata().expect("not metadata");
     let zip = zip_file.read_zip().expect("This File not ZIP");

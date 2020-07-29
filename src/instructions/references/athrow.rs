@@ -28,7 +28,7 @@ impl AThrow {
 
         let thread = frame.thread();
 
-        display_frame(frame);
+        //display_frame(frame);
 
         let pc = frame
             .method()
@@ -38,7 +38,6 @@ impl AThrow {
             stack.clear();
             stack.push_ref(Some(object.clone()));
             frame.set_next_pc(pc);
-            println!("handle_pc:{}", pc);
             return true;
         }
         (*thread).borrow_mut().pop_frame();
@@ -48,12 +47,12 @@ impl AThrow {
             }
             let frame = (*thread).borrow().current_frame();
             /**
-             **/
+             **
             {
                 let fra = (*frame).borrow();
                 display_frame(fra.deref());
             }
-            /**/
+            **/
             let handler_pc = get_handler_pc(frame.clone(), object.clone());
             if handler_pc > 0 {
                 let mut mut_borrow = (*frame).borrow_mut();
@@ -61,7 +60,6 @@ impl AThrow {
                 stack.clear();
                 stack.push_ref(Some(object.clone()));
                 mut_borrow.set_next_pc(handler_pc);
-                println!("handle_pc:{}", pc);
                 return true;
             }
             (*thread).borrow_mut().pop_frame();
@@ -107,11 +105,7 @@ impl Instruction for AThrow {
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
         {
             let method = frame.method_ptr();
-            println!("frame method:{},next_pc:{}", method.name(), frame.next_pc());
             let class = (*object).borrow().class();
-
-            println!("ex class : {}", (*class).borrow().java_name());
-
         }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(thread.clone(), object);
