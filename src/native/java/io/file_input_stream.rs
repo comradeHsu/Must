@@ -5,6 +5,8 @@ use crate::utils::java_str_to_rust_str;
 use std::fs::File;
 use std::io::{stderr, stdin, stdout, Read, Seek, SeekFrom};
 use std::path::Path;
+use crate::invoke_support::throw_exception;
+use std::error::Error;
 
 pub fn init() {
     Registry::register("java/io/FileInputStream", "initIDs", "()V", init_ids);
@@ -33,13 +35,17 @@ pub fn open0(frame: &mut Frame) {
     let name = vars.get_ref(1);
     let rust_str = java_str_to_rust_str(name.unwrap());
     let path = Path::new(&rust_str);
-    if !path.exists() {
-        // throws FileNotFoundException;
-        println!("path:{}",path.to_str().unwrap());
-        panic!("FileNotFoundException");
-    }
     let file = File::open(path);
-    (*this).borrow_mut().set_file(file.unwrap());
+    if file.is_err() {
+        let mut msg = String::new();
+        let error = file.err().unwrap();
+        msg.push_str(path.to_str().unwrap());
+        msg.push(' ');
+        msg.push_str(error.to_string().as_str());
+        throw_exception(frame,"java/io/FileNotFoundException",Some(msg.as_str()));
+    } else {
+        (*this).borrow_mut().set_file(file.unwrap());
+    }
 }
 
 /// private native int readBytes(byte b[], int off, int len) throws IOException;

@@ -141,27 +141,6 @@ impl Jvm {
         return boxed(args_arr);
     }
 
-    pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
-        let bootstrap_loader = Self::boot_class_loader();
-        let class = bootstrap_loader
-            .find_or_create(class_name.replace('.', "/").as_str())
-            .unwrap();
-        let mut object = Class::new_object(&class);
-        if msg.is_some() {
-            object.set_ref_var(
-                "detailMessage",
-                "Ljava/lang/String;",
-                StringPool::java_string(msg.unwrap().to_string()),
-            );
-        }
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_ref(Some(boxed(object)));
-        let mut athrow = AThrow::new();
-        athrow.execute(frame);
-    }
-
     fn create_ext_loader(&self, ext_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
         let method = Class::get_static_method(
             ext_class,

@@ -14,6 +14,10 @@ use std::ops::DerefMut;
 use std::process::exit;
 use std::rc::Rc;
 use std::thread::sleep_ms;
+use crate::class_loader::app_class_loader::ClassLoader;
+use crate::runtime_data_area::heap::class::Class;
+use crate::instructions::references::athrow::AThrow;
+use crate::instructions::base::instruction::Instruction;
 
 pub mod parameter;
 pub mod return_value;
@@ -119,4 +123,31 @@ pub enum ReturnType {
     Double,
     Char,
     Object,
+}
+
+pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
+    let class = frame.method().class();
+    let class_loader = (*class).borrow().get_class_loader();
+    let exception_class = ClassLoader::load_class(class_loader,class_name);
+    let mut object = Class::new_object(&exception_class);
+    let constructor_desc = match msg.is_none() {
+        true => "()V",
+        false => "(Ljava/lang/String;)V"
+    };
+    let detail_message = match msg.is_some() {
+        true => Some(StringPool::java_string(msg.unwrap().to_string())),
+        false => None
+    };
+    let constructor = Class::get_constructor(exception_class.clone(), constructor_desc);
+    let object_ptr = Some(boxed(object));
+    let parameters = vec![
+        Parameter::Object(object_ptr.clone()),
+        Parameter::Object(detail_message)
+    ];
+    frame
+        .operand_stack()
+        .expect("stack is none")
+        .push_ref(object_ptr);
+    let mut athrow = AThrow::new();
+    athrow.execute(frame);
 }
