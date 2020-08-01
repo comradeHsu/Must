@@ -11,6 +11,7 @@ use chrono::Local;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::native::java::lang::object::hash_code;
 
 pub fn init() {
     Registry::register(
@@ -56,6 +57,7 @@ pub fn init() {
         map_library_name,
     );
     Registry::register("java/lang/System", "nanoTime", "()J", nano_time);
+    Registry::register("java/lang/System", "identityHashCode", "(Ljava/lang/Object;)I", identity_hash_code);
 }
 
 pub fn array_copy(frame: &mut Frame) {
@@ -236,4 +238,10 @@ pub fn nano_time(frame: &mut Frame) {
     let nano = Local::now().timestamp_nanos();
     let stack = frame.operand_stack().expect("stack is none");
     stack.push_long(nano)
+}
+
+/// public static native int identityHashCode(Object o);
+/// (Ljava/lang/Object;)I
+pub fn identity_hash_code(frame: &mut Frame) {
+    hash_code(frame)
 }

@@ -11,6 +11,7 @@ use crate::runtime_data_area::heap::method::Method;
 use std::cell::RefCell;
 use crate::runtime_data_area::heap::class::Class;
 use crate::instructions::references::ResolveMethodRef;
+use crate::invoke_support::throw_exception;
 
 pub struct InvokeVirtual(ConstantPoolInstruction);
 
@@ -43,8 +44,9 @@ impl Instruction for InvokeVirtual {
             //                InvokeVirtual::hack_println(frame,method_ref.descriptor());
             //                return;
             //            }
-            //            Jvm::throw_exception(frame, "java.lang.NullPointerException", None);
-            panic!("java.lang.NullPointerException");
+            throw_exception(frame, "java/lang/NullPointerException", None);
+            return;
+            //panic!("java.lang.NullPointerException");
         }
         let obj_class = (*object.unwrap()).borrow().class();
         let resolved_method_class = resolved_method.class();
