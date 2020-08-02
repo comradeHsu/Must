@@ -36,6 +36,7 @@ fn create_execute_env(method: Rc<Method>, params: Option<Parameters>) -> Rc<RefC
     let thread = boxed(JavaThread::new_thread());
     let mut dummy_frame = JavaThread::new_frame(thread.clone(), method.clone());
     let mut frame = JavaThread::new_frame(thread.clone(), method);
+
     prepare_parameter(&mut frame, params);
     (*thread).borrow_mut().push_frame(dummy_frame);
     (*thread).borrow_mut().push_frame(frame);
@@ -144,6 +145,7 @@ pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
         Parameter::Object(object_ptr.clone()),
         Parameter::Object(detail_message)
     ];
+    invoke(constructor.unwrap(),Some(Parameters::with_parameters(parameters)),ReturnType::Void);
     frame
         .operand_stack()
         .expect("stack is none")
