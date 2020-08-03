@@ -49,28 +49,6 @@ pub struct Class {
 }
 
 impl Class {
-    #[inline]
-    pub fn none() -> Class {
-        return Class {
-            access_flags: 0,
-            name: "".to_string(),
-            super_class_name: None,
-            interfaces_name: vec![],
-            constant_pool: ConstantPool::none(),
-            fields: vec![],
-            methods: vec![],
-            loader: None,
-            super_class: None,
-            interfaces: None,
-            instance_slot_count: 0,
-            static_slot_count: 0,
-            static_vars: None,
-            initialized: false,
-            java_class: None,
-            source_file: None,
-            annotations: None,
-        };
-    }
 
     #[inline]
     pub fn new(class_file: ClassFile) -> Rc<RefCell<Class>> {
@@ -154,7 +132,7 @@ impl Class {
             name: class_name.to_string(),
             super_class_name: Some("java/lang/Object".to_string()),
             interfaces_name: vec![],
-            constant_pool: ConstantPool::none(),
+            constant_pool: ConstantPool::default(),
             fields: vec![],
             methods: vec![],
             loader: Some(loader.clone()),
@@ -179,7 +157,7 @@ impl Class {
             name: class_name.to_string(),
             super_class_name: None,
             interfaces_name: vec![],
-            constant_pool: ConstantPool::none(),
+            constant_pool: ConstantPool::default(),
             fields: vec![],
             methods: vec![],
             loader: Some(boot_loader),
@@ -852,5 +830,29 @@ impl PartialEq for Class {
             return true;
         }
         return false;
+    }
+}
+
+impl Default for Class {
+    fn default() -> Self {
+        return Class {
+            access_flags: 0,
+            name: "".to_string(),
+            super_class_name: None,
+            interfaces_name: vec![],
+            constant_pool: ConstantPool::default(),
+            fields: vec![],
+            methods: vec![],
+            loader: None,
+            super_class: None,
+            interfaces: None,
+            instance_slot_count: 0,
+            static_slot_count: 0,
+            static_vars: None,
+            initialized: false,
+            java_class: None,
+            source_file: None,
+            annotations: None,
+        };
     }
 }

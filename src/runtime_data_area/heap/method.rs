@@ -40,7 +40,7 @@ impl Method {
             max_locals: 0,
             code: vec![],
             arg_slot_count: 0,
-            exception_table: ExceptionTable::none(),
+            exception_table: ExceptionTable::default(),
             line_number_table: None,
             annotations: None,
             exceptions: vec![],
@@ -325,14 +325,14 @@ impl Method {
     }
 
     pub fn shim_return_method() -> Method {
-        let mut class = Class::none();
+        let mut class = Class::default();
         return Method {
             class_member: ClassMember::shim(class),
             max_stack: 0,
             max_locals: 0,
             code: vec![0xb1],
             arg_slot_count: 0,
-            exception_table: ExceptionTable::none(),
+            exception_table: ExceptionTable::default(),
             line_number_table: None,
             annotations: None,
             exceptions: vec![],

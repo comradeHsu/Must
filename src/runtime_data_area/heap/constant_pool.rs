@@ -18,12 +18,6 @@ pub struct ConstantPool {
 }
 
 impl ConstantPool {
-    pub fn none() -> ConstantPool {
-        return ConstantPool {
-            class: Option::None,
-            constants: vec![],
-        };
-    }
 
     pub fn new_constant_pool(
         class: Option<Rc<RefCell<Class>>>,
@@ -127,6 +121,15 @@ impl ConstantPool {
         return self.constants.len();
     }
 
+}
+
+impl Default for ConstantPool {
+    fn default() -> Self {
+        return ConstantPool {
+            class: Option::None,
+            constants: vec![],
+        };
+    }
 }
 
 #[derive(Debug)]

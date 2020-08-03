@@ -14,10 +14,6 @@ pub struct ExceptionTable {
 }
 
 impl ExceptionTable {
-    #[inline]
-    pub fn none() -> ExceptionTable {
-        return ExceptionTable { table: vec![], holder: None };
-    }
 
     pub fn new(
         entries: &Vec<ExceptionTableEntry>,
@@ -70,6 +66,12 @@ impl ExceptionTable {
             }
         }
         return None;
+    }
+}
+
+impl Default for ExceptionTable {
+    fn default() -> Self {
+        return ExceptionTable { table: vec![], holder: None };
     }
 }
 

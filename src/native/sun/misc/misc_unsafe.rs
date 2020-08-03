@@ -451,7 +451,7 @@ mod java_unsafe {
 
     #[test]
     fn test_byte_array_offset() {
-        let mut object = Object::new(boxed(Class::none()));
+        let mut object = Object::new(boxed(Class::default()));
         object.data = Bytes(vec![1, 2, 3]);
         let ptr = boxed(object);
         let ptr = (*ptr).borrow();

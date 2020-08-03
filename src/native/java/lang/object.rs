@@ -79,7 +79,7 @@ mod object {
 
     #[test]
     fn test_rc_ptr() {
-        let mut object = Object::new(boxed(Class::none()));
+        let mut object = Object::new(boxed(Class::default()));
         object.data = Ints(vec![1, 2, 3]);
         let ptr = boxed(object);
         let p = &ptr as *const Rc<RefCell<Object>>;

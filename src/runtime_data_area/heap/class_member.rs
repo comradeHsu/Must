@@ -24,7 +24,7 @@ impl ClassMember {
             name: "".to_string(),
             descriptor: "".to_string(),
             signature: "".to_string(),
-            class: Rc::new(RefCell::new(Class::none())),
+            class: Rc::new(RefCell::new(Class::default())),
         };
     }
 
