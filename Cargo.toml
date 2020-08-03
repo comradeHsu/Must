@@ -1,8 +1,9 @@
 [package]
-name = "rust-jvm"
+name = "lark"
 version = "0.1.0"
 authors = ["comradeHsu <61239289@qq.com>"]
 edition = "2018"
+description = "Research Java Virtual Machine by Rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
