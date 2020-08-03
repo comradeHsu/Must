@@ -47,6 +47,7 @@ pub fn get_stack_trace_depth(frame: &mut Frame) {
     let this = frame.local_vars().expect("vars is none").get_this();
     let ptr = this.unwrap();
     let depth = (*ptr).borrow().trace().unwrap().len();
+    println!("----depth:{}",depth);
     frame
         .operand_stack()
         .expect("stack is none")

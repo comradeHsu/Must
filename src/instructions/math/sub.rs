@@ -69,8 +69,7 @@ impl Instruction for ISub {
         let stack = frame.operand_stack().expect("operand_stack is none");
         let v2 = stack.pop_int();
         let v1 = stack.pop_int();
-        //println!("v1;{},v2:{}",v1,v2);
-        let rs = v1 - v2;
+        let (rs,_) = v1.overflowing_sub(v2);
         stack.push_int(rs);
     }
 }

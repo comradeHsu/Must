@@ -36,7 +36,6 @@ fn create_execute_env(method: Rc<Method>, params: Option<Parameters>) -> Rc<RefC
     let thread = boxed(JavaThread::new_thread());
     let mut dummy_frame = JavaThread::new_frame(thread.clone(), method.clone());
     let mut frame = JavaThread::new_frame(thread.clone(), method);
-
     prepare_parameter(&mut frame, params);
     (*thread).borrow_mut().push_frame(dummy_frame);
     (*thread).borrow_mut().push_frame(frame);
@@ -131,10 +130,7 @@ pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
     let class_loader = (*class).borrow().get_class_loader();
     let exception_class = ClassLoader::load_class(class_loader,class_name);
     let mut object = Class::new_object(&exception_class);
-    let constructor_desc = match msg.is_none() {
-        true => "()V",
-        false => "(Ljava/lang/String;)V"
-    };
+    let constructor_desc = "(Ljava/lang/String;)V";
     let detail_message = match msg.is_some() {
         true => Some(StringPool::java_string(msg.unwrap().to_string())),
         false => None
