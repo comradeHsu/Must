@@ -25,7 +25,7 @@ class SelfClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) {
         String rename = name.replace('.','/');
         try {
-            String path = "D:\\workspace\\demo1\\" + rename + ".class" ;
+            String path = "D:\\workspace\\demo\\" + rename + ".class1" ;
             FileInputStream in = new FileInputStream(path) ;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buf = new byte[1024] ;
