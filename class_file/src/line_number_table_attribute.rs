@@ -1,5 +1,5 @@
-use crate::class_file::attribute_info::AttributeInfo;
-use crate::class_file::class_reader::ClassReader;
+use crate::attribute_info::AttributeInfo;
+use crate::class_reader::ClassReader;
 use std::ptr;
 
 #[derive(Debug)]
@@ -61,7 +61,7 @@ impl AttributeInfo for LineNumberTableAttribute {
 
 #[cfg(test)]
 mod line {
-    use crate::class_file::line_number_table_attribute::{
+    use crate::line_number_table_attribute::{
         LineNumberTableAttribute, LineNumberTableEntry,
     };
 

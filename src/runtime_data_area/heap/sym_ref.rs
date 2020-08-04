@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::ConstantClassInfo;
+use lark_classfile::constant_pool::ConstantClassInfo;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::Jvm;
 use crate::runtime_data_area::heap::class::Class;

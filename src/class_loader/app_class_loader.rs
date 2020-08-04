@@ -1,4 +1,4 @@
-use crate::class_file::class_file::ClassFile;
+use lark_classfile::class_file::ClassFile;
 use crate::instrument::java_lang_instrument::JavaLangInstrument;
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::{invoke, ReturnType};

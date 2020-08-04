@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::ConstantInterfaceMethodRefInfo;
+use lark_classfile::constant_pool::ConstantInterfaceMethodRefInfo;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::runtime_data_area::heap::member_ref::MemberRef;

@@ -1,8 +1,8 @@
-use crate::class_file::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
-use crate::class_file::exceptions_attribute::ExceptionsAttribute;
-use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
-use crate::class_file::member_info::MemberInfo;
-use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use lark_classfile::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
+use lark_classfile::exceptions_attribute::ExceptionsAttribute;
+use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
+use lark_classfile::member_info::MemberInfo;
+use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::access_flags::NATIVE;
 use crate::runtime_data_area::heap::class::Class;

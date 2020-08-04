@@ -1,11 +1,11 @@
-use crate::class_file::attribute_info::Attribute::{
+use crate::attribute_info::Attribute::{
     Code, ConstantValue, RuntimeVisibleAnnotations,
 };
-use crate::class_file::attribute_info::{read_attributes, Attribute, AttributeInfo};
-use crate::class_file::class_reader::ClassReader;
-use crate::class_file::code_attribute::CodeAttribute;
-use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::constant_value_attribute::ConstantValueAttribute;
+use crate::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::class_reader::ClassReader;
+use crate::code_attribute::CodeAttribute;
+use crate::constant_pool::ConstantPool;
+use crate::constant_value_attribute::ConstantValueAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
 

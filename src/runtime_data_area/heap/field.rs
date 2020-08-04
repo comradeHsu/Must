@@ -1,6 +1,6 @@
-use crate::class_file::attribute_info::Attribute::RuntimeVisibleAnnotations;
-use crate::class_file::member_info::MemberInfo;
-use crate::class_file::runtime_visible_annotations_attribute::AnnotationAttribute;
+use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
+use lark_classfile::member_info::MemberInfo;
+use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_member::ClassMember;

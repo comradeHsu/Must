@@ -1,7 +1,6 @@
 use crate::cmd::Cmd;
 use crate::jvm::Jvm;
 
-mod class_file;
 mod class_loader;
 mod class_path;
 mod cmd;

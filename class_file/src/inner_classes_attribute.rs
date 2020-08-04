@@ -1,5 +1,5 @@
-use crate::class_file::attribute_info::AttributeInfo;
-use crate::class_file::class_reader::ClassReader;
+use crate::attribute_info::AttributeInfo;
+use crate::class_reader::ClassReader;
 
 pub struct InnerClassesAttribute {
     classes: Vec<InnerClassInfo>,

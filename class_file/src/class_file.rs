@@ -1,9 +1,9 @@
-use crate::class_file::attribute_info::Attribute::SourceFile;
-use crate::class_file::attribute_info::{read_attributes, Attribute, AttributeInfo};
-use crate::class_file::class_reader::ClassReader;
-use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::member_info::MemberInfo;
-use crate::class_file::source_file_attribute::SourceFileAttribute;
+use crate::attribute_info::Attribute::SourceFile;
+use crate::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::class_reader::ClassReader;
+use crate::constant_pool::ConstantPool;
+use crate::member_info::MemberInfo;
+use crate::source_file_attribute::SourceFileAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::vec::Vec;

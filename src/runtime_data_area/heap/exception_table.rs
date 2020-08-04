@@ -1,4 +1,4 @@
-use crate::class_file::code_attribute::ExceptionTableEntry;
+use lark_classfile::code_attribute::ExceptionTableEntry;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_ref::ClassRef;
 use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;

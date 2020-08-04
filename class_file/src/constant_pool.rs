@@ -1,6 +1,6 @@
-use crate::class_file::class_reader::ClassReader;
-use crate::class_file::constant_pool::ConstantInfoEnum::*;
-use crate::class_file::makers_attribute::DeprecatedAttribute;
+use crate::class_reader::ClassReader;
+use crate::constant_pool::ConstantInfoEnum::*;
+use crate::makers_attribute::DeprecatedAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -582,7 +582,7 @@ impl ConstantInfo for ConstantMethodTypeInfo {
 
 #[cfg(test)]
 mod tests {
-    use crate::class_file::constant_pool::tests::Number::{Int, Lon};
+    use crate::constant_pool::tests::Number::{Int, Lon};
     use std::mem;
     use std::rc::Rc;
 

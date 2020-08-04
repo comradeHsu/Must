@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::ConstantClassInfo;
+use lark_classfile::constant_pool::ConstantClassInfo;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::runtime_data_area::heap::sym_ref::SymbolRef;

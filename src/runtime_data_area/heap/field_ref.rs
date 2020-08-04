@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::ConstantFieldRefInfo;
+use lark_classfile::constant_pool::ConstantFieldRefInfo;
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::constant_pool::ConstantPool;
 use crate::runtime_data_area::heap::field::Field;

@@ -175,6 +175,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "lark-classfile"
+version = "0.1.0"
+dependencies = [
+ "podio 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -333,6 +340,7 @@ name = "rust-jvm"
 version = "0.1.0"
 dependencies = [
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lark-classfile 0.1.0",
  "num_cpus 1.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "podio 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "positioned-io 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",

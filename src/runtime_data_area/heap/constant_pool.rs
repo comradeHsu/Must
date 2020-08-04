@@ -1,4 +1,4 @@
-use crate::class_file::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
+use lark_classfile::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
 use crate::runtime_data_area::heap::class::Class;
 use crate::runtime_data_area::heap::class_ref::ClassRef;
 use crate::runtime_data_area::heap::constant_pool::Constant::*;

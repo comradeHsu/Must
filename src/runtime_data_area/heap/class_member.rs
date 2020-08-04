@@ -1,4 +1,4 @@
-use crate::class_file::member_info::MemberInfo;
+use lark_classfile::member_info::MemberInfo;
 use crate::runtime_data_area::heap::access_flags::{
     ABSTRACT, FINAL, PRIVATE, PROTECTED, PUBLIC, STATIC, SYNTHETIC,
 };

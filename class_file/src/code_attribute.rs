@@ -1,7 +1,7 @@
-use crate::class_file::attribute_info::{read_attributes, Attribute, AttributeInfo};
-use crate::class_file::class_reader::ClassReader;
-use crate::class_file::constant_pool::ConstantPool;
-use crate::class_file::line_number_table_attribute::LineNumberTableAttribute;
+use crate::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::class_reader::ClassReader;
+use crate::constant_pool::ConstantPool;
+use crate::line_number_table_attribute::LineNumberTableAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
 
