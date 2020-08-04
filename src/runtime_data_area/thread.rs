@@ -82,6 +82,10 @@ impl JavaThread {
     //    pub fn std_thread(&mut self) -> Builder {
     //        return self.thread.take().unwrap();
     //    }
+
+    pub fn current() -> JavaThread {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]

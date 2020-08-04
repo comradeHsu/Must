@@ -11,6 +11,7 @@ pub struct Frame {
     thread: Rc<RefCell<JavaThread>>,
     method: Rc<Method>,
     next_pc: i32,
+    frame_type:FrameType
 }
 
 impl Frame {
@@ -22,6 +23,7 @@ impl Frame {
             thread,
             method,
             next_pc: 0,
+            frame_type: Default::default()
         };
     }
 
@@ -37,6 +39,7 @@ impl Frame {
             thread: thread,
             method: Rc::new(Method::new()),
             next_pc: 0,
+            frame_type: Default::default()
         };
     }
 
@@ -85,11 +88,6 @@ impl Frame {
         return self.method.clone();
     }
 
-    #[inline]
-    pub fn boxed(data: Self) -> Rc<RefCell<Frame>> {
-        return Rc::new(RefCell::new(data));
-    }
-
     pub fn new_shim_frame(thread: Rc<RefCell<JavaThread>>, ops: OperandStack) -> Frame {
         return Frame {
             local_vars: None,
@@ -97,12 +95,32 @@ impl Frame {
             method: Rc::new(Method::shim_return_method()),
             operand_stack: Some(ops),
             next_pc: 0,
+            frame_type: Default::default()
         };
     }
 
     #[inline]
     pub fn immutable_local_vars(&self) -> Option<&LocalVars> {
         return self.local_vars.as_ref();
+    }
+
+    #[inline]
+    pub fn is_intrinsic_frame(&self) -> bool {
+        if let FrameType::IntrinsicFrame = self.frame_type {
+            return true;
+        }
+        false
+    }
+}
+
+enum FrameType {
+    InterpreterFrame,
+    IntrinsicFrame
+}
+
+impl Default for FrameType {
+    fn default() -> Self {
+        FrameType::InterpreterFrame
     }
 }
 
