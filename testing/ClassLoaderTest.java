@@ -1,4 +1,4 @@
-package testJava;
+package testing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
