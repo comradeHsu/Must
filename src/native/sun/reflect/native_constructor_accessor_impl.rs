@@ -1,11 +1,11 @@
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::method_invoke_logic::hack_invoke_method;
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::operand_stack::OperandStack;
+use crate::runtime::frame::Frame;
+use crate::oops::class::Class;
+use crate::oops::method::Method;
+use crate::oops::object::Object;
+use crate::runtime::operand_stack::OperandStack;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;

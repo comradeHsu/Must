@@ -1,7 +1,7 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::{Jvm, JVM};
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 use crate::utils::java_str_to_rust_str;
 
 pub fn init() {

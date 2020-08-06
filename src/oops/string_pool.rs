@@ -1,7 +1,7 @@
 use crate::jvm::Jvm;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::DataType::Chars;
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::class::Class;
+use crate::oops::object::DataType::Chars;
+use crate::oops::object::Object;
 use crate::utils::{boxed, java_str_to_rust_str};
 use std::cell::RefCell;
 use std::collections::HashMap;

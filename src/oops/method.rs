@@ -4,18 +4,18 @@ use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
 use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::runtime_data_area::heap::access_flags::NATIVE;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_member::ClassMember;
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
-use crate::runtime_data_area::heap::exception_table::ExceptionTable;
-use crate::runtime_data_area::heap::method_descriptor::{MethodDescriptor, MethodDescriptorParser};
+use crate::oops::access_flags::NATIVE;
+use crate::oops::class::Class;
+use crate::oops::class_member::ClassMember;
+use crate::oops::class_name_helper::PrimitiveTypes;
+use crate::oops::constant_pool::Constant::ClassReference;
+use crate::oops::exception_table::ExceptionTable;
+use crate::oops::method_descriptor::{MethodDescriptor, MethodDescriptorParser};
 use std::cell::RefCell;
 use std::ptr;
 use std::rc::Rc;
 use std::ops::Deref;
-use crate::runtime_data_area::heap::constant_pool::Constant;
+use crate::oops::constant_pool::Constant;
 
 #[derive(Debug)]
 pub struct Method {

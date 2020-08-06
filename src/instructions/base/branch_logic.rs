@@ -1,4 +1,4 @@
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub fn branch(frame: &mut Frame, offset: i32) {
     let thread = frame.thread();

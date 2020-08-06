@@ -2,12 +2,12 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{
     ConstantPoolInstruction, Instruction, LocalVarsInstruction,
 };
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::constant_pool::Constant::{
+use crate::runtime::frame::Frame;
+use crate::oops::constant_pool::Constant::{
     ClassReference, Double, Float, Integer, Long, Str,
 };
-use crate::runtime_data_area::heap::string_pool::StringPool;
-use crate::runtime_data_area::heap::constant_pool::Constant;
+use crate::oops::string_pool::StringPool;
+use crate::oops::constant_pool::Constant;
 
 pub struct LDC(LocalVarsInstruction);
 

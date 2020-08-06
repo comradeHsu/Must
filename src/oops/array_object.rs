@@ -1,8 +1,8 @@
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::DataType::{
+use crate::oops::class::Class;
+use crate::oops::object::DataType::{
     Bytes, Chars, Doubles, Floats, Ints, Longs, References, Shorts,
 };
-use crate::runtime_data_area::heap::object::{DataType, MetaData, Object};
+use crate::oops::object::{DataType, MetaData, Object};
 use std::cell::RefCell;
 use std::rc::Rc;
 

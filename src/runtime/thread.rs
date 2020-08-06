@@ -1,6 +1,6 @@
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::stack::Stack;
+use crate::runtime::frame::Frame;
+use crate::oops::method::Method;
+use crate::runtime::stack::Stack;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;

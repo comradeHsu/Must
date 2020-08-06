@@ -1,9 +1,9 @@
 use lark_classfile::constant_pool::ConstantInterfaceMethodRefInfo;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use crate::runtime_data_area::heap::member_ref::MemberRef;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::heap::method_ref::MethodRef;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::ConstantPool;
+use crate::oops::member_ref::MemberRef;
+use crate::oops::method::Method;
+use crate::oops::method_ref::MethodRef;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;

@@ -4,26 +4,25 @@ use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::Jvm;
-use crate::runtime_data_area::heap::access_flags::{
+use crate::oops::access_flags::{
     AccessFlag, ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
 };
-use crate::runtime_data_area::heap::array_object::ArrayObject;
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
-use crate::runtime_data_area::heap::constant_pool::{ConstantPool, Constant};
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::heap::object::DataType::{
+use crate::oops::array_object::ArrayObject;
+use crate::oops::class_name_helper::PrimitiveTypes;
+use crate::oops::constant_pool::{ConstantPool, Constant};
+use crate::oops::field::Field;
+use crate::oops::method::Method;
+use crate::oops::object::DataType::{
     Bytes, Chars, Doubles, Floats, Ints, Longs, References, Shorts,
 };
-use crate::runtime_data_area::heap::object::{MetaData, Object};
-use crate::runtime_data_area::heap::slots::Slots;
-use crate::runtime_data_area::slot::Slot;
+use crate::oops::object::{MetaData, Object};
+use crate::oops::slots::Slots;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use crate::runtime_data_area::heap::string_pool::StringPool;
-use crate::runtime_data_area::heap::constant_pool::Constant::{FieldReference, ClassReference, MethodReference};
+use crate::oops::string_pool::StringPool;
+use crate::oops::constant_pool::Constant::{FieldReference, ClassReference, MethodReference};
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 

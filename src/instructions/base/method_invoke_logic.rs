@@ -1,6 +1,6 @@
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::thread::JavaThread;
+use crate::runtime::frame::Frame;
+use crate::oops::method::Method;
+use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
 

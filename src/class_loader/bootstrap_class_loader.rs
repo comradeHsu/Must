@@ -1,8 +1,8 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::class_loader::class_linker::ClassLinker;
 use crate::class_path::class_path::{ClassPath, Entry, FindClassError, new_entry};
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
+use crate::oops::class::Class;
+use crate::oops::class_name_helper::PrimitiveTypes;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::collections::HashMap;

@@ -11,7 +11,7 @@ use crate::instructions::stores::dstore::DStore;
 use crate::instructions::stores::fstore::FStore;
 use crate::instructions::stores::istore::IStore;
 use crate::instructions::stores::lstore::LStore;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub struct Wide {
     modified_instruction: Box<dyn Instruction>,

@@ -1,8 +1,8 @@
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::Constant;
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::slots::Slots;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::Constant;
+use crate::oops::field::Field;
+use crate::oops::slots::Slots;
+use crate::oops::string_pool::StringPool;
 use std::cell::RefCell;
 use std::rc::Rc;
 

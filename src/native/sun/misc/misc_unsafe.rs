@@ -1,8 +1,8 @@
 use crate::instructions::base::class_init_logic::init_class;
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::DataType::{Ints, StandardObject};
+use crate::runtime::frame::Frame;
+use crate::oops::class::Class;
+use crate::oops::object::DataType::{Ints, StandardObject};
 use crate::utils::numbers::get_power_of_two;
 use std::alloc::Layout;
 use std::cell::RefCell;
@@ -365,9 +365,9 @@ mod memory_size_map {
 mod java_unsafe {
     use crate::class_path::class_path::ClassPath;
     use crate::cmd::Cmd;
-    use crate::runtime_data_area::heap::class::Class;
-    use crate::runtime_data_area::heap::object::DataType::{Bytes, Ints};
-    use crate::runtime_data_area::heap::object::Object;
+    use crate::oops::class::Class;
+    use crate::oops::object::DataType::{Bytes, Ints};
+    use crate::oops::object::Object;
     use crate::utils::boxed;
     use crate::utils::numbers::get_power_of_two;
     use std::alloc::Layout;

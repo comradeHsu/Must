@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::class::Class;
+use crate::oops::class::Class;
 use std::cell::RefCell;
 use std::rc::Rc;
 

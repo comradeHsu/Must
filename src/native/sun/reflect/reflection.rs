@@ -1,5 +1,5 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub fn init() {
     Registry::register(

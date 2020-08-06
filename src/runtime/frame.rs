@@ -1,7 +1,7 @@
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::local_vars::LocalVars;
-use crate::runtime_data_area::operand_stack::OperandStack;
-use crate::runtime_data_area::thread::JavaThread;
+use crate::oops::method::Method;
+use crate::runtime::local_vars::LocalVars;
+use crate::runtime::operand_stack::OperandStack;
+use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -108,10 +108,10 @@ impl Frame {
 
 #[cfg(test)]
 mod test {
-    use crate::runtime_data_area::frame::Frame;
-    use crate::runtime_data_area::local_vars::LocalVars;
-    use crate::runtime_data_area::operand_stack::OperandStack;
-    use crate::runtime_data_area::thread::JavaThread;
+    use crate::runtime::frame::Frame;
+    use crate::runtime::local_vars::LocalVars;
+    use crate::runtime::operand_stack::OperandStack;
+    use crate::runtime::thread::JavaThread;
     use std::cell::RefCell;
     use std::rc::Rc;
 

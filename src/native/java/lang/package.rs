@@ -1,12 +1,12 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 use crate::jvm::Jvm;
 use std::collections::HashSet;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::oops::string_pool::StringPool;
 use std::rc::Rc;
 use std::cell::RefCell;
-use crate::runtime_data_area::heap::object::{Object, DataType};
-use crate::runtime_data_area::heap::array_object::ArrayObject;
+use crate::oops::object::{Object, DataType};
+use crate::oops::array_object::ArrayObject;
 use crate::utils::{boxed, java_str_to_rust_str};
 
 pub fn init() {

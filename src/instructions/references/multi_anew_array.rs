@@ -1,9 +1,9 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::array_object::ArrayObject;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
+use crate::runtime::frame::Frame;
+use crate::oops::array_object::ArrayObject;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;

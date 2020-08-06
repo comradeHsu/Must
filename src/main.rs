@@ -13,7 +13,8 @@ mod jni;
 mod jvm;
 mod native;
 mod prims;
-mod runtime_data_area;
+mod runtime;
+mod oops;
 mod utils;
 
 fn main() {

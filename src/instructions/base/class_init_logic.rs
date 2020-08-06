@@ -1,5 +1,5 @@
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::thread::JavaThread;
+use crate::oops::class::Class;
+use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
 

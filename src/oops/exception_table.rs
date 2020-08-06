@@ -1,8 +1,8 @@
 use lark_classfile::code_attribute::ExceptionTableEntry;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_ref::ClassRef;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
+use crate::oops::class::Class;
+use crate::oops::class_ref::ClassRef;
+use crate::oops::constant_pool::Constant::ClassReference;
+use crate::oops::constant_pool::ConstantPool;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;

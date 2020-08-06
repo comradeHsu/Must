@@ -1,4 +1,4 @@
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 use std::collections::HashMap;
 
 pub type NativeMethod = fn(frame: &mut Frame);
@@ -59,9 +59,9 @@ impl Registry {
 #[cfg(test)]
 mod test {
     use crate::native::registry::Registry;
-    use crate::runtime_data_area::frame::Frame;
-    use crate::runtime_data_area::heap::method::Method;
-    use crate::runtime_data_area::thread::JavaThread;
+    use crate::runtime::frame::Frame;
+    use crate::oops::method::Method;
+    use crate::runtime::thread::JavaThread;
     use crate::utils::boxed;
     use std::rc::Rc;
 

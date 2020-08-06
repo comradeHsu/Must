@@ -1,6 +1,6 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::object::{MetaData, Object};
+use crate::runtime::frame::Frame;
+use crate::oops::object::{MetaData, Object};
 use crate::utils::java_str_to_rust_str;
 use std::fs::File;
 use std::io::{stderr, stdin, stdout, Read, Seek, SeekFrom};

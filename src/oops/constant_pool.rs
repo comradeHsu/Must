@@ -1,15 +1,15 @@
 use lark_classfile::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_ref::ClassRef;
-use crate::runtime_data_area::heap::constant_pool::Constant::*;
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::field_ref::FieldRef;
-use crate::runtime_data_area::heap::interface_method_ref::InterfaceMethodRef;
-use crate::runtime_data_area::heap::method_ref::MethodRef;
+use crate::oops::class::Class;
+use crate::oops::class_ref::ClassRef;
+use crate::oops::constant_pool::Constant::*;
+use crate::oops::field::Field;
+use crate::oops::field_ref::FieldRef;
+use crate::oops::interface_method_ref::InterfaceMethodRef;
+use crate::oops::method_ref::MethodRef;
 use core::mem;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::runtime_data_area::heap::method::Method;
+use crate::oops::method::Method;
 
 #[derive(Debug)]
 pub struct ConstantPool {

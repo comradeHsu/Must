@@ -1,8 +1,8 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::object::Object;
+use crate::runtime::frame::Frame;
+use crate::oops::object::Object;
 use crate::utils::boxed;
 use std::ops::Deref;
 
@@ -69,9 +69,9 @@ pub fn clone(frame: &mut Frame) {
 
 #[cfg(test)]
 mod object {
-    use crate::runtime_data_area::heap::class::Class;
-    use crate::runtime_data_area::heap::object::DataType::Ints;
-    use crate::runtime_data_area::heap::object::Object;
+    use crate::oops::class::Class;
+    use crate::oops::object::DataType::Ints;
+    use crate::oops::object::Object;
     use crate::utils::boxed;
     use std::cell::RefCell;
     use std::ops::Deref;

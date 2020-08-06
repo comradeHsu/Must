@@ -1,8 +1,8 @@
 use lark_classfile::constant_pool::ConstantFieldRefInfo;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::member_ref::MemberRef;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::ConstantPool;
+use crate::oops::field::Field;
+use crate::oops::member_ref::MemberRef;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::ops::Deref;

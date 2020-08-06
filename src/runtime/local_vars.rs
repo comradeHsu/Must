@@ -1,5 +1,5 @@
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::slot::Slot;
+use crate::oops::object::Object;
+use crate::runtime::slot::Slot;
 use crate::utils::numbers::{
     f32_to_i32, f64_to_i64, i32_for_bool, i32_to_f32, i64_back_bytes_to_i32, i64_from_i32_bytes,
     i64_to_f64,

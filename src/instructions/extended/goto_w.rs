@@ -1,7 +1,7 @@
 use crate::instructions::base::branch_logic::branch;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub struct GotoW {
     offset: i32,

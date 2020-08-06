@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::access_flags::AccessFlag::*;
+use crate::oops::access_flags::AccessFlag::*;
 
 pub enum AccessFlag {
     Public(i32),

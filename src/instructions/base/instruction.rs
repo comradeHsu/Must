@@ -1,5 +1,5 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub trait Instruction {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader);

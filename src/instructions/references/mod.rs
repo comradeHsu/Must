@@ -1,11 +1,11 @@
 use std::rc::Rc;
 use std::cell::RefCell;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::heap::constant_pool::Constant::{MethodReference, FieldReference, ClassReference, InterfaceMethodReference};
+use crate::oops::class::Class;
+use crate::oops::field::Field;
+use crate::oops::method::Method;
+use crate::oops::constant_pool::Constant::{MethodReference, FieldReference, ClassReference, InterfaceMethodReference};
 use std::ops::Deref;
-use crate::runtime_data_area::heap::constant_pool::Constant;
+use crate::oops::constant_pool::Constant;
 
 pub mod anew_array;
 pub mod array_length;

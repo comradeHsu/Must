@@ -1,7 +1,7 @@
 use crate::instructions::base::branch_logic::branch;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 fn int_pop(frame: &mut Frame) -> (i32, i32) {
     let stack = frame.operand_stack().expect("operand_stack is none");

@@ -1,8 +1,8 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::thread::JavaThread;
+use crate::runtime::frame::Frame;
+use crate::oops::object::Object;
+use crate::runtime::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
 use std::cell::RefCell;
 use std::ops::Deref;

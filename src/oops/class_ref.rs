@@ -1,7 +1,7 @@
 use lark_classfile::constant_pool::ConstantClassInfo;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::ConstantPool;
-use crate::runtime_data_area::heap::sym_ref::SymbolRef;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::ConstantPool;
+use crate::oops::sym_ref::SymbolRef;
 use std::cell::RefCell;
 use std::rc::Rc;
 

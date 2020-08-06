@@ -1,8 +1,8 @@
 use lark_classfile::constant_pool::ConstantClassInfo;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::Jvm;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::class::Class;
+use crate::oops::object::Object;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::ops::Deref;

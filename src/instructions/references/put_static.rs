@@ -1,12 +1,12 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::constant_pool::Constant::FieldReference;
+use crate::runtime::frame::Frame;
+use crate::oops::constant_pool::Constant::FieldReference;
 use std::rc::Rc;
 use std::cell::RefCell;
-use crate::runtime_data_area::heap::field::Field;
-use crate::runtime_data_area::heap::class::Class;
+use crate::oops::field::Field;
+use crate::oops::class::Class;
 use crate::instructions::references::ResolveFieldRef;
 
 pub struct PutStatic(ConstantPoolInstruction);

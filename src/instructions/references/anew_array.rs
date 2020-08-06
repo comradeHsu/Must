@@ -1,8 +1,8 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::constant_pool::Constant::ClassReference;
+use crate::runtime::frame::Frame;
+use crate::oops::class::Class;
+use crate::oops::constant_pool::Constant::ClassReference;
 use crate::utils::boxed;
 use crate::instructions::references::ResolveClassRef;
 

@@ -2,10 +2,10 @@ use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
 use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::class_member::ClassMember;
-use crate::runtime_data_area::heap::class_name_helper::PrimitiveTypes;
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::class::Class;
+use crate::oops::class_member::ClassMember;
+use crate::oops::class_name_helper::PrimitiveTypes;
+use crate::oops::object::Object;
 use std::cell::RefCell;
 use std::rc::Rc;
 
