@@ -1,7 +1,7 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub struct InvokeNative(NoOperandsInstruction);
 

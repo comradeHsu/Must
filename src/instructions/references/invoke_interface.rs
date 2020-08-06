@@ -1,9 +1,9 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::constant_pool::Constant::InterfaceMethodReference;
-use crate::runtime_data_area::heap::method_ref::MethodRef;
+use crate::runtime::frame::Frame;
+use crate::oops::constant_pool::Constant::InterfaceMethodReference;
+use crate::oops::method_ref::MethodRef;
 use std::ops::Deref;
 use crate::instructions::references::{ResolveMethodRef, ResolveInterfaceMethodRef};
 

@@ -1,4 +1,4 @@
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::object::Object;
 use std::cell::RefCell;
 use std::rc::Rc;
 /// invoke java method of parameters

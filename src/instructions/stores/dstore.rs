@@ -2,7 +2,7 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{
     Instruction, LocalVarsInstruction, NoOperandsInstruction,
 };
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 fn d_store(frame: &mut Frame, index: usize) {
     let val = frame

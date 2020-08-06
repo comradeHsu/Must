@@ -2,9 +2,9 @@ use crate::class_loader::app_class_loader::ClassLoader;
 use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime::frame::Frame;
+use crate::oops::class::Class;
+use crate::oops::string_pool::StringPool;
 
 pub fn init() {
     Registry::register("sun/misc/VM", "initialize", "()V", initialize);

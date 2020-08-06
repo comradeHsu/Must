@@ -2,8 +2,8 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::constant_pool::Constant::MethodReference;
+use crate::runtime::frame::Frame;
+use crate::oops::constant_pool::Constant::MethodReference;
 use crate::instructions::references::ResolveMethodRef;
 
 pub struct InvokeStatic(ConstantPoolInstruction);

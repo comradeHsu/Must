@@ -1,6 +1,6 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime::frame::Frame;
+use crate::oops::string_pool::StringPool;
 
 pub fn init() {
     Registry::register("java/lang/String", "intern", "()Ljava/lang/String;", intern);

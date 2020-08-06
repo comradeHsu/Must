@@ -1,9 +1,9 @@
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
-use crate::runtime_data_area::heap::array_object::ArrayObject;
-use crate::runtime_data_area::heap::object::DataType;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::runtime::frame::Frame;
+use crate::oops::array_object::ArrayObject;
+use crate::oops::object::DataType;
+use crate::oops::string_pool::StringPool;
 use crate::utils::boxed;
 
 pub fn init() {

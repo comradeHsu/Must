@@ -1,7 +1,6 @@
 use crate::cmd::Cmd;
 use crate::jvm::Jvm;
 
-mod class_file;
 mod class_loader;
 mod class_path;
 mod cmd;
@@ -14,7 +13,8 @@ mod jni;
 mod jvm;
 mod native;
 mod prims;
-mod runtime_data_area;
+mod runtime;
+mod oops;
 mod utils;
 
 fn main() {

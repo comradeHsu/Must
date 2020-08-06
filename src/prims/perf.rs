@@ -3,8 +3,8 @@ use crate::invoke_support::{invoke, ReturnType};
 use crate::jni::{JObject, JString};
 use crate::jvm::Jvm;
 use crate::prims::perf_data::{PerfDataManager, Units, Variability};
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::class::Class;
+use crate::oops::object::Object;
 use crate::utils::{boxed, jstr_to_utf_nullable};
 use std::mem::size_of;
 

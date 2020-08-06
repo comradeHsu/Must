@@ -1,5 +1,5 @@
 use crate::native::registry::Registry;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 use crate::utils::numbers::{f64_to_i64, i64_to_f64};
 
 pub fn init() {

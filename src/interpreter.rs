@@ -1,9 +1,9 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::new_instruction;
 use crate::native::init;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::object::Object;
-use crate::runtime_data_area::thread::JavaThread;
+use crate::oops::class::Class;
+use crate::oops::object::Object;
+use crate::runtime::thread::JavaThread;
 use crate::utils::boxed;
 use chrono::Local;
 use std::cell::RefCell;

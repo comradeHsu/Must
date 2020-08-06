@@ -1,7 +1,7 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::instructions::check_index;
-use crate::runtime_data_area::frame::Frame;
+use crate::runtime::frame::Frame;
 
 pub struct AAload(NoOperandsInstruction);
 

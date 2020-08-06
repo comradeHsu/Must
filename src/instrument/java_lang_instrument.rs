@@ -1,7 +1,7 @@
 use crate::instrument::create_instrumentation;
-use crate::runtime_data_area::heap::class::Class;
-use crate::runtime_data_area::heap::method::Method;
-use crate::runtime_data_area::heap::object::Object;
+use crate::oops::class::Class;
+use crate::oops::method::Method;
+use crate::oops::object::Object;
 use std::cell::RefCell;
 use std::rc::Rc;
 
