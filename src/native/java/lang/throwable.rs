@@ -6,7 +6,7 @@ use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::jvm::Jvm;
-use crate::runtime_data_area::heap::string_pool::StringPool;
+use crate::oops::string_pool::StringPool;
 use crate::utils::boxed;
 
 pub fn init() {

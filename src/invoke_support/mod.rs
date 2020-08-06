@@ -15,7 +15,7 @@ use std::process::exit;
 use std::rc::Rc;
 use std::thread::sleep_ms;
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::runtime_data_area::heap::class::Class;
+use crate::oops::class::Class;
 use crate::instructions::references::athrow::AThrow;
 use crate::instructions::base::instruction::Instruction;
 

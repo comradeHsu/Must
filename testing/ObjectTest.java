@@ -1,7 +1,11 @@
-package testJava;
-public class MyObject {
+package testing;
+
+public class ObjectTest {
+
     public static int staticVar;
+
     public int instanceVar;
+
     public static void main(String[] args) {
         int x = 32768;             // ldc
         MyObject myObj = new MyObject();     // new
@@ -15,4 +19,5 @@ public class MyObject {
             System.out.println(myObj.instanceVar);
         }
     }
+
 }
