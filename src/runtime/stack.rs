@@ -2,6 +2,7 @@ use crate::runtime::frame::Frame;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
+use crate::utils::boxed;
 
 pub struct Stack {
     max_size: usize,
@@ -23,7 +24,7 @@ impl Stack {
         if self.frames.len() >= self.max_size {
             panic!("java.lang.StackOverflowError");
         }
-        self.frames.push_back(Frame::boxed(frame));
+        self.frames.push_back(boxed(frame));
         self.size += 1;
     }
 
