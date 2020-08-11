@@ -46,7 +46,7 @@ mod tests {
             verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testJava.ClassLoaderTest".to_string(),
+            class: "testing.ClassLoaderTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

@@ -6,6 +6,7 @@ use crate::oops::method::Method;
 use crate::oops::constant_pool::Constant::{MethodReference, FieldReference, ClassReference, InterfaceMethodReference};
 use std::ops::Deref;
 use crate::oops::constant_pool::Constant;
+use crate::runtime::frame::Frame;
 
 pub mod anew_array;
 pub mod array_length;
@@ -26,7 +27,7 @@ pub mod put_field;
 pub mod put_static;
 
 trait ResolveFieldRef {
-    fn resolve_field_ref(&self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Field>> {
+    fn resolve_field_ref(&self, class:Rc<RefCell<Class>>) -> Rc<RefCell<Field>> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -85,7 +86,7 @@ trait ResolveMethodRef {
         return method.unwrap();
     }
 
-    fn resolved_method_ref_tuple(&self,class:Rc<RefCell<Class>>) -> (Rc<RefCell<Class>>,Rc<Method>) {
+    fn resolved_method_ref_tuple(&self, class:Rc<RefCell<Class>>) -> (Rc<RefCell<Class>>,Rc<Method>) {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()

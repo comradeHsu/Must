@@ -37,7 +37,7 @@ pub fn fill_in_stack_trace(frame: &mut Frame) {
         .expect("stack is none")
         .push_ref(this.clone());
     let ptr = this.unwrap();
-    let stes = StackTraceElement::create_stack_trace_elements(ptr.clone(), frame.thread());
+    let stes = StackTraceElement::create_stack_trace_elements(ptr.clone());
     (*ptr).borrow_mut().set_trace(stes);
 }
 
@@ -47,7 +47,6 @@ pub fn get_stack_trace_depth(frame: &mut Frame) {
     let this = frame.local_vars().expect("vars is none").get_this();
     let ptr = this.unwrap();
     let depth = (*ptr).borrow().trace().unwrap().len();
-    println!("----depth:{}",depth);
     frame
         .operand_stack()
         .expect("stack is none")
@@ -106,17 +105,17 @@ pub struct StackTraceElement {
 
 impl StackTraceElement {
     fn create_stack_trace_elements(
-        object: Rc<RefCell<Object>>,
-        thread: Rc<RefCell<JavaThread>>,
+        object: Rc<RefCell<Object>>
     ) -> Vec<StackTraceElement> {
         let skip = StackTraceElement::distance_to_object((*object).borrow().class()) as usize + 2;
-        let thread_borrow = (*thread).borrow();
-        let all_frames = thread_borrow.get_frames();
-        let mut stes = Vec::with_capacity(all_frames.len() - skip);
-        for i in 0..(all_frames.len() - skip) {
-            stes.push(Self::create_stack_trace_element(all_frames[i].clone()));
-        }
-        return stes;
+        let thread = JavaThread::current();
+        thread.frames_with(|frames|{
+            let mut stes = Vec::with_capacity(frames.len() - skip);
+            for i in 0..(frames.len() - skip) {
+                stes.push(Self::create_stack_trace_element(frames[i].clone()));
+            }
+            return stes;
+        })
     }
 
     fn distance_to_object(class: Rc<RefCell<Class>>) -> i32 {

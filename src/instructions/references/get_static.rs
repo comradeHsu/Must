@@ -27,7 +27,7 @@ impl Instruction for GetStatic {
         let class = field.parent().class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(class.clone());
             return;
         }
         if !field.parent().is_static() {

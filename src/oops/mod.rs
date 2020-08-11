@@ -17,3 +17,21 @@ pub mod object;
 pub mod slots;
 pub mod string_pool;
 pub mod sym_ref;
+
+#[cfg(test)]
+mod test{
+    use std::cell::UnsafeCell;
+
+    #[test]
+    fn test_unsafe_cell() {
+        unsafe {
+            let data = UnsafeCell::new(10);
+            let s1 = &mut *data.get();
+            let s2 = &mut *data.get();
+            *s1 = 5;
+            println!("data:{}", *data.get());
+            *s2 = 15;
+            println!("data:{}", *data.get());
+        }
+    }
+}

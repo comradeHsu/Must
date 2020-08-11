@@ -1,5 +1,5 @@
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 use crate::jni::{JObject, JString};
 use crate::jvm::Jvm;
 use crate::prims::perf_data::{PerfDataManager, Units, Variability};
@@ -59,7 +59,7 @@ impl Perf {
             Parameter::Long(pointer as i64),
             Parameter::Int(size_long as i32),
         ];
-        invoke(
+        JavaCall::invoke(
             method.unwrap(),
             Some(Parameters::with_parameters(param)),
             ReturnType::Void,

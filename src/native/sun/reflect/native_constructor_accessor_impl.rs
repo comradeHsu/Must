@@ -10,7 +10,7 @@ use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::invoke_support::parameter::{Parameters, Parameter};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 
 pub fn init() {
     Registry::register(
@@ -35,7 +35,7 @@ pub fn new_instance0(frame: &mut Frame) {
 
     if !(*class).borrow().initialized() {
         frame.revert_next_pc();
-        init_class(frame.thread(), class);
+        init_class(class);
         return;
     }
     let obj = Some(boxed(Class::new_object(&class)));
@@ -62,7 +62,7 @@ pub fn new_instance0(frame: &mut Frame) {
         let args = array_ref.references();
         args.iter().for_each(|arg| {params.append_parameter(Parameter::Object(arg.clone()))})
     }
-    invoke(constructor,Some(params),ReturnType::Void);
+    JavaCall::invoke(constructor,Some(params),ReturnType::Void);
 }
 
 fn get_method(method_obj: Rc<RefCell<Object>>) -> Rc<Method> {

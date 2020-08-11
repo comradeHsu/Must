@@ -8,7 +8,7 @@ use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::instructions::references::athrow::AThrow;
 use crate::interpreter::{interpret, invoke_java_method};
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 use crate::prims::perf_data::Variability;
 use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
@@ -26,7 +26,7 @@ pub struct Jvm {
     boot_class_loader: BootstrapClassLoader,
     ext_class_loader: Option<Rc<RefCell<Object>>>,
     app_class_loader: Option<Rc<RefCell<Object>>>,
-    main_thread: Rc<RefCell<JavaThread>>,
+    main_thread: JavaThread,
 }
 
 pub static mut JVM: Option<Jvm> = None;
@@ -43,9 +43,10 @@ impl Jvm {
             cmd,
             boot_class_loader: class_loader,
             ext_class_loader: None,
-            main_thread: boxed(JavaThread::new_main_thread()),
+            main_thread: JavaThread::new_main_thread(),
             app_class_loader: None,
         };
+        jvm.main_thread.set();
         unsafe {
             JVM = Some(jvm);
             return JVM.as_mut().unwrap();
@@ -53,7 +54,7 @@ impl Jvm {
     }
 
     #[inline]
-    pub fn main_thread(&self) -> Rc<RefCell<JavaThread>> {
+    pub fn main_thread(&self) -> JavaThread {
         return self.main_thread.clone();
     }
 
@@ -85,20 +86,20 @@ impl Jvm {
             .boot_class_loader
             .find_or_create("sun/misc/VM")
             .unwrap();
-        init_class(self.main_thread.clone(), vm_class);
+        init_class(vm_class);
         interpret(self.main_thread.clone());
 
         let ext_class = self
             .boot_class_loader
             .find_or_create("sun/misc/Launcher$ExtClassLoader")
             .unwrap();
-        init_class(self.main_thread.clone(), ext_class.clone());
+        init_class(ext_class.clone());
 
         let app_class = self
             .boot_class_loader
             .find_or_create("sun/misc/Launcher$AppClassLoader")
             .unwrap();
-        init_class(self.main_thread.clone(), app_class.clone());
+        init_class(app_class.clone());
 
         interpret(self.main_thread.clone());
         self.ext_class_loader = self.create_ext_loader(ext_class);
@@ -118,12 +119,12 @@ impl Jvm {
             return;
         }
         let args_arr = self.create_args_array();
-        let mut frame = JavaThread::new_frame(self.main_thread.clone(), main_method.unwrap());
+        let mut frame = Frame::new(main_method.unwrap());
         frame
             .local_vars()
             .expect("vars is none")
             .set_ref(0, Some(args_arr));
-        (*self.main_thread).borrow_mut().push_frame(frame);
+        self.main_thread.push_frame(frame);
         interpret(self.main_thread.clone());
     }
 
@@ -147,7 +148,7 @@ impl Jvm {
             "getExtClassLoader",
             "()Lsun/misc/Launcher$ExtClassLoader;",
         );
-        let value = invoke(method.unwrap(), None, ReturnType::Object);
+        let value = JavaCall::invoke(method.unwrap(), None, ReturnType::Object);
         return value.object();
     }
 
@@ -162,7 +163,7 @@ impl Jvm {
             "(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;",
         );
         let params = Parameters::with_parameters(vec![Parameter::Object(parent)]);
-        let value = invoke(method.unwrap(), Some(params), ReturnType::Object).object();
+        let value = JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return value;
     }
 }
@@ -199,7 +200,7 @@ fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
         for ob in objs {
             if ob.is_some() {
                 let param = Parameters::with_parameters(vec![Parameter::Object(ob.clone())]);
-                let string = invoke(method.clone(), Some(param), ReturnType::Object).object();
+                let string = JavaCall::invoke(method.clone(), Some(param), ReturnType::Object).object();
                 let rust_str = java_str_to_rust_str(string.unwrap());
                 println!("URL:{}", rust_str);
             }

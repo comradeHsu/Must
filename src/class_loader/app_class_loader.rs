@@ -1,7 +1,7 @@
 use lark_classfile::class_file::ClassFile;
 use crate::instrument::java_lang_instrument::JavaLangInstrument;
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 use crate::jvm::Jvm;
 use crate::oops::class::Class;
 use crate::oops::object::Object;
@@ -76,7 +76,7 @@ impl ClassLoader {
             Parameter::Object(byte_array.clone()),
             Parameter::Boolean(false),
         ];
-        let rs = invoke(
+        let rs = JavaCall::invoke(
             method,
             Some(Parameters::with_parameters(params)),
             ReturnType::Object,
@@ -190,7 +190,7 @@ impl ClassLoader {
                 Parameter::Object(object.clone()),
                 Parameter::Object(loader_object)
             ];
-            invoke(
+            JavaCall::invoke(
                 constructor.unwrap(),
                 Some(Parameters::with_parameters(parameters)),
                 ReturnType::Void,
@@ -214,7 +214,7 @@ impl ClassLoader {
             Parameter::Object(Some(loader)),
             Parameter::Object(Some(java_name)),
         ]);
-        let return_value = invoke(method.unwrap(), Some(params), ReturnType::Object).object();
+        let return_value = JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return (*return_value.unwrap()).borrow().meta();
     }
 

@@ -12,6 +12,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::native::java::lang::object::hash_code;
+use crate::runtime::thread::JavaThread;
 
 pub fn init() {
     Registry::register(
@@ -117,7 +118,7 @@ pub fn init_properties(frame: &mut Frame) {
         "setProperty",
         "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
     );
-    let thread = frame.thread();
+    let thread = JavaThread::current();
     for (key, val) in _sys_props() {
         let j_key = StringPool::java_string(key);
         let j_val = StringPool::java_string(val);
@@ -125,10 +126,10 @@ pub fn init_properties(frame: &mut Frame) {
         ops.push_ref(props.clone());
         ops.push_ref(Some(j_key));
         ops.push_ref(Some(j_val));
-        let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
-        (*thread).borrow_mut().push_frame(shim_frame);
+        let shim_frame = Frame::new_shim_frame(ops);
+        thread.push_frame(shim_frame);
 
-        hack_invoke_method(thread.clone(), set_prop_method.clone().unwrap());
+        hack_invoke_method(set_prop_method.clone().unwrap());
     }
 }
 
@@ -143,7 +144,7 @@ fn _sys_props() -> HashMap<String, String> {
     map.insert(
         "java.class.path".to_owned(),
         //        "D:/java8/JDK/lib;D:/java8/JDK/lib/tools.jar;.;D:/workspace/rust-jvm/;".to_owned(),
-        "D:/workspace/rust-jvm/".to_owned(),
+        "D:/workspace/lark/".to_owned(),
     );
     //map.insert("sun.misc.URLClassPath.debug".to_owned(), "true".to_owned());
     //    map.insert(

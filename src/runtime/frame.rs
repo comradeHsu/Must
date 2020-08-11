@@ -8,7 +8,6 @@ use std::rc::Rc;
 pub struct Frame {
     local_vars: Option<LocalVars>,
     operand_stack: Option<OperandStack>,
-    thread: Rc<RefCell<JavaThread>>,
     method: Rc<Method>,
     next_pc: i32,
     frame_type:FrameType
@@ -16,27 +15,48 @@ pub struct Frame {
 
 impl Frame {
     #[inline]
-    pub fn new(thread: Rc<RefCell<JavaThread>>, method: Rc<Method>) -> Frame {
+    pub fn new(method: Rc<Method>) -> Frame {
         return Frame {
             local_vars: LocalVars::with_capacity(method.max_locals()),
             operand_stack: OperandStack::new(method.max_stack()),
-            thread,
             method,
             next_pc: 0,
             frame_type: Default::default()
         };
     }
 
+    pub fn new_intrinsic_frame(method: Rc<Method>) -> Frame {
+        Self::with_type(method,FrameType::IntrinsicFrame)
+    }
+
+    pub fn new_barrier_frame() -> Frame {
+        let mut frame = Self::with_type(
+            Rc::new(Method::default()),
+            FrameType::BarrierFrame
+        );
+        frame.operand_stack = OperandStack::new(1);
+        frame
+    }
+
+    #[inline]
+    fn with_type(method: Rc<Method>,frame_type:FrameType) -> Frame {
+        return Frame {
+            local_vars: LocalVars::with_capacity(method.max_locals()),
+            operand_stack: OperandStack::new(method.max_stack()),
+            method,
+            next_pc: 0,
+            frame_type
+        };
+    }
+
     #[inline]
     pub fn with_capacity(
-        thread: Rc<RefCell<JavaThread>>,
         max_locals: usize,
         max_stack: usize,
     ) -> Frame {
         return Frame {
             local_vars: LocalVars::with_capacity(max_locals),
             operand_stack: OperandStack::new(max_stack),
-            thread: thread,
             method: Rc::new(Method::new()),
             next_pc: 0,
             frame_type: Default::default()
@@ -65,12 +85,7 @@ impl Frame {
 
     #[inline]
     pub fn revert_next_pc(&mut self) {
-        self.next_pc = (*self.thread).borrow().get_pc();
-    }
-
-    #[inline]
-    pub fn thread(&self) -> Rc<RefCell<JavaThread>> {
-        return self.thread.clone();
+        self.next_pc = JavaThread::current().get_pc();
     }
 
     #[inline]
@@ -88,10 +103,9 @@ impl Frame {
         return self.method.clone();
     }
 
-    pub fn new_shim_frame(thread: Rc<RefCell<JavaThread>>, ops: OperandStack) -> Frame {
+    pub fn new_shim_frame(ops: OperandStack) -> Frame {
         return Frame {
             local_vars: None,
-            thread,
             method: Rc::new(Method::shim_return_method()),
             operand_stack: Some(ops),
             next_pc: 0,
@@ -111,11 +125,21 @@ impl Frame {
         }
         false
     }
+
+    #[inline]
+    pub fn is_barrier_frame(&self) -> bool {
+        if let FrameType::BarrierFrame = self.frame_type {
+            return true;
+        }
+        false
+    }
 }
 
+#[derive(Clone,Debug)]
 enum FrameType {
     InterpreterFrame,
-    IntrinsicFrame
+    IntrinsicFrame,
+    BarrierFrame
 }
 
 impl Default for FrameType {
@@ -136,7 +160,7 @@ mod test {
     #[test]
     fn test_frame() {
         let thread = Rc::new(RefCell::new(JavaThread::new_thread()));
-        let mut frame = Frame::with_capacity(thread, 100, 100);
+        let mut frame = Frame::with_capacity(100, 100);
         test_local_vars(&mut frame.local_vars.unwrap());
         test_operand_stack(&mut frame.operand_stack.unwrap());
     }

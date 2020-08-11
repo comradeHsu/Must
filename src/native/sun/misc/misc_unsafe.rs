@@ -315,7 +315,7 @@ pub fn ensure_class_initialized(frame: &mut Frame) {
     let object = vars.get_ref(1).unwrap();
     let raw_class = (*object).borrow().meta().unwrap();
     if !(*raw_class).borrow().initialized() {
-        init_class(frame.thread(), raw_class.clone());
+        init_class(raw_class.clone());
     }
 }
 

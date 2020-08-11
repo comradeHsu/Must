@@ -1,6 +1,7 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
 use crate::runtime::frame::Frame;
+use crate::runtime::thread::JavaThread;
 
 pub struct Return(NoOperandsInstruction);
 
@@ -17,8 +18,8 @@ impl Instruction for Return {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        (*thread).borrow_mut().pop_frame();
+        let thread = JavaThread::current();
+        thread.pop_frame();
     }
 }
 
@@ -37,9 +38,9 @@ impl Instruction for AReturn {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        let _current_frame = (*thread).borrow_mut().pop_frame();
-        let invoke_frame = (*thread).borrow().current_frame();
+        let thread = JavaThread::current();
+        let _current_frame = thread.pop_frame();
+        let invoke_frame = thread.current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_ref();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -66,9 +67,9 @@ impl Instruction for DReturn {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        let _current_frame = (*thread).borrow_mut().pop_frame();
-        let invoke_frame = (*thread).borrow().current_frame();
+        let thread = JavaThread::current();
+        let _current_frame = thread.pop_frame();
+        let invoke_frame = thread.current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_double();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -94,9 +95,9 @@ impl Instruction for FReturn {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        let _current_frame = (*thread).borrow_mut().pop_frame();
-        let invoke_frame = (*thread).borrow().current_frame();
+        let thread = JavaThread::current();
+        let _current_frame = thread.pop_frame();
+        let invoke_frame = thread.current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_float();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -122,9 +123,9 @@ impl Instruction for IReturn {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        let _current_frame = (*thread).borrow_mut().pop_frame();
-        let invoke_frame = (*thread).borrow().current_frame();
+        let thread = JavaThread::current();
+        let _current_frame = thread.pop_frame();
+        let invoke_frame = thread.current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_int();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();
@@ -150,9 +151,9 @@ impl Instruction for LReturn {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let thread = frame.thread();
-        let _current_frame = (*thread).borrow_mut().pop_frame();
-        let invoke_frame = (*thread).borrow().current_frame();
+        let thread = JavaThread::current();
+        let _current_frame = thread.pop_frame();
+        let invoke_frame = thread.current_frame();
         //        let mut borrow_frame = (*current_frame).borrow_mut();
         let return_value = frame.operand_stack().expect("stack is none").pop_long();
         let mut borrow_invoke = (*invoke_frame).borrow_mut();

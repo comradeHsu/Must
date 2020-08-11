@@ -23,6 +23,12 @@ impl Instruction for NoOperandsInstruction {
     fn execute(&mut self, frame: &mut Frame) {}
 }
 
+impl ToString for NoOperandsInstruction {
+    fn to_string(&self) -> String {
+        unimplemented!()
+    }
+}
+
 ///跳转指令
 pub struct BranchInstruction {
     offset: i32,
@@ -46,6 +52,12 @@ impl Instruction for BranchInstruction {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
+        unimplemented!()
+    }
+}
+
+impl ToString for BranchInstruction {
+    fn to_string(&self) -> String {
         unimplemented!()
     }
 }
@@ -82,6 +94,12 @@ impl Instruction for LocalVarsInstruction {
     }
 }
 
+impl ToString for LocalVarsInstruction {
+    fn to_string(&self) -> String {
+        unimplemented!()
+    }
+}
+
 ///存储和加载指令：常量池
 pub struct ConstantPoolInstruction {
     index: usize,
@@ -105,6 +123,12 @@ impl Instruction for ConstantPoolInstruction {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
+        unimplemented!()
+    }
+}
+
+impl ToString for ConstantPoolInstruction {
+    fn to_string(&self) -> String {
         unimplemented!()
     }
 }

@@ -30,7 +30,7 @@ impl Instruction for InvokeStatic {
         let class = resolved_method.class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(class.clone());
             return;
         }
         invoke_method(frame, resolved_method);

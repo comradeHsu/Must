@@ -11,30 +11,30 @@ use std::ops::DerefMut;
 use std::rc::Rc;
 //use std::time;
 
-pub fn interpret(thread: Rc<RefCell<JavaThread>>) {
+pub fn interpret(thread: JavaThread) {
     circulate(thread);
 }
 
 #[inline]
-pub fn circulate(mut thread: Rc<RefCell<JavaThread>>) {
+pub fn circulate(mut thread: JavaThread) {
     let mut reader = BytecodeReader::new();
     init();
     println!("start {:?}", Local::now());
     loop {
         //        let mut borrow_thread = (*thread).borrow_mut();
-        let current_frame = (*thread).borrow().current_frame();
+        let current_frame = thread.current_frame();
         let pc = (*current_frame).borrow().next_pc();
-        (*thread).borrow_mut().set_pc(pc);
+        thread.set_pc(pc);
         let method = (*current_frame).borrow().method_ptr();
         let bytecode = method.code();
-        //       println!("method:{}, {}, {}",method.name(),method.descriptor(),(*method.class()).borrow().name());
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
+        //println!("method:{}, {}, {},inst:{}",method.name(),method.descriptor(),(*method.class()).borrow().name(),opcode);
         let mut inst = new_instruction(opcode);
         inst.fetch_operands(&mut reader);
         (*current_frame).borrow_mut().set_next_pc(reader.pc());
         inst.execute((*current_frame).borrow_mut().deref_mut());
-        if (*thread).borrow().is_stack_empty() {
+        if thread.is_stack_empty() {
             break;
         }
         //        let ten_millis = time::Duration::from_millis(50);

@@ -1,7 +1,7 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 use crate::native::registry::Registry;
 use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
@@ -89,6 +89,6 @@ fn create() -> Option<Rc<RefCell<Object>>> {
         Parameter::Object(Some(object.clone())),
         Parameter::Object(Some(args)),
     ]);
-    invoke(method.unwrap(), Some(params), ReturnType::Void);
+    JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Void);
     return Some(object);
 }

@@ -340,3 +340,20 @@ impl Method {
         };
     }
 }
+
+impl Default for Method {
+    fn default() -> Self {
+        return Method {
+            class_member: ClassMember::new(),
+            max_stack: 0,
+            max_locals: 0,
+            code: vec![],
+            arg_slot_count: 0,
+            exception_table: ExceptionTable::default(),
+            line_number_table: None,
+            annotations: None,
+            exceptions: vec![],
+            method_desc: MethodDescriptor::new(),
+        };
+    }
+}

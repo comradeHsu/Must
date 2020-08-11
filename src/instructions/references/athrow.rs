@@ -26,7 +26,7 @@ impl AThrow {
                 .find_exception_handler((*object).borrow().class(), pc);
         }
 
-        let thread = frame.thread();
+        let thread = JavaThread::current();
 
         //display_frame(frame);
 
@@ -40,12 +40,12 @@ impl AThrow {
             frame.set_next_pc(pc);
             return true;
         }
-        (*thread).borrow_mut().pop_frame();
+        thread.pop_frame();
         loop {
-            if (*thread).borrow().is_stack_empty() {
+            if thread.is_stack_empty() {
                 break;
             }
-            let frame = (*thread).borrow().current_frame();
+            let frame = thread.current_frame();
             /**
              **
             {
@@ -62,13 +62,14 @@ impl AThrow {
                 mut_borrow.set_next_pc(handler_pc);
                 return true;
             }
-            (*thread).borrow_mut().pop_frame();
+            thread.pop_frame();
         }
         return false;
     }
 
-    fn handle_uncaught_exception(thread: Rc<RefCell<JavaThread>>, object: Rc<RefCell<Object>>) {
-        (*thread).borrow_mut().clear_stack();
+    fn handle_uncaught_exception(object: Rc<RefCell<Object>>) {
+        let thread = JavaThread::current();
+        thread.clear_stack();
         let _java_msg = (*object)
             .borrow()
             .get_ref_var("detailMessage", "Ljava/lang/String;");
@@ -98,7 +99,6 @@ impl Instruction for AThrow {
         if ex.is_none() {
             panic!("java.lang.NullPointerException");
         }
-        let thread = frame.thread();
         let object = ex.unwrap();
 
         //        let meta = (*object).borrow().meta();
@@ -108,7 +108,7 @@ impl Instruction for AThrow {
             let class = (*object).borrow().class();
         }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
-            Self::handle_uncaught_exception(thread.clone(), object);
+            Self::handle_uncaught_exception(object);
         }
     }
 }

@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use crate::oops::field::Field;
 use crate::oops::class::Class;
 use crate::instructions::references::ResolveFieldRef;
+use crate::runtime::thread::JavaThread;
 
 pub struct PutStatic(ConstantPoolInstruction);
 
@@ -24,16 +25,15 @@ impl Instruction for PutStatic {
     }
 
     fn execute(&mut self, frame: &mut Frame) {
-        let current_method = frame.method();
+        let current_method = frame.method_ptr();
         let current_class = current_method.class();
 
         let field_option = self.resolve_field_ref(current_class.clone());
-
         let field = (*field_option).borrow();
         let class = field.parent().class();
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(class.clone());
             return;
         }
         if !field.parent().is_static() {

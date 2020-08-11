@@ -15,6 +15,7 @@ use crate::utils::{boxed, java_str_to_rust_str};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::runtime::thread::JavaThread;
 
 pub fn init() {
     Registry::register(
@@ -137,9 +138,8 @@ pub fn for_name0(frame: &mut Frame) {
     let class = ClassLoader::load_class(java_loader, rust_name.as_str());
     let java_class = (*class).borrow().get_java_class();
     if initialize && !(*class).borrow().initialized() {
-        let thread = frame.thread();
-        frame.set_next_pc((*thread).borrow().get_pc());
-        init_class(thread, class);
+        frame.set_next_pc(JavaThread::current().get_pc());
+        init_class(class);
     } else {
         frame
             .operand_stack()
@@ -327,7 +327,7 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
         .push_ref(boxed_arr.clone());
 
     if constructor_count > 0 {
-        let thread = frame.thread();
+        let thread = JavaThread::current();
         let arr = boxed_arr.unwrap();
         let mut temp = (*arr).borrow_mut();
         let constructor_objs = temp.mut_references();
@@ -357,11 +357,11 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
             let mut data: Vec<u8> = vec![0, 20]; // annotations
             ops.push_ref(Some(boxed(to_byte_arr(Some(data)).unwrap()))); // parameterAnnotations
 
-            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
-            (*thread).borrow_mut().push_frame(shim_frame);
+            let shim_frame = Frame::new_shim_frame(ops);
+            thread.push_frame(shim_frame);
 
             // init constructor_obj
-            hack_invoke_method(thread.clone(), constructor_init_method.clone().unwrap());
+            hack_invoke_method(constructor_init_method.clone().unwrap());
         }
     }
 }
@@ -393,7 +393,7 @@ pub fn get_declared_fields0(frame: &mut Frame) {
         .push_ref(boxed_arr.clone());
 
     if field_count > 0 {
-        let thread = frame.thread();
+        let thread = JavaThread::current();
         let arr = boxed_arr.unwrap();
         let mut temp = (*arr).borrow_mut();
         let field_objs = temp.mut_references();
@@ -420,11 +420,11 @@ pub fn get_declared_fields0(frame: &mut Frame) {
 
             ops.push_ref(Some(boxed(to_byte_arr(Some(data)).unwrap()))); // annotations
 
-            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
-            (*thread).borrow_mut().push_frame(shim_frame);
+            let shim_frame = Frame::new_shim_frame(ops);
+            thread.push_frame(shim_frame);
 
             // init field_obj
-            hack_invoke_method(thread.clone(), field_init_method.clone().unwrap());
+            hack_invoke_method(field_init_method.clone().unwrap());
         }
     }
 }
@@ -464,7 +464,7 @@ pub fn get_declared_methods0(frame: &mut Frame) {
 
     // create method objs
     if method_count > 0 {
-        let thread = frame.thread();
+        let thread = JavaThread::current();
         let arr = boxed_arr.unwrap();
         let mut temp = (*arr).borrow_mut();
         let method_objs = temp.mut_references();
@@ -497,11 +497,11 @@ pub fn get_declared_methods0(frame: &mut Frame) {
             ops.push_ref(None);
             //            ops.push_ref(toByteArr(classLoader, method.AnnotationDefaultData()))   // annotationDefault
 
-            let shim_frame = Frame::new_shim_frame(thread.clone(), ops);
-            (*thread).borrow_mut().push_frame(shim_frame);
+            let shim_frame = Frame::new_shim_frame(ops);
+            thread.push_frame(shim_frame);
 
             // init methodObj
-            hack_invoke_method(thread.clone(), method);
+            hack_invoke_method(method);
         }
     }
 }

@@ -1,7 +1,7 @@
 pub mod java_lang_instrument;
 
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{invoke, ReturnType};
+use crate::invoke_support::{ReturnType, JavaCall};
 use crate::jvm::Jvm;
 use crate::oops::class::Class;
 use crate::oops::object::Object;
@@ -24,7 +24,7 @@ pub fn create_instrumentation() -> Rc<RefCell<Object>> {
         Parameter::Boolean(false),
         Parameter::Boolean(false),
     ];
-   invoke(
+    JavaCall::invoke(
         constructor.unwrap(),
         Some(Parameters::with_parameters(parameters)),
         ReturnType::Void,

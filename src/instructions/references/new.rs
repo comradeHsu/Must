@@ -8,6 +8,7 @@ use crate::utils::boxed;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::instructions::references::ResolveClassRef;
+use crate::runtime::thread::JavaThread;
 
 pub struct New(ConstantPoolInstruction);
 
@@ -29,7 +30,7 @@ impl Instruction for New {
         let class = self.resolve_class_ref(class);
         if !(*class).borrow().initialized() {
             frame.revert_next_pc();
-            init_class(frame.thread(), class.clone());
+            init_class(class.clone());
             return;
         }
         let ref_class = (*class).borrow();
