@@ -17,11 +17,8 @@ impl Instruction for IfEq {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val == 0 {
             branch(frame, self.0.get_offset());
         }
@@ -42,11 +39,8 @@ impl Instruction for IfNe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val != 0 {
             branch(frame, self.0.get_offset());
         }
@@ -67,11 +61,8 @@ impl Instruction for IfLt {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val < 0 {
             branch(frame, self.0.get_offset());
         }
@@ -92,11 +83,8 @@ impl Instruction for IfLe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val <= 0 {
             branch(frame, self.0.get_offset());
         }
@@ -117,11 +105,8 @@ impl Instruction for IfGt {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val > 0 {
             branch(frame, self.0.get_offset());
         }
@@ -142,11 +127,8 @@ impl Instruction for IfGe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         if val >= 0 {
             branch(frame, self.0.get_offset());
         }

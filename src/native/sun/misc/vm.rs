@@ -10,7 +10,7 @@ pub fn init() {
     Registry::register("sun/misc/VM", "initialize", "()V", initialize);
 }
 
-pub fn initialize(frame: &mut Frame) {
+pub fn initialize(frame: &Frame) {
     let system_class = Jvm::boot_class_loader()
         .find_or_create("java/lang/System")
         .unwrap();

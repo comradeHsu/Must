@@ -16,5 +16,5 @@ impl Instruction for Nop {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {}
+    fn execute(&mut self, frame: &Frame) {}
 }

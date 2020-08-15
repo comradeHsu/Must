@@ -18,10 +18,12 @@ impl Instruction for CheckCast {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let reference = stack.pop_ref();
-        stack.push_ref(reference.clone());
+    fn execute(&mut self, frame: &Frame) {
+        let reference = frame.operand_stack(|stack| {
+            let reference = stack.pop_ref();
+            stack.push_ref(reference.clone());
+            reference
+        });
         if reference.is_none() {
             return;
         }

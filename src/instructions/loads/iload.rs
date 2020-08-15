@@ -4,15 +4,9 @@ use crate::instructions::base::instruction::{
 };
 use crate::runtime::frame::Frame;
 
-fn i_load(frame: &mut Frame, index: usize) {
-    let val = frame
-        .local_vars()
-        .expect("local_vars is empty")
-        .get_int(index);
-    frame
-        .operand_stack()
-        .expect("operand_stack is empty")
-        .push_int(val);
+fn i_load(frame: &Frame, index: usize) {
+    let val = frame.get_int(index);
+    frame.push_int(val);
 }
 ///iload
 pub struct ILoad(LocalVarsInstruction);
@@ -34,7 +28,7 @@ impl Instruction for ILoad {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_load(frame, self.0.get_index());
     }
 }
@@ -54,7 +48,7 @@ impl Instruction for ILoad0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_load(frame, 0);
     }
 }
@@ -74,7 +68,7 @@ impl Instruction for ILoad1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_load(frame, 1);
     }
 }
@@ -94,7 +88,7 @@ impl Instruction for ILoad2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_load(frame, 2);
     }
 }
@@ -114,7 +108,7 @@ impl Instruction for ILoad3 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_load(frame, 3);
     }
 }

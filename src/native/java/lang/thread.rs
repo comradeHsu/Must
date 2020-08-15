@@ -22,7 +22,7 @@ pub fn init() {
     Registry::register("java/lang/Thread", "isInterrupted", "(Z)Z", is_interrupted);
 }
 
-pub fn current_thread(frame: &mut Frame) {
+pub fn current_thread(frame: &Frame) {
     let class = frame.method().class();
     let loader = Jvm::boot_class_loader();
     let thread_class = loader.find_or_create("java/lang/Thread").unwrap();
@@ -38,15 +38,12 @@ pub fn current_thread(frame: &mut Frame) {
     java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", boxed(java_thread_group));
     java_thread.set_int_var("priority", "I", 1);
 
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(Some(boxed(java_thread)));
+    frame.push_ref(Some(boxed(java_thread)));
 }
 
 // private native void setPriority0(int newPriority);
 // (I)V
-pub fn set_priority0(frame: &mut Frame) {
+pub fn set_priority0(frame: &Frame) {
     // vars := frame.LocalVars()
     // this := vars.GetThis()
     // newPriority := vars.GetInt(1))
@@ -55,42 +52,33 @@ pub fn set_priority0(frame: &mut Frame) {
 
 // public final native boolean isAlive();
 // ()Z
-pub fn is_alive(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_boolean(false);
+pub fn is_alive(frame: &Frame) {
+    frame.push_boolean(false);
 }
 
 // private native void start0();
 // ()V
-pub fn start0(frame: &mut Frame) {
+pub fn start0(frame: &Frame) {
     // todo
 }
 
 // public static native void sleep(long millis) throws InterruptedException;
 // (J)V
-pub fn sleep(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let millis = vars.get_long(0);
+pub fn sleep(frame: &Frame) {
+    let millis = frame.get_long(0);
     let ten_millis = time::Duration::from_millis(millis as u64);
     thread::sleep(ten_millis);
 }
 
 //  public static native void yield();
 // ()V
-pub fn java_yield(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn java_yield(frame: &Frame) {
     thread::yield_now();
 }
 
 // private native boolean isInterrupted(boolean ClearInterrupted);
 // (Z)Z
 /// waiting for impl
-pub fn is_interrupted(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_boolean(false);
+pub fn is_interrupted(frame: &Frame) {
+    frame.push_boolean(false);
 }

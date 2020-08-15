@@ -20,17 +20,18 @@ impl Instruction for ANewArray {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
         let component_class = self.resolve_class_ref(class);
-        let stack = frame.operand_stack().expect("stack is none");
-        let count = stack.pop_int();
-        if count < 0 {
-            panic!("java.lang.NegativeArraySizeException")
-        }
         let array_class = Class::create_array_class(component_class);
-        let array = Class::new_array(&array_class, count as usize);
-        stack.push_ref(Some(boxed(array)));
+        frame.operand_stack(|stack| {
+            let count = stack.pop_int();
+            if count < 0 {
+                panic!("java.lang.NegativeArraySizeException")
+            }
+            let array = Class::new_array(&array_class, count as usize);
+            stack.push_ref(Some(boxed(array)));
+        })
     }
 }
 

@@ -16,13 +16,14 @@ impl Instruction for ArrayLength {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let object = stack.pop_ref();
-        if object.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let array_len = (*object.unwrap()).borrow().array_length();
-        stack.push_int(array_len as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let object = stack.pop_ref();
+            if object.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let array_len = (*object.unwrap()).borrow().array_length();
+            stack.push_int(array_len as i32);
+        })
     }
 }

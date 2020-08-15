@@ -17,12 +17,13 @@ impl Instruction for IShl {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int();
-        let v1 = stack.pop_int();
-        let rs = v1 << v2;
-        stack.push_int(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int();
+            let v1 = stack.pop_int();
+            let rs = v1 << v2;
+            stack.push_int(rs);
+        })
     }
 }
 
@@ -41,12 +42,13 @@ impl Instruction for IShr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int();
-        let v1 = stack.pop_int();
-        let rs = v1 >> v2;
-        stack.push_int(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int();
+            let v1 = stack.pop_int();
+            let rs = v1 >> v2;
+            stack.push_int(rs);
+        })
     }
 }
 
@@ -65,12 +67,13 @@ impl Instruction for IuShr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int() as u32;
-        let v1 = stack.pop_int() as u32;
-        let rs = v1 >> v2;
-        stack.push_int(rs as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int() as u32;
+            let v1 = stack.pop_int() as u32;
+            let rs = v1 >> v2;
+            stack.push_int(rs as i32);
+        })
     }
 }
 
@@ -89,12 +92,13 @@ impl Instruction for LShl {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int() as u32;
-        let v1 = stack.pop_long();
-        let (rs, _) = v1.overflowing_shl(v2);
-        stack.push_long(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int() as u32;
+            let v1 = stack.pop_long();
+            let (rs, _) = v1.overflowing_shl(v2);
+            stack.push_long(rs);
+        })
     }
 }
 
@@ -113,12 +117,13 @@ impl Instruction for LShr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int() as i64;
-        let v1 = stack.pop_long();
-        let rs = v1 >> v2;
-        stack.push_long(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int() as i64;
+            let v1 = stack.pop_long();
+            let rs = v1 >> v2;
+            stack.push_long(rs);
+        })
     }
 }
 
@@ -137,11 +142,12 @@ impl Instruction for LuShr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int() as u64;
-        let v1 = stack.pop_long() as u64;
-        let rs = v1 >> v2;
-        stack.push_long(rs as i64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int() as u64;
+            let v1 = stack.pop_long() as u64;
+            let rs = v1 >> v2;
+            stack.push_long(rs as i64);
+        })
     }
 }

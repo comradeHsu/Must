@@ -11,9 +11,6 @@ pub fn init() {
 }
 
 /// java/util/concurrent/atomic/AtomicLong.VMSupportsCS8()Z
-pub fn vm_supports_cs8(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_boolean(false);
+pub fn vm_supports_cs8(frame: &Frame) {
+    frame.push_boolean(false);
 }

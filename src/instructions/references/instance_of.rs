@@ -19,20 +19,20 @@ impl Instruction for InstanceOf {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         //        let stack = frame.operand_stack().expect("stack is none");
-        let reference = frame.operand_stack().expect("stack is none").pop_ref();
+        let reference = frame.pop_ref();
         if reference.is_none() {
-            frame.operand_stack().expect("stack is none").push_int(0);
+            frame.push_int(0);
             return;
         }
         let class = frame.method().class();
 
         let class = self.resolve_class_ref(class);
         if (*reference.unwrap()).borrow().is_instance_of(class) {
-            frame.operand_stack().expect("stack is none").push_int(1);
+            frame.push_int(1);
         } else {
-            frame.operand_stack().expect("stack is none").push_int(0);
+            frame.push_int(0);
         }
     }
 }

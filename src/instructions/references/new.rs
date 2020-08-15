@@ -24,7 +24,7 @@ impl Instruction for New {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
         let class = self.resolve_class_ref(class);
@@ -42,8 +42,6 @@ impl Instruction for New {
             false => Class::new_object(&class),
         };
         frame
-            .operand_stack()
-            .expect("")
             .push_ref(Some(boxed(object)));
     }
 }

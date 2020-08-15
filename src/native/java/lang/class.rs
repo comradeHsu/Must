@@ -90,10 +90,8 @@ pub fn init() {
     );
 }
 
-pub fn get_primitive_class(frame: &mut Frame) {
+pub fn get_primitive_class(frame: &Frame) {
     let name_obj = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let target = java_str_to_rust_str(name_obj);
@@ -102,36 +100,31 @@ pub fn get_primitive_class(frame: &mut Frame) {
         .find_or_create(target.as_str())
         .unwrap();
     let java_class = (*class).borrow().get_java_class();
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(java_class);
+    frame.push_ref(java_class);
 }
 
-pub fn get_name0(frame: &mut Frame) {
+pub fn get_name0(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta().unwrap();
     let name = (*class).borrow().java_name();
     let name_obj = StringPool::java_string(name);
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(Some(name_obj));
+    frame.push_ref(Some(name_obj));
 }
 
-pub fn desired_assertion_status0(frame: &mut Frame) {
-    frame.operand_stack().expect("stack null").push_int(0);
+pub fn desired_assertion_status0(frame: &Frame) {
+    frame.push_int(0);
 }
 
-pub fn for_name0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let name = vars.get_ref(0);
-    let initialize = vars.get_boolean(1);
-    let java_loader = vars.get_ref(2);
+pub fn for_name0(frame: &Frame) {
+    let (name,initialize,java_loader) = frame.local_vars_get(|vars|{
+        let name = vars.get_ref(0);
+        let initialize = vars.get_boolean(1);
+        let java_loader = vars.get_ref(2);
+        (name,initialize,java_loader)
+    });
+
 
     let rust_name = java_str_to_rust_str(name.unwrap()).replace('.', "/");
 
@@ -141,56 +134,38 @@ pub fn for_name0(frame: &mut Frame) {
         frame.set_next_pc(JavaThread::current().get_pc());
         init_class(class);
     } else {
-        frame
-            .operand_stack()
-            .expect("stack null")
-            .push_ref(java_class);
+        frame.push_ref(java_class);
     }
 }
 
-pub fn is_interface(frame: &mut Frame) {
+pub fn is_interface(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta();
     frame
-        .operand_stack()
-        .expect("stack null")
         .push_boolean((*class.unwrap()).borrow().is_interface());
 }
 
-pub fn is_primitive(frame: &mut Frame) {
+pub fn is_primitive(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta();
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_boolean((*class.unwrap()).borrow().is_primitive());
+    frame.push_boolean((*class.unwrap()).borrow().is_primitive());
 }
 
-pub fn get_modifiers(frame: &mut Frame) {
+pub fn get_modifiers(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta();
     frame
-        .operand_stack()
-        .expect("stack null")
         .push_int((*class.unwrap()).borrow().access_flags() as i32);
 }
 
-pub fn get_superclass(frame: &mut Frame) {
+pub fn get_superclass(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta().unwrap();
@@ -199,16 +174,11 @@ pub fn get_superclass(frame: &mut Frame) {
     if super_class.is_some() {
         java_class = (*super_class.unwrap()).borrow().get_java_class();
     }
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(java_class);
+    frame.push_ref(java_class);
 }
 
-pub fn get_interfaces0(frame: &mut Frame) {
+pub fn get_interfaces0(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta().unwrap();
@@ -216,10 +186,7 @@ pub fn get_interfaces0(frame: &mut Frame) {
     let interfaces = borrow.interfaces();
     let none = Vec::new();
     let class_arr = to_class_arr(interfaces.unwrap_or_else(|| &none));
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(Some(boxed(class_arr)));
+    frame.push_ref(Some(boxed(class_arr)));
 }
 
 // []*Class => Class[]
@@ -254,41 +221,33 @@ fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
     return None;
 }
 
-pub fn is_array(frame: &mut Frame) {
+pub fn is_array(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta();
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_boolean((*class.unwrap()).borrow().is_array());
+    frame.push_boolean((*class.unwrap()).borrow().is_array());
 }
 
 // public native Class<?> getComponentType();
 // ()Ljava/lang/Class;
-pub fn get_component_type(frame: &mut Frame) {
+pub fn get_component_type(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().meta().unwrap();
     let component_class = (*class).borrow().component_class();
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref((*component_class).borrow().get_java_class());
+    frame.push_ref((*component_class).borrow().get_java_class());
 }
 
 // public native boolean isAssignableFrom(Class<?> cls);
 // (Ljava/lang/Class;)Z
-pub fn is_assignable_from(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let this = vars.get_this();
-    let cls = vars.get_ref(1);
+pub fn is_assignable_from(frame: &Frame) {
+    let (this,cls) = frame.local_vars_get(|vars|{
+        let this = vars.get_this();
+        let cls = vars.get_ref(1);
+        (this,cls)
+    });
 
     let this_class = (*this.unwrap()).borrow().meta().unwrap();
     let cls_class = (*cls.unwrap()).borrow().meta().unwrap();
@@ -296,7 +255,7 @@ pub fn is_assignable_from(frame: &mut Frame) {
         .borrow()
         .is_assignable_from((*cls_class).borrow().deref());
 
-    frame.operand_stack().expect("stack null").push_boolean(ok);
+    frame.push_boolean(ok);
 }
 
 const _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR: &str =
@@ -304,10 +263,12 @@ const _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR: &str =
 
 // private native Constructor<T>[] getDeclaredConstructors0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Constructor;
-pub fn get_declared_constructors0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let class_obj = vars.get_this().unwrap();
-    let public_only = vars.get_boolean(1);
+pub fn get_declared_constructors0(frame: &Frame) {
+    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+        let class_obj = vars.get_this().unwrap();
+        let public_only = vars.get_boolean(1);
+        (class_obj,public_only)
+    });
 
     let class = (*class_obj).borrow().meta().unwrap();
     let constructors = (*class).borrow().get_constructors(public_only);
@@ -321,10 +282,7 @@ pub fn get_declared_constructors0(frame: &mut Frame) {
     let constructor_arr = Class::new_array(&class_arr_class, constructor_count);
 
     let boxed_arr = Some(boxed(constructor_arr));
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(boxed_arr.clone());
+    frame.push_ref(boxed_arr.clone());
 
     if constructor_count > 0 {
         let thread = JavaThread::current();
@@ -371,10 +329,12 @@ const _FIELD_CONSTRUCTOR_DESCRIPTOR: &str =
 
 // private native Field[] getDeclaredFields0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Field;
-pub fn get_declared_fields0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let class_obj = vars.get_this().unwrap();
-    let public_only = vars.get_boolean(1);
+pub fn get_declared_fields0(frame: &Frame) {
+    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+        let class_obj = vars.get_this().unwrap();
+        let public_only = vars.get_boolean(1);
+        (class_obj,public_only)
+    });
 
     let class = (*class_obj).borrow().meta().unwrap();
     let fields = (*class).borrow().get_fields(public_only);
@@ -387,10 +347,7 @@ pub fn get_declared_fields0(frame: &mut Frame) {
     let field_arr = Class::new_array(&field_arr_class, field_count);
 
     let boxed_arr = Some(boxed(field_arr));
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(boxed_arr.clone());
+    frame.push_ref(boxed_arr.clone());
 
     if field_count > 0 {
         let thread = JavaThread::current();
@@ -441,10 +398,12 @@ const _METHOD_CONSTRUCTOR_DESCRIPTOR:&str =
 
 /// private native Method[] getDeclaredMethods0(boolean publicOnly);
 /// (Z)[Ljava/lang/reflect/Method;
-pub fn get_declared_methods0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let class_obj = vars.get_this().unwrap();
-    let public_only = vars.get_boolean(1);
+pub fn get_declared_methods0(frame: &Frame) {
+    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+        let class_obj = vars.get_this().unwrap();
+        let public_only = vars.get_boolean(1);
+        (class_obj,public_only)
+    });
 
     let class = (*class_obj).borrow().meta().unwrap();
     let methods = (*class).borrow().get_methods(public_only);
@@ -457,10 +416,7 @@ pub fn get_declared_methods0(frame: &mut Frame) {
     let method_arr = Class::new_array(&method_arr_class, method_count);
 
     let boxed_arr = Some(boxed(method_arr));
-    frame
-        .operand_stack()
-        .expect("stack null")
-        .push_ref(boxed_arr.clone());
+    frame.push_ref(boxed_arr.clone());
 
     // create method objs
     if method_count > 0 {

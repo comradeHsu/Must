@@ -61,13 +61,17 @@ pub fn init() {
     Registry::register("java/lang/System", "identityHashCode", "(Ljava/lang/Object;)I", identity_hash_code);
 }
 
-pub fn array_copy(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let src = vars.get_ref(0);
-    let src_pos = vars.get_int(1) as usize;
-    let dest = vars.get_ref(2);
-    let dest_pos = vars.get_int(3) as usize;
-    let length = vars.get_int(4) as usize;
+pub fn array_copy(frame: &Frame) {
+    let (src,src_pos,dest,dest_pos,length) =
+        frame.local_vars_get(|vars|{
+        let src = vars.get_ref(0);
+        let src_pos = vars.get_int(1) as usize;
+        let dest = vars.get_ref(2);
+        let dest_pos = vars.get_int(3) as usize;
+        let length = vars.get_int(4) as usize;
+        (src,src_pos,dest,dest_pos,length)
+    });
+
     if src.is_none() || dest.is_none() {
         panic!("java.lang.NullPointerException");
     }
@@ -98,18 +102,16 @@ fn check_array_copy(src: Rc<RefCell<Object>>, dest: Rc<RefCell<Object>>) -> bool
     return true;
 }
 
-pub fn set_out0(frame: &mut Frame) {
-    let out = frame.local_vars().expect("vars is none").get_this();
+pub fn set_out0(frame: &Frame) {
+    let out = frame.get_this();
     let system_class = frame.method().class();
     Class::set_static_ref_var(system_class, "out", "Ljava/io/PrintStream;", out);
 }
 
-pub fn init_properties(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let props = vars.get_ref(0);
+pub fn init_properties(frame: &Frame) {
+    let props = frame.get_ref(0);
 
-    let stack = frame.operand_stack().expect("stcak is none");
-    stack.push_ref(props.clone());
+    frame.push_ref(props.clone());
 
     // public synchronized Object setProperty(String key, String value)
     let class = (*props.clone().unwrap()).borrow().class();
@@ -197,9 +199,8 @@ fn _sys_props() -> HashMap<String, String> {
 
 // private static native void setIn0(InputStream in);
 // (Ljava/io/InputStream;)V
-pub fn set_in0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let in_object = vars.get_ref(0);
+pub fn set_in0(frame: &Frame) {
+    let in_object = frame.get_ref(0);
 
     let sys_class = frame.method().class();
     Class::set_static_ref_var(sys_class, "in", "Ljava/io/InputStream;", in_object);
@@ -207,9 +208,8 @@ pub fn set_in0(frame: &mut Frame) {
 
 // private static native void setErr0(PrintStream err);
 // (Ljava/io/PrintStream;)V
-pub fn set_err0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let err = vars.get_ref(0);
+pub fn set_err0(frame: &Frame) {
+    let err = frame.get_ref(0);
 
     let sys_class = frame.method().class();
     Class::set_static_ref_var(sys_class, "err", "Ljava/io/PrintStream;", err);
@@ -217,32 +217,29 @@ pub fn set_err0(frame: &mut Frame) {
 
 /// public static native long currentTimeMillis();
 /// ()J
-pub fn current_time_millis(frame: &mut Frame) {
+pub fn current_time_millis(frame: &Frame) {
     let millis = Local::now().timestamp_millis();
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_long(millis)
+    frame.push_long(millis)
 }
 
 /// public static native String mapLibraryName(String name);
 /// java/lang/System.mapLibraryName(Ljava/lang/String;)Ljava/lang/String;
-pub fn map_library_name(frame: &mut Frame) {
-    let name = frame.local_vars().expect("vars is none").get_ref(0);
+pub fn map_library_name(frame: &Frame) {
+    let name = frame.get_ref(0);
     let mut rust_name = java_str_to_rust_str(name.clone().unwrap());
     rust_name.push_str(".dll");
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_ref(Some(StringPool::java_string(rust_name)));
+    frame.push_ref(Some(StringPool::java_string(rust_name)));
 }
 
 /// public static native long nanoTime();
 /// ()J
-pub fn nano_time(frame: &mut Frame) {
+pub fn nano_time(frame: &Frame) {
     let nano = Local::now().timestamp_nanos();
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_long(nano)
+    frame.push_long(nano)
 }
 
 /// public static native int identityHashCode(Object o);
 /// (Ljava/lang/Object;)I
-pub fn identity_hash_code(frame: &mut Frame) {
+pub fn identity_hash_code(frame: &Frame) {
     hash_code(frame)
 }

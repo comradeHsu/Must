@@ -34,29 +34,15 @@ pub fn init() {
         "(Ljava/io/File;)J",
         get_length,
     );
-    Registry::register(
-        "testJava/ClassPathTest",
-        "print",
-        "(Ljava/lang/String;)V",
-        print,
-    );
 }
 
 /// java/io/WinNTFileSystem.initIDs()V
-pub fn init_ids(_frame: &mut Frame) {}
-
-pub fn print(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_string = vars.get_ref(0);
-    let string = java_str_to_rust_str(java_string.unwrap());
-    println!("the Java String is {}",string);
-}
+pub fn init_ids(_frame: &Frame) {}
 
 /// private native String canonicalize0(String path) throws IOException;
 /// (Ljava/lang/String;)Ljava/lang/String;
-pub fn canonicalize0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_path = vars.get_ref(1);
+pub fn canonicalize0(frame: &Frame) {
+    let java_path = frame.get_ref(1);
     let mut path = java_str_to_rust_str(java_path.clone().unwrap());
     let mut java_string = None;
     let file_path = Path::new(&path);
@@ -69,10 +55,7 @@ pub fn canonicalize0(frame: &mut Frame) {
         }
         java_string = Some(StringPool::java_string(path));
     }
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(java_string);
+    frame.push_ref(java_string);
 }
 
 /// @Native public static final int BA_EXISTS    = 0x01;
@@ -81,9 +64,8 @@ pub fn canonicalize0(frame: &mut Frame) {
 /// @Native public static final int BA_HIDDEN    = 0x08;
 /// public native int getBooleanAttributes(File f);
 /// (Ljava/io/File;)I
-pub fn get_boolean_attributes(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_file = vars.get_ref(1).unwrap();
+pub fn get_boolean_attributes(frame: &Frame) {
+    let java_file = frame.get_ref(1).unwrap();
     let java_path = (*java_file)
         .borrow()
         .get_ref_var("path", "Ljava/lang/String;");
@@ -103,10 +85,7 @@ pub fn get_boolean_attributes(frame: &mut Frame) {
         attribute |= 0x08;
     }
 
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(attribute);
+    frame.push_int(attribute);
 }
 
 fn is_hidden(filename: &str) -> bool {
@@ -125,9 +104,8 @@ fn is_hidden(filename: &str) -> bool {
 
 /// public native long getLastModifiedTime(File f);
 /// (Ljava/io/File;)J
-pub fn get_last_modified_time(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_file = vars.get_ref(1).expect("java.lang.NullPointerException");
+pub fn get_last_modified_time(frame: &Frame) {
+    let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
     let java_path = (*java_file)
         .borrow()
         .get_ref_var("path", "Ljava/lang/String;");
@@ -139,17 +117,13 @@ pub fn get_last_modified_time(frame: &mut Frame) {
     let time = modify_time
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards");
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(time.as_millis() as i64);
+    frame.push_long(time.as_millis() as i64);
 }
 
 ///  public native long getLength(File f);
 /// (Ljava/io/File;)J
-pub fn get_length(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_file = vars.get_ref(1).expect("java.lang.NullPointerException");
+pub fn get_length(frame: &Frame) {
+    let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
     let java_path = (*java_file)
         .borrow()
         .get_ref_var("path", "Ljava/lang/String;");
@@ -159,10 +133,7 @@ pub fn get_length(frame: &mut Frame) {
         true => metadata.unwrap().len(),
         false => 0
     };
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(len as i64);
+    frame.push_long(len as i64);
 }
 
 #[cfg(test)]

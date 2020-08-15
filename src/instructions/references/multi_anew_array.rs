@@ -23,17 +23,18 @@ impl MultiANewArray {
         };
     }
 
-    fn pop_and_check_counts(frame: &mut Frame, dimensions: usize) -> Vec<i32> {
-        let stack = frame.operand_stack().expect("stack is none");
-        let mut counts = Vec::with_capacity(dimensions);
-        for dimension in 1..dimensions {
-            let index = dimensions - dimension;
-            counts[index] = stack.pop_int();
-            if counts[index] < 0 {
-                panic!("java.lang.NegativeArraySizeException")
+    fn pop_and_check_counts(frame: &Frame, dimensions: usize) -> Vec<i32> {
+        frame.operand_stack(move |stack| {
+            let mut counts = Vec::with_capacity(dimensions);
+            for dimension in 1..dimensions {
+                let index = dimensions - dimension;
+                counts[index] = stack.pop_int();
+                if counts[index] < 0 {
+                    panic!("java.lang.NegativeArraySizeException")
+                }
             }
-        }
-        return counts;
+            return counts;
+        })
     }
 
     fn new_multi_dimensional_array(
@@ -61,15 +62,13 @@ impl Instruction for MultiANewArray {
         self.dimensions = reader.read_u8();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
 
         let array_class = self.resolve_class_ref(current_class);
         let counts = MultiANewArray::pop_and_check_counts(frame, self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts, array_class);
         frame
-            .operand_stack()
-            .expect("stack is none")
             .push_ref(Some(boxed(arr)));
     }
 }

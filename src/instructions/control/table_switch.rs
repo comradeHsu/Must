@@ -32,11 +32,8 @@ impl Instruction for TableSwitch {
         self.jump_offsets = reader.read_i32_table(jump_offset_count as usize);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let index = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let index = frame.pop_int();
         let mut offset = 0;
         if index >= self.low && index <= self.high {
             offset = *self

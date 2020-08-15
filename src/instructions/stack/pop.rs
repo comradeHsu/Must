@@ -17,9 +17,8 @@ impl Instruction for Pop {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        stack.pop_slot();
+    fn execute(&mut self, frame: &Frame) {
+        frame.pop_slot();
     }
 }
 
@@ -38,9 +37,10 @@ impl Instruction for Pop2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        stack.pop_slot();
-        stack.pop_slot();
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            stack.pop_slot();
+            stack.pop_slot();
+        })
     }
 }

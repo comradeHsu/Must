@@ -16,11 +16,12 @@ impl Instruction for Swap {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        stack.push_slot(slot);
-        stack.push_slot(slot_2);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            stack.push_slot(slot);
+            stack.push_slot(slot_2);
+        })
     }
 }

@@ -25,7 +25,7 @@ impl Instruction for InvokeInterface {
         reader.read_u8();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
         let (interface,resolved_method) = self.
             resolved_interface_method_ref_tuple(current_class);
@@ -33,10 +33,7 @@ impl Instruction for InvokeInterface {
             panic!("java.lang.IncompatibleClassChangeError")
         }
 
-        let object = frame
-            .operand_stack()
-            .expect("stack is none")
-            .get_ref_from_top(resolved_method.arg_slot_count() - 1);
+        let object = frame.get_ref_from_top(resolved_method.arg_slot_count() - 1);
 
         if object.is_none() {
             panic!("java.lang.NullPointerException") // todo

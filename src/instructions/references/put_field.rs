@@ -22,7 +22,7 @@ impl Instruction for PutField {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let current_method = frame.method_ptr();
         let current_class = current_method.class();
 
@@ -41,13 +41,11 @@ impl Instruction for PutField {
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
 
-        let stack = frame.operand_stack().expect("stack is none");
-
         let first_char = desc.chars().next().unwrap();
         match first_char {
             'Z' | 'B' | 'C' | 'S' | 'I' => {
-                let val = stack.pop_int();
-                let reference = stack.pop_ref();
+                let val = frame.pop_int();
+                let reference = frame.pop_ref();
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
@@ -57,8 +55,8 @@ impl Instruction for PutField {
                     .set_int(slot_id, val);
             }
             'F' => {
-                let val = stack.pop_float();
-                let reference = stack.pop_ref();
+                let val = frame.pop_float();
+                let reference = frame.pop_ref();
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
@@ -68,8 +66,8 @@ impl Instruction for PutField {
                     .set_float(slot_id, val);
             }
             'J' => {
-                let val = stack.pop_long();
-                let reference = stack.pop_ref();
+                let val = frame.pop_long();
+                let reference = frame.pop_ref();
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
@@ -79,8 +77,8 @@ impl Instruction for PutField {
                     .set_long(slot_id, val);
             }
             'D' => {
-                let val = stack.pop_double();
-                let reference = stack.pop_ref();
+                let val = frame.pop_double();
+                let reference = frame.pop_ref();
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
@@ -90,8 +88,8 @@ impl Instruction for PutField {
                     .set_double(slot_id, val);
             }
             'L' | '[' => {
-                let val = stack.pop_ref();
-                let reference = stack.pop_ref();
+                let val = frame.pop_ref();
+                let reference = frame.pop_ref();
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }

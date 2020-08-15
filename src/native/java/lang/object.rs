@@ -17,39 +17,27 @@ pub fn init() {
     Registry::register("java/lang/Object", "clone", "()Ljava/lang/Object;", clone);
 }
 
-pub fn get_class(frame: &mut Frame) {
+pub fn get_class(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let class = (*this).borrow().class();
     let java_class = (*class).borrow().get_java_class();
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(java_class);
+    frame.push_ref(java_class);
 }
 
-pub fn hash_code(frame: &mut Frame) {
+pub fn hash_code(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let ptr = (*this).borrow();
     let ptr = ptr.deref() as *const Object;
     let hash = ptr as usize;
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(hash as i32);
+    frame.push_int(hash as i32);
 }
 
-pub fn clone(frame: &mut Frame) {
+pub fn clone(frame: &Frame) {
     let this = frame
-        .local_vars()
-        .expect("vars is none")
         .get_this()
         .unwrap();
     let this_class = (*this).borrow().class();
@@ -61,10 +49,7 @@ pub fn clone(frame: &mut Frame) {
     if !(*this_class).borrow().is_implements(borrow.deref()) {
         panic!("java.lang.CloneNotSupportedException");
     }
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(Some(boxed((*this).borrow().clone())));
+    frame.push_ref(Some(boxed((*this).borrow().clone())));
 }
 
 #[cfg(test)]

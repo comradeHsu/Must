@@ -28,10 +28,11 @@ impl Instruction for IInc {
         self.constant = reader.read_i8() as i32;
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let vars = frame.local_vars().expect("operand_stack is none");
-        let mut val = vars.get_int(self.index);
-        val += self.constant;
-        vars.set_int(self.index, val);
+    fn execute(&mut self, frame: &Frame) {
+        frame.local_vars_set(|vars| {
+            let mut val = vars.get_int(self.index);
+            val += self.constant;
+            vars.set_int(self.index, val);
+        })
     }
 }

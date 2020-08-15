@@ -19,11 +19,8 @@ impl Instruction for BiPush {
         self.val = reader.read_i8();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(self.val as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(self.val as i32);
     }
 }
 
@@ -44,10 +41,7 @@ impl Instruction for SiPush {
         self.val = reader.read_i16();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(self.val as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(self.val as i32);
     }
 }

@@ -4,15 +4,9 @@ use crate::instructions::base::instruction::{
 };
 use crate::runtime::frame::Frame;
 
-fn d_load(frame: &mut Frame, index: usize) {
-    let val = frame
-        .local_vars()
-        .expect("local_vars is empty")
-        .get_double(index);
-    frame
-        .operand_stack()
-        .expect("operand_stack is empty")
-        .push_double(val);
+fn d_load(frame: &Frame, index: usize) {
+    let val = frame.get_double(index);
+    frame.push_double(val);
 }
 ///dload
 pub struct DLoad(LocalVarsInstruction);
@@ -34,7 +28,7 @@ impl Instruction for DLoad {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         d_load(frame, self.0.get_index());
     }
 }
@@ -54,7 +48,7 @@ impl Instruction for DLoad0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         d_load(frame, 0);
     }
 }
@@ -74,7 +68,7 @@ impl Instruction for DLoad1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         d_load(frame, 1);
     }
 }
@@ -94,7 +88,7 @@ impl Instruction for DLoad2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         d_load(frame, 2);
     }
 }
@@ -114,7 +108,7 @@ impl Instruction for DLoad3 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         d_load(frame, 3);
     }
 }

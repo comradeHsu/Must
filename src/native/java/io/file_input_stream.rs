@@ -25,14 +25,16 @@ pub fn init() {
     );
 }
 
-pub fn init_ids(frame: &mut Frame) {}
+pub fn init_ids(frame: &Frame) {}
 
 /// private native void open0(String name) throws FileNotFoundException;
 /// (Ljava/lang/String;)V
-pub fn open0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("LocalVars is none");
-    let this = vars.get_ref(0).unwrap();
-    let name = vars.get_ref(1);
+pub fn open0(frame: &Frame) {
+    let (this,name) = frame.local_vars_get(|vars|{
+        let this = vars.get_ref(0).unwrap();
+        let name = vars.get_ref(1);
+        return (this,name)
+    });
     let rust_str = java_str_to_rust_str(name.unwrap());
     let path = Path::new(&rust_str);
     let file = File::open(path);
@@ -50,15 +52,17 @@ pub fn open0(frame: &mut Frame) {
 
 /// private native int readBytes(byte b[], int off, int len) throws IOException;
 /// ([BII)I
-pub fn read_bytes(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("LocalVars is none");
-    let this = vars.get_ref(0).unwrap();
-    let byte_array = vars.get_ref(1).unwrap();
-    let offset = vars.get_int(2) as usize;
-    let length = vars.get_int(3);
+pub fn read_bytes(frame: &Frame) {
+    let (this,byte_array,offset,length) = frame.local_vars_get(|vars|{
+        let this = vars.get_ref(0).unwrap();
+        let byte_array = vars.get_ref(1).unwrap();
+        let offset = vars.get_int(2) as usize;
+        let length = vars.get_int(3);
+        return (this,byte_array,offset,length)
+    });
 
     if length <= 0 {
-        frame.operand_stack().expect("stack is none").push_int(0);
+        frame.push_int(0);
         return;
     }
 
@@ -77,7 +81,7 @@ pub fn read_bytes(frame: &mut Frame) {
         }
         size = read_size as i32;
     }
-    frame.operand_stack().expect("stack is none").push_int(size);
+    frame.push_int(size);
 }
 
 fn unique_path(path: String) -> String {
@@ -96,7 +100,7 @@ fn unique_path(path: String) -> String {
 
 /// private native void close0() throws IOException;
 /// ()V
-pub fn close0(frame: &mut Frame) {
+pub fn close0(frame: &Frame) {
     //    let vars = frame.local_vars().expect("LocalVars is none");
     //    let name = vars.get_ref(1);
     //    let rust_str = java_str_to_rust_str(name.unwrap());

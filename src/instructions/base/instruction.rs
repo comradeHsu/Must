@@ -4,7 +4,7 @@ use crate::runtime::frame::Frame;
 pub trait Instruction {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader);
 
-    fn execute(&mut self, frame: &mut Frame);
+    fn execute(&mut self, frame: &Frame);
 }
 
 ///没有操作数的指令
@@ -20,7 +20,7 @@ impl NoOperandsInstruction {
 impl Instruction for NoOperandsInstruction {
     fn fetch_operands(&mut self, reader: &mut BytecodeReader) {}
 
-    fn execute(&mut self, frame: &mut Frame) {}
+    fn execute(&mut self, frame: &Frame) {}
 }
 
 impl ToString for NoOperandsInstruction {
@@ -51,7 +51,7 @@ impl Instruction for BranchInstruction {
         self.offset = reader.read_i16() as i32;
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         unimplemented!()
     }
 }
@@ -89,7 +89,7 @@ impl Instruction for LocalVarsInstruction {
         self.index = reader.read_u8() as usize;
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         unimplemented!()
     }
 }
@@ -122,7 +122,7 @@ impl Instruction for ConstantPoolInstruction {
         self.index = reader.read_u16() as usize;
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         unimplemented!()
     }
 }

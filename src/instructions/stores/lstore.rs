@@ -4,14 +4,10 @@ use crate::instructions::base::instruction::{
 };
 use crate::runtime::frame::Frame;
 
-fn i_store(frame: &mut Frame, index: usize) {
+fn i_store(frame: &Frame, index: usize) {
     let val = frame
-        .operand_stack()
-        .expect("operand_stack is empty")
         .pop_long();
     frame
-        .local_vars()
-        .expect("local_vars is empty")
         .set_long(index, val);
 }
 
@@ -35,7 +31,7 @@ impl Instruction for LStore {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_store(frame, self.0.get_index());
     }
 }
@@ -55,7 +51,7 @@ impl Instruction for LStore0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_store(frame, 0);
     }
 }
@@ -75,7 +71,7 @@ impl Instruction for LStore1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_store(frame, 1);
     }
 }
@@ -95,7 +91,7 @@ impl Instruction for LStore2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_store(frame, 2);
     }
 }
@@ -115,7 +111,7 @@ impl Instruction for LStore3 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         i_store(frame, 3);
     }
 }

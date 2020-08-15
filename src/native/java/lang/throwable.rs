@@ -30,12 +30,9 @@ pub fn init() {
     );
 }
 
-pub fn fill_in_stack_trace(frame: &mut Frame) {
-    let this = frame.local_vars().expect("vars is none").get_this();
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(this.clone());
+pub fn fill_in_stack_trace(frame: &Frame) {
+    let this = frame.get_this();
+    frame.push_ref(this.clone());
     let ptr = this.unwrap();
     let stes = StackTraceElement::create_stack_trace_elements(ptr.clone());
     (*ptr).borrow_mut().set_trace(stes);
@@ -43,29 +40,23 @@ pub fn fill_in_stack_trace(frame: &mut Frame) {
 
 ///  native int getStackTraceDepth();
 /// getStackTraceDepth()I
-pub fn get_stack_trace_depth(frame: &mut Frame) {
-    let this = frame.local_vars().expect("vars is none").get_this();
+pub fn get_stack_trace_depth(frame: &Frame) {
+    let this = frame.get_this();
     let ptr = this.unwrap();
     let depth = (*ptr).borrow().trace().unwrap().len();
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(depth as i32);
+    frame.push_int(depth as i32);
 }
 
 ///  native StackTraceElement getStackTraceElement(int index);
 /// (I)Ljava/lang/StackTraceElement;
-pub fn get_stack_trace_element(frame: &mut Frame) {
-    let this = frame.local_vars().expect("vars is none").get_this();
-    let index = frame.local_vars().expect("vars is none").get_int(1) as usize;
+pub fn get_stack_trace_element(frame: &Frame) {
+    let this = frame.get_this();
+    let index = frame.get_int(1) as usize;
     let ptr = this.unwrap();
     let this_ref = (*ptr).borrow();
     let elements = this_ref.trace().unwrap();
     let java_element = create_java_stack_trace_element(elements.get(index).unwrap());
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(java_element);
+    frame.push_ref(java_element);
 }
 
 fn create_java_stack_trace_element(element:&StackTraceElement) -> Option<Rc<RefCell<Object>>> {
@@ -112,7 +103,7 @@ impl StackTraceElement {
         thread.frames_with(|frames|{
             let mut stes = Vec::with_capacity(frames.len() - skip);
             for i in 0..(frames.len() - skip) {
-                stes.push(Self::create_stack_trace_element(frames[i].clone()));
+                stes.push(Self::create_stack_trace_element(&frames[i]));
             }
             return stes;
         })
@@ -128,15 +119,14 @@ impl StackTraceElement {
         return distance;
     }
 
-    fn create_stack_trace_element(frame: Rc<RefCell<Frame>>) -> StackTraceElement {
-        let frame_borrow = (*frame).borrow();
-        let method = frame_borrow.method();
+    fn create_stack_trace_element(frame: &Frame) -> StackTraceElement {
+        let method = frame.method();
         let class = method.class();
         return StackTraceElement {
             file_name: (*class).borrow().source_file(),
             class_name: (*class).borrow().java_name(),
             method_name: method.name().to_string(),
-            line_number: method.get_line_number(frame_borrow.next_pc() - 1),
+            line_number: method.get_line_number(frame.next_pc() - 1),
         };
     }
 }

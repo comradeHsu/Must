@@ -17,9 +17,8 @@ pub fn init() {
 
 ///private native String[] getMetaInfEntryNames();
 /// ()[Ljava/lang/String;
-pub fn get_meta_inf_entry_names(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let this = vars.get_this().unwrap();
+pub fn get_meta_inf_entry_names(frame: &Frame) {
+    let this = frame.get_this().unwrap();
     let address = (*this).borrow().get_long_var("jzfile", "J") as usize;
     let zip_file = crate::native::java::util::zip_file::zip_file_cache::get_mut(address)
         .expect("the file is not open");
@@ -37,8 +36,5 @@ pub fn get_meta_inf_entry_names(frame: &mut Frame) {
         boot.find_or_create("java/lang/String").unwrap(),
         DataType::References(data),
     );
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(Some(boxed(object)));
+    frame.push_ref(Some(boxed(object)));
 }

@@ -17,10 +17,11 @@ impl Instruction for DNeg {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_double();
-        stack.push_double(-v1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_double();
+            stack.push_double(-v1);
+        })
     }
 }
 
@@ -39,10 +40,11 @@ impl Instruction for FNeg {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_float();
-        stack.push_float(-v1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_float();
+            stack.push_float(-v1);
+        })
     }
 }
 
@@ -61,10 +63,11 @@ impl Instruction for INeg {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int();
-        stack.push_int(-v1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int();
+            stack.push_int(-v1);
+        })
     }
 }
 
@@ -83,9 +86,10 @@ impl Instruction for LNeg {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_long();
-        stack.push_long(-v1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_long();
+            stack.push_long(-v1);
+        })
     }
 }

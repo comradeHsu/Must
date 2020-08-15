@@ -27,7 +27,7 @@ impl Instruction for InvokeVirtual {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
 
         let resolved_method = self.resolved_method_ref(current_class.clone());
@@ -36,8 +36,6 @@ impl Instruction for InvokeVirtual {
         }
 
         let object = frame
-            .operand_stack()
-            .expect("stack is none")
             .get_ref_from_top(resolved_method.arg_slot_count() - 1);
         if object.is_none() {
             //            if method_ref.name() == "println" {

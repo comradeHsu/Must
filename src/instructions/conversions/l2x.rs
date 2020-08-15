@@ -16,10 +16,11 @@ impl Instruction for L2d {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_long();
-        stack.push_double(v1 as f64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_long();
+            stack.push_double(v1 as f64);
+        })
     }
 }
 
@@ -37,10 +38,11 @@ impl Instruction for L2f {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_long();
-        stack.push_float(v1 as f32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_long();
+            stack.push_float(v1 as f32);
+        })
     }
 }
 
@@ -58,9 +60,10 @@ impl Instruction for L2i {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_long();
-        stack.push_int(v1 as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_long();
+            stack.push_int(v1 as i32);
+        })
     }
 }

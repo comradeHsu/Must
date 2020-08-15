@@ -15,11 +15,14 @@ pub fn init() {
 
 // private native void writeBytes(byte b[], int off, int len, boolean append) throws IOException;
 // ([BIIZ)V
-pub fn write_bytes(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let b = vars.get_ref(1).unwrap();
-    let off = vars.get_int(2) as usize;
-    let len = vars.get_int(3) as usize;
+pub fn write_bytes(frame: &Frame) {
+    let (b,off,len) =frame.local_vars_get(|vars|{
+        let b = vars.get_ref(1).unwrap();
+        let off = vars.get_int(2) as usize;
+        let len = vars.get_int(3) as usize;
+        (b,off,len)
+    });
+
     let borrow = (*b).borrow();
     let java_bytes = borrow.bytes();
     let bytes = byte_change(java_bytes);
@@ -39,7 +42,7 @@ fn byte_change(java_bytes: &Vec<i8>) -> Vec<u8> {
     return vec;
 }
 
-pub fn init_ids(frame: &mut Frame) {}
+pub fn init_ids(frame: &Frame) {}
 
 #[cfg(test)]
 mod test {

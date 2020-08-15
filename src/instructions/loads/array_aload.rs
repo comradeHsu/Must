@@ -17,18 +17,19 @@ impl Instruction for AAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let references = borrow.references();
-        check_index(references.len(), index);
-        stack.push_ref(references[index].clone());
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let references = borrow.references();
+            check_index(references.len(), index);
+            stack.push_ref(references[index].clone());
+        })
     }
 }
 
@@ -46,18 +47,19 @@ impl Instruction for BAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let bytes = borrow.bytes();
-        check_index(bytes.len(), index);
-        stack.push_int(bytes[index] as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let bytes = borrow.bytes();
+            check_index(bytes.len(), index);
+            stack.push_int(bytes[index] as i32);
+        })
     }
 }
 
@@ -75,18 +77,19 @@ impl Instruction for CAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let chars = borrow.chars();
-        check_index(chars.len(), index);
-        stack.push_int(chars[index] as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let chars = borrow.chars();
+            check_index(chars.len(), index);
+            stack.push_int(chars[index] as i32);
+        })
     }
 }
 
@@ -104,18 +107,19 @@ impl Instruction for DAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let doubles = borrow.doubles();
-        check_index(doubles.len(), index);
-        stack.push_double(doubles[index]);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let doubles = borrow.doubles();
+            check_index(doubles.len(), index);
+            stack.push_double(doubles[index]);
+        })
     }
 }
 
@@ -133,18 +137,19 @@ impl Instruction for FAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let floats = borrow.floats();
-        check_index(floats.len(), index);
-        stack.push_float(floats[index]);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let floats = borrow.floats();
+            check_index(floats.len(), index);
+            stack.push_float(floats[index]);
+        })
     }
 }
 
@@ -162,18 +167,19 @@ impl Instruction for IAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let ints = borrow.ints();
-        check_index(ints.len(), index);
-        stack.push_int(ints[index]);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let ints = borrow.ints();
+            check_index(ints.len(), index);
+            stack.push_int(ints[index]);
+        })
     }
 }
 
@@ -191,18 +197,19 @@ impl Instruction for LAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let longs = borrow.longs();
-        check_index(longs.len(), index);
-        stack.push_long(longs[index]);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let longs = borrow.longs();
+            check_index(longs.len(), index);
+            stack.push_long(longs[index]);
+        })
     }
 }
 
@@ -220,17 +227,18 @@ impl Instruction for SAload {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let index = stack.pop_int() as usize;
-        let arr_ref = stack.pop_ref();
-        if arr_ref.is_none() {
-            panic!("java.lang.NullPointerException");
-        }
-        let object = arr_ref.unwrap();
-        let borrow = (*object).borrow();
-        let shorts = borrow.shorts();
-        check_index(shorts.len(), index);
-        stack.push_int(shorts[index] as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let index = stack.pop_int() as usize;
+            let arr_ref = stack.pop_ref();
+            if arr_ref.is_none() {
+                panic!("java.lang.NullPointerException");
+            }
+            let object = arr_ref.unwrap();
+            let borrow = (*object).borrow();
+            let shorts = borrow.shorts();
+            check_index(shorts.len(), index);
+            stack.push_int(shorts[index] as i32);
+        })
     }
 }

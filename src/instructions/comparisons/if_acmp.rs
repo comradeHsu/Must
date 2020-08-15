@@ -3,11 +3,12 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime::frame::Frame;
 
-fn acmp(frame: &mut Frame) -> bool {
-    let stack = frame.operand_stack().expect("operand_stack is none");
-    let v2 = stack.pop_ref();
-    let v1 = stack.pop_ref();
-    return v1 == v2;
+fn acmp(frame: &Frame) -> bool {
+    frame.operand_stack(|stack| {
+        let v2 = stack.pop_ref();
+        let v1 = stack.pop_ref();
+        return v1 == v2;
+    })
 }
 
 pub struct IfACmpEq(BranchInstruction);
@@ -24,7 +25,7 @@ impl Instruction for IfACmpEq {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         if acmp(frame) {
             branch(frame, self.0.get_offset());
         }
@@ -45,7 +46,7 @@ impl Instruction for IfACmpNe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         if !acmp(frame) {
             branch(frame, self.0.get_offset());
         }

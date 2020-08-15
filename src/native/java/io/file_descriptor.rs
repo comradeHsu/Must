@@ -6,13 +6,9 @@ pub fn init() {
     Registry::register("java/io/FileDescriptor", "set", "(I)J", set);
 }
 
-pub fn init_ids(frame: &mut Frame) {}
+pub fn init_ids(frame: &Frame) {}
 
-pub fn set(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let fd = vars.get_int(0);
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(fd as i64);
+pub fn set(frame: &Frame) {
+    let fd = frame.get_int(0);
+    frame.push_long(fd as i64);
 }

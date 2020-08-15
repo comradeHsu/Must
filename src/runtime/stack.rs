@@ -7,7 +7,7 @@ use crate::utils::boxed;
 pub struct Stack {
     max_size: usize,
     size: usize,
-    frames: VecDeque<Rc<RefCell<Frame>>>,
+    frames: VecDeque<Frame>,
 }
 
 impl Stack {
@@ -24,11 +24,11 @@ impl Stack {
         if self.frames.len() >= self.max_size {
             panic!("java.lang.StackOverflowError");
         }
-        self.frames.push_back(boxed(frame));
+        self.frames.push_back(frame);
         self.size += 1;
     }
 
-    pub fn pop(&mut self) -> Rc<RefCell<Frame>> {
+    pub fn pop(&mut self) -> Frame {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
@@ -37,7 +37,7 @@ impl Stack {
         return frame;
     }
 
-    pub fn top(&self) -> Rc<RefCell<Frame>> {
+    pub fn top(&self) -> Frame {
         if self.frames.is_empty() {
             panic!("jvm stack is empty!");
         }
@@ -63,7 +63,7 @@ impl Stack {
     }
 
     #[inline]
-    pub fn get_frames(&self) -> &VecDeque<Rc<RefCell<Frame>>> {
+    pub fn get_frames(&self) -> &VecDeque<Frame> {
         return &self.frames;
     }
 }

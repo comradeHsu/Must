@@ -16,7 +16,7 @@ impl Instruction for Fcmpg {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         fcmp(frame, true);
     }
 }
@@ -35,24 +35,25 @@ impl Instruction for Fcmpl {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         fcmp(frame, false);
     }
 }
 
-fn fcmp(frame: &mut Frame, flag: bool) {
-    let stack = frame.operand_stack().expect("operand_stack is none");
-    let v2 = stack.pop_float();
-    let v1 = stack.pop_float();
-    if v1 > v2 {
-        stack.push_int(1);
-    } else if v1 == v2 {
-        stack.push_int(0);
-    } else if v1 < v2 {
-        stack.push_int(-1);
-    } else if flag {
-        stack.push_int(1);
-    } else {
-        stack.push_int(-1);
-    }
+fn fcmp(frame: &Frame, flag: bool) {
+    frame.operand_stack(|stack|{
+        let v2 = stack.pop_float();
+        let v1 = stack.pop_float();
+        if v1 > v2 {
+            stack.push_int(1);
+        } else if v1 == v2 {
+            stack.push_int(0);
+        } else if v1 < v2 {
+            stack.push_int(-1);
+        } else if flag {
+            stack.push_int(1);
+        } else {
+            stack.push_int(-1);
+        }
+    });
 }

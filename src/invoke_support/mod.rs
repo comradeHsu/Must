@@ -1,6 +1,5 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::new_instruction;
-use crate::interpreter::invoke_java_method;
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::return_value::ReturnValue;
 use crate::jvm::JVM;
@@ -67,30 +66,31 @@ impl JavaCall {
 
     fn prepare_parameter(&self,frame: &mut Frame) {
         if self.params.is_some() {
-            let vars = frame.local_vars().expect("LocalVars is none");
-            let params = self.params.as_ref().unwrap();
-            let mut index = 0;
-            for i in 0..params.size() {
-                let parameter = params.get_parameter(i);
-                match parameter {
-                    Parameter::Boolean(value) => vars.set_boolean(index, *value),
-                    Parameter::Byte(value) => vars.set_int(index, *value as i32),
-                    Parameter::Short(value) => vars.set_int(index, *value as i32),
-                    Parameter::Int(value) => vars.set_int(index, *value),
-                    Parameter::Long(value) => {
-                        vars.set_long(index, *value);
-                        index += 1;
+            frame.local_vars_set(|vars| {
+                let params = self.params.as_ref().unwrap();
+                let mut index = 0;
+                for i in 0..params.size() {
+                    let parameter = params.get_parameter(i);
+                    match parameter {
+                        Parameter::Boolean(value) => vars.set_boolean(index, *value),
+                        Parameter::Byte(value) => vars.set_int(index, *value as i32),
+                        Parameter::Short(value) => vars.set_int(index, *value as i32),
+                        Parameter::Int(value) => vars.set_int(index, *value),
+                        Parameter::Long(value) => {
+                            vars.set_long(index, *value);
+                            index += 1;
+                        }
+                        Parameter::Float(value) => vars.set_float(index, *value),
+                        Parameter::Double(value) => {
+                            vars.set_double(index, *value);
+                            index += 1;
+                        }
+                        Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
+                        Parameter::Object(value) => vars.set_ref(index, value.clone()),
                     }
-                    Parameter::Float(value) => vars.set_float(index, *value),
-                    Parameter::Double(value) => {
-                        vars.set_double(index, *value);
-                        index += 1;
-                    }
-                    Parameter::Char(value) => vars.set_int(index, *value as u8 as i32),
-                    Parameter::Object(value) => vars.set_ref(index, value.clone()),
+                    index += 1;
                 }
-                index += 1;
-            }
+            });
         }
     }
 
@@ -98,47 +98,37 @@ impl JavaCall {
         let mut reader = BytecodeReader::new();
         loop {
             let current_frame = self.thread.current_frame();
-            if (*current_frame).borrow().is_barrier_frame() {
+            if current_frame.is_barrier_frame() {
                 break;
             }
-            let pc = (*current_frame).borrow().next_pc();
+            let pc = current_frame.next_pc();
             self.thread.set_pc(pc);
-            let method = (*current_frame).borrow().method_ptr();
+            let method = current_frame.method_ptr();
             let bytecode = method.code();
-//            if  (*method.class()).borrow().name() == "java/lang/Throwable" &&
-//                method.name() == "<clinit>"{
-//                println!("code : {:?}",to_hex_str(&bytecode))
-//            }
             reader.reset(bytecode, pc);
             let opcode = reader.read_u8();
             //println!("\tmethod:{}, {}, {},inst:{}",method.name(),method.descriptor(),(*method.class()).borrow().name(),opcode);
             let mut inst = new_instruction(opcode);
             inst.fetch_operands(&mut reader);
-            (*current_frame).borrow_mut().set_next_pc(reader.pc());
-//            if  (*method.class()).borrow().name() == "java/lang/Throwable" &&
-//                method.name() == "<clinit>"{
-//                println!("current_frame pc : {:?}，next pc {}, thread pc :{}",pc,reader.pc(),thread.get_pc());
-//            }
-            inst.execute((*current_frame).borrow_mut().deref_mut());
+            current_frame.set_next_pc(reader.pc());
+            inst.execute(&current_frame);
             if self.thread.is_stack_empty() {
                 exit(101);
             }
             //sleep_ms(500);
         }
         let value_frame = self.thread.pop_frame();
-        let mut frame_borrow = (*value_frame).borrow_mut();
-        let stack = frame_borrow.operand_stack().expect("stack is none");
         let value = match self.return_type {
             ReturnType::Void => ReturnValue::Void,
-            ReturnType::Boolean => ReturnValue::Boolean(stack.pop_boolean()),
-            ReturnType::Byte => ReturnValue::Byte(stack.pop_int() as i8),
-            ReturnType::Short => ReturnValue::Short(stack.pop_int() as i16),
-            ReturnType::Int => ReturnValue::Int(stack.pop_int()),
-            ReturnType::Long => ReturnValue::Long(stack.pop_long()),
-            ReturnType::Float => ReturnValue::Float(stack.pop_float()),
-            ReturnType::Double => ReturnValue::Double(stack.pop_double()),
-            ReturnType::Char => ReturnValue::Char(stack.pop_int() as u8 as char),
-            ReturnType::Object => ReturnValue::Object(stack.pop_ref()),
+            ReturnType::Boolean => ReturnValue::Boolean(value_frame.pop_boolean()),
+            ReturnType::Byte => ReturnValue::Byte(value_frame.pop_int() as i8),
+            ReturnType::Short => ReturnValue::Short(value_frame.pop_int() as i16),
+            ReturnType::Int => ReturnValue::Int(value_frame.pop_int()),
+            ReturnType::Long => ReturnValue::Long(value_frame.pop_long()),
+            ReturnType::Float => ReturnValue::Float(value_frame.pop_float()),
+            ReturnType::Double => ReturnValue::Double(value_frame.pop_double()),
+            ReturnType::Char => ReturnValue::Char(value_frame.pop_int() as u8 as char),
+            ReturnType::Object => ReturnValue::Object(value_frame.pop_ref()),
         };
         return value;
     }
@@ -164,7 +154,7 @@ pub enum ReturnType {
     Object,
 }
 
-pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
+pub fn throw_exception(frame: &Frame, class_name: &str, msg: Option<&str>) {
     let class = frame.method().class();
     let class_loader = (*class).borrow().get_class_loader();
     let exception_class = ClassLoader::load_class(class_loader,class_name);
@@ -181,10 +171,7 @@ pub fn throw_exception(frame: &mut Frame, class_name: &str, msg: Option<&str>) {
         Parameter::Object(detail_message)
     ];
     JavaCall::invoke(constructor.unwrap(),Some(Parameters::with_parameters(parameters)),ReturnType::Void);
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(object_ptr);
+    frame.push_ref(object_ptr);
     let mut athrow = AThrow::new();
     athrow.execute(frame);
 }

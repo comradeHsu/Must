@@ -19,7 +19,7 @@ impl Instruction for GotoW {
         self.offset = reader.read_i32();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         branch(frame, self.offset);
     }
 }

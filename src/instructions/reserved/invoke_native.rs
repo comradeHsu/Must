@@ -17,7 +17,7 @@ impl Instruction for InvokeNative {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let method = frame.method();
         let class = method.class();
         let class_name = (*class).borrow().name().to_string();

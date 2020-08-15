@@ -19,7 +19,7 @@ impl Instruction for GetStatic {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
         let field_option = self.resolve_field_ref(class);
@@ -37,14 +37,14 @@ impl Instruction for GetStatic {
         let slot_id = field.slot_id();
         let mut borrow_class = (*class).borrow_mut();
         let slots = borrow_class.mut_static_vars().expect("slots is none");
-        let stack = frame.operand_stack().expect("stack is none");
+
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
-            'F' => stack.push_float(slots.get_float(slot_id)),
-            'J' => stack.push_long(slots.get_long(slot_id)),
-            'D' => stack.push_double(slots.get_double(slot_id)),
-            'L' | '[' => stack.push_ref(slots.get_ref(slot_id)),
+            'Z' | 'B' | 'C' | 'S' | 'I' => frame.push_int(slots.get_int(slot_id)),
+            'F' => frame.push_float(slots.get_float(slot_id)),
+            'J' => frame.push_long(slots.get_long(slot_id)),
+            'D' => frame.push_double(slots.get_double(slot_id)),
+            'L' | '[' => frame.push_ref(slots.get_ref(slot_id)),
             _ => {}
         }
     }

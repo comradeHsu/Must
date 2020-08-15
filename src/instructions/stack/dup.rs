@@ -17,11 +17,12 @@ impl Instruction for Dup {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot = stack.pop_slot();
-        stack.push_slot(slot.clone());
-        stack.push_slot(slot);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot = stack.pop_slot();
+            stack.push_slot(slot.clone());
+            stack.push_slot(slot);
+        })
     }
 }
 
@@ -40,13 +41,14 @@ impl Instruction for DupX1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        stack.push_slot(slot.clone());
-        stack.push_slot(slot_2);
-        stack.push_slot(slot);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            stack.push_slot(slot.clone());
+            stack.push_slot(slot_2);
+            stack.push_slot(slot);
+        })
     }
 }
 
@@ -65,15 +67,16 @@ impl Instruction for DupX2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot_1 = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        let slot_3 = stack.pop_slot();
-        stack.push_slot(slot_1.clone());
-        stack.push_slot(slot_3);
-        stack.push_slot(slot_2);
-        stack.push_slot(slot_1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot_1 = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            let slot_3 = stack.pop_slot();
+            stack.push_slot(slot_1.clone());
+            stack.push_slot(slot_3);
+            stack.push_slot(slot_2);
+            stack.push_slot(slot_1);
+        })
     }
 }
 
@@ -92,14 +95,15 @@ impl Instruction for Dup2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot_1 = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        stack.push_slot(slot_2.clone());
-        stack.push_slot(slot_1.clone());
-        stack.push_slot(slot_2);
-        stack.push_slot(slot_1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot_1 = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            stack.push_slot(slot_2.clone());
+            stack.push_slot(slot_1.clone());
+            stack.push_slot(slot_2);
+            stack.push_slot(slot_1);
+        })
     }
 }
 
@@ -118,16 +122,17 @@ impl Instruction for Dup2X1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot_1 = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        let slot_3 = stack.pop_slot();
-        stack.push_slot(slot_2.clone());
-        stack.push_slot(slot_1.clone());
-        stack.push_slot(slot_3);
-        stack.push_slot(slot_2);
-        stack.push_slot(slot_1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot_1 = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            let slot_3 = stack.pop_slot();
+            stack.push_slot(slot_2.clone());
+            stack.push_slot(slot_1.clone());
+            stack.push_slot(slot_3);
+            stack.push_slot(slot_2);
+            stack.push_slot(slot_1);
+        })
     }
 }
 
@@ -146,17 +151,18 @@ impl Instruction for Dup2X2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let slot_1 = stack.pop_slot();
-        let slot_2 = stack.pop_slot();
-        let slot_3 = stack.pop_slot();
-        let slot_4 = stack.pop_slot();
-        stack.push_slot(slot_2.clone());
-        stack.push_slot(slot_1.clone());
-        stack.push_slot(slot_4);
-        stack.push_slot(slot_3);
-        stack.push_slot(slot_2);
-        stack.push_slot(slot_1);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let slot_1 = stack.pop_slot();
+            let slot_2 = stack.pop_slot();
+            let slot_3 = stack.pop_slot();
+            let slot_4 = stack.pop_slot();
+            stack.push_slot(slot_2.clone());
+            stack.push_slot(slot_1.clone());
+            stack.push_slot(slot_4);
+            stack.push_slot(slot_3);
+            stack.push_slot(slot_2);
+            stack.push_slot(slot_1);
+        })
     }
 }

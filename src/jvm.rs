@@ -6,7 +6,7 @@ use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::Instruction;
 use crate::instructions::base::method_invoke_logic::invoke_method;
 use crate::instructions::references::athrow::AThrow;
-use crate::interpreter::{interpret, invoke_java_method};
+use crate::interpreter::{interpret};
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::{ReturnType, JavaCall};
 use crate::prims::perf_data::Variability;
@@ -120,10 +120,7 @@ impl Jvm {
         }
         let args_arr = self.create_args_array();
         let mut frame = Frame::new(main_method.unwrap());
-        frame
-            .local_vars()
-            .expect("vars is none")
-            .set_ref(0, Some(args_arr));
+        frame.set_ref(0, Some(args_arr));
         self.main_thread.push_frame(frame);
         interpret(self.main_thread.clone());
     }

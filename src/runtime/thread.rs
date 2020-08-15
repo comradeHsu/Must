@@ -56,11 +56,11 @@ impl JavaThread {
         (*self.inner).borrow_mut().stack.push(frame);
     }
 
-    pub fn pop_frame(&self) -> Rc<RefCell<Frame>> {
+    pub fn pop_frame(&self) -> Frame {
         return (*self.inner).borrow_mut().stack.pop();
     }
 
-    pub fn current_frame(&self) -> Rc<RefCell<Frame>> {
+    pub fn current_frame(&self) -> Frame {
         return (*self.inner).borrow().stack.top();
     }
 
@@ -85,7 +85,7 @@ impl JavaThread {
 
     pub fn frames_with<R, F>(&self,func: F) -> R
         where
-            F: FnOnce(&VecDeque<Rc<RefCell<Frame>>>) -> R,
+            F: FnOnce(&VecDeque<Frame>) -> R,
     {
         let borrow = (*self.inner).borrow();
         func(borrow.stack.get_frames())

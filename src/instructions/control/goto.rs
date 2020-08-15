@@ -17,7 +17,7 @@ impl Instruction for Goto {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         branch(frame, self.0.get_offset());
     }
 }

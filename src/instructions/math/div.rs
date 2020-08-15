@@ -17,12 +17,13 @@ impl Instruction for DDiv {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_double();
-        let v1 = stack.pop_double();
-        let rs = v1 / v2;
-        stack.push_double(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_double();
+            let v1 = stack.pop_double();
+            let rs = v1 / v2;
+            stack.push_double(rs);
+        })
     }
 }
 
@@ -41,12 +42,13 @@ impl Instruction for FDiv {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_float();
-        let v1 = stack.pop_float();
-        let rs = v1 / v2;
-        stack.push_float(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_float();
+            let v1 = stack.pop_float();
+            let rs = v1 / v2;
+            stack.push_float(rs);
+        })
     }
 }
 
@@ -65,12 +67,13 @@ impl Instruction for IDiv {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int();
-        let v1 = stack.pop_int();
-        let rs = v1 / v2;
-        stack.push_int(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int();
+            let v1 = stack.pop_int();
+            let rs = v1 / v2;
+            stack.push_int(rs);
+        })
     }
 }
 
@@ -89,11 +92,12 @@ impl Instruction for LDiv {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_long();
-        let v1 = stack.pop_long();
-        let rs = v1 / v2;
-        stack.push_long(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_long();
+            let v1 = stack.pop_long();
+            let rs = v1 / v2;
+            stack.push_long(rs);
+        })
     }
 }

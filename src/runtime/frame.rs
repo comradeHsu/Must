@@ -4,8 +4,10 @@ use crate::runtime::operand_stack::OperandStack;
 use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::oops::object::Object;
+use crate::runtime::slot::Slot;
 
-pub struct Frame {
+struct Core {
     local_vars: Option<LocalVars>,
     operand_stack: Option<OperandStack>,
     method: Rc<Method>,
@@ -13,15 +15,22 @@ pub struct Frame {
     frame_type:FrameType
 }
 
+#[derive(Clone)]
+pub struct Frame {
+    core: Rc<RefCell<Core>>
+}
+
 impl Frame {
     #[inline]
     pub fn new(method: Rc<Method>) -> Frame {
         return Frame {
-            local_vars: LocalVars::with_capacity(method.max_locals()),
-            operand_stack: OperandStack::new(method.max_stack()),
-            method,
-            next_pc: 0,
-            frame_type: Default::default()
+            core: Rc::new(RefCell::new(Core {
+                local_vars: LocalVars::with_capacity(method.max_locals()),
+                operand_stack: OperandStack::new(method.max_stack()),
+                method,
+                next_pc: 0,
+                frame_type: Default::default()
+            })),
         };
     }
 
@@ -34,18 +43,20 @@ impl Frame {
             Rc::new(Method::default()),
             FrameType::BarrierFrame
         );
-        frame.operand_stack = OperandStack::new(1);
+        (*frame.core).borrow_mut().operand_stack = OperandStack::new(1);
         frame
     }
 
     #[inline]
     fn with_type(method: Rc<Method>,frame_type:FrameType) -> Frame {
         return Frame {
-            local_vars: LocalVars::with_capacity(method.max_locals()),
-            operand_stack: OperandStack::new(method.max_stack()),
-            method,
-            next_pc: 0,
-            frame_type
+            core: Rc::new(RefCell::new(Core {
+                local_vars: LocalVars::with_capacity(method.max_locals()),
+                operand_stack: OperandStack::new(method.max_stack()),
+                method,
+                next_pc: 0,
+                frame_type
+            })),
         };
     }
 
@@ -55,72 +66,66 @@ impl Frame {
         max_stack: usize,
     ) -> Frame {
         return Frame {
-            local_vars: LocalVars::with_capacity(max_locals),
-            operand_stack: OperandStack::new(max_stack),
-            method: Rc::new(Method::new()),
-            next_pc: 0,
-            frame_type: Default::default()
+            core: Rc::new(RefCell::new(Core {
+                local_vars: LocalVars::with_capacity(max_locals),
+                operand_stack: OperandStack::new(max_stack),
+                method: Default::default(),
+                next_pc: 0,
+                frame_type: Default::default()
+            })),
         };
     }
 
-    #[inline]
-    pub fn operand_stack(&mut self) -> Option<&mut OperandStack> {
-        return self.operand_stack.as_mut();
-    }
-
-    #[inline]
-    pub fn local_vars(&mut self) -> Option<&mut LocalVars> {
-        return self.local_vars.as_mut();
-    }
+//    #[inline]
+//    pub fn operand_stack(&mut self) -> Option<&mut OperandStack> {
+//        return (*self.core).borrow_mut().operand_stack.as_mut();
+//    }
+//
+//    #[inline]
+//    pub fn local_vars(&mut self) -> Option<&mut LocalVars> {
+//        return (*self.core).borrow_mut().local_vars.as_mut();
+//    }
 
     #[inline]
     pub fn next_pc(&self) -> i32 {
-        return self.next_pc;
+        return (*self.core).borrow().next_pc;
     }
 
     #[inline]
-    pub fn set_next_pc(&mut self, next_pc: i32) {
-        self.next_pc = next_pc;
+    pub fn set_next_pc(&self, next_pc: i32) {
+        (*self.core).borrow_mut().next_pc = next_pc;
     }
 
     #[inline]
-    pub fn revert_next_pc(&mut self) {
-        self.next_pc = JavaThread::current().get_pc();
+    pub fn revert_next_pc(&self) {
+        (*self.core).borrow_mut().next_pc = JavaThread::current().get_pc();
     }
 
     #[inline]
-    pub fn method(&self) -> &Method {
-        return self.method.as_ref();
-    }
-
-    #[inline]
-    pub fn method_by_clone(&self) -> Rc<Method> {
-        return self.method.clone();
+    pub fn method(&self) -> Rc<Method> {
+        return (*self.core).borrow().method.clone();
     }
 
     #[inline]
     pub fn method_ptr(&self) -> Rc<Method> {
-        return self.method.clone();
+        return  (*self.core).borrow().method.clone();
     }
 
     pub fn new_shim_frame(ops: OperandStack) -> Frame {
         return Frame {
-            local_vars: None,
-            method: Rc::new(Method::shim_return_method()),
-            operand_stack: Some(ops),
-            next_pc: 0,
-            frame_type: Default::default()
+            core: Rc::new(RefCell::new(Core {
+                local_vars: None,
+                method: Rc::new(Method::shim_return_method()),
+                operand_stack: Some(ops),
+                next_pc: 0,
+                frame_type: Default::default()
+            })),
         };
     }
 
     #[inline]
-    pub fn immutable_local_vars(&self) -> Option<&LocalVars> {
-        return self.local_vars.as_ref();
-    }
-
-    #[inline]
     pub fn is_intrinsic_frame(&self) -> bool {
-        if let FrameType::IntrinsicFrame = self.frame_type {
+        if let FrameType::IntrinsicFrame = (*self.core).borrow().frame_type {
             return true;
         }
         false
@@ -128,10 +133,175 @@ impl Frame {
 
     #[inline]
     pub fn is_barrier_frame(&self) -> bool {
-        if let FrameType::BarrierFrame = self.frame_type {
+        if let FrameType::BarrierFrame = (*self.core).borrow().frame_type {
             return true;
         }
         false
+    }
+
+    /// local_vars table operation
+    ///
+    pub fn local_vars_get<R, F>(&self,func: F) -> R
+        where
+            F: FnOnce(&LocalVars) -> R,
+    {
+        let holder = (*self.core).borrow();
+        let vars = holder.local_vars.as_ref().expect("vars is none");
+        func(vars)
+    }
+
+    pub fn local_vars_set<R, F>(&self,func: F) -> R
+        where
+            F: FnOnce(&mut LocalVars) -> R,
+    {
+        let mut holder = (*self.core).borrow_mut();
+        let vars = holder.local_vars.as_mut().expect("vars is none");
+        func(vars)
+    }
+
+    pub fn get_boolean(&self, index: usize) -> bool {
+        self.local_vars_get(|v| v.get_boolean(index))
+    }
+
+    pub fn set_boolean(&self, index: usize, val: bool) {
+        self.local_vars_set(|v| v.set_boolean(index,val))
+    }
+
+    pub fn get_int(&self, index: usize) -> i32 {
+        self.local_vars_get(|v| v.get_int(index))
+    }
+
+    pub fn set_int(&self, index: usize, val: i32) {
+        self.local_vars_set(|v| v.set_int(index,val))
+    }
+
+    pub fn get_float(&self, index: usize) -> f32 {
+        self.local_vars_get(|v| v.get_float(index))
+    }
+
+    pub fn set_float(&self, index: usize, val: f32) {
+        self.local_vars_set(|v| v.set_float(index,val))
+    }
+
+    pub fn get_long(&self, index: usize) -> i64 {
+        self.local_vars_get(|v| v.get_long(index))
+    }
+
+    pub fn set_long(&self, index: usize, val: i64) {
+        self.local_vars_set(|v| v.set_long(index,val))
+    }
+
+    pub fn get_double(&self, index: usize) -> f64 {
+        self.local_vars_get(|v| v.get_double(index))
+    }
+
+    pub fn set_double(&self, index: usize, val: f64) {
+        self.local_vars_set(|v| v.set_double(index,val))
+    }
+
+    pub fn get_ref(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+        self.local_vars_get(|v| v.get_ref(index))
+    }
+
+    pub fn set_ref(&self, index: usize, val: Option<Rc<RefCell<Object>>>) {
+        self.local_vars_set(|v| v.set_ref(index,val))
+    }
+
+    pub fn set_slot(&self, index: usize, val: Slot) {
+        self.local_vars_set(|v| v.set_slot(index,val))
+    }
+
+    #[inline]
+    pub fn get_this(&self) -> Option<Rc<RefCell<Object>>> {
+        return self.get_ref(0);
+    }
+
+    /// OperandStack operation
+    ///
+    pub fn operand_stack<R, F>(&self,func: F) -> R
+        where
+            F: FnOnce(&mut OperandStack) -> R,
+    {
+        let mut holder = (*self.core).borrow_mut();
+        let vars = holder.operand_stack.as_mut().expect("vars is none");
+        func(vars)
+    }
+
+    #[inline]
+    pub fn push_int(&self, val: i32) {
+        self.operand_stack(|o| o.push_int(val))
+    }
+
+    #[inline]
+    pub fn pop_int(&self) -> i32 {
+        self.operand_stack(|o| o.pop_int())
+    }
+
+    #[inline]
+    pub fn pop_boolean(&self) -> bool {
+        self.operand_stack(|o| o.pop_boolean())
+    }
+
+    #[inline]
+    pub fn push_float(&self, val: f32) {
+        self.operand_stack(|o| o.push_float(val))
+    }
+
+    #[inline]
+    pub fn pop_float(&self) -> f32 {
+        self.operand_stack(|o| o.pop_float())
+    }
+
+    #[inline]
+    pub fn push_long(&self, val: i64) {
+        self.operand_stack(|o| o.push_long(val))
+    }
+
+    #[inline]
+    pub fn pop_long(&self) -> i64 {
+        self.operand_stack(|o| o.pop_long())
+    }
+
+    #[inline]
+    pub fn push_double(&self, val: f64) {
+        self.operand_stack(|o| o.push_double(val))
+    }
+
+    #[inline]
+    pub fn pop_double(&self) -> f64 {
+        self.operand_stack(|o| o.pop_double())
+    }
+
+    #[inline]
+    pub fn push_ref(&self, val: Option<Rc<RefCell<Object>>>) {
+        self.operand_stack(|o| o.push_ref(val))
+    }
+
+    #[inline]
+    pub fn pop_ref(&self) -> Option<Rc<RefCell<Object>>> {
+        self.operand_stack(|o| o.pop_ref())
+    }
+
+    #[inline]
+    pub fn push_boolean(&self, val: bool) {
+        self.operand_stack(|o| o.push_boolean(val))
+    }
+
+    #[inline]
+    pub fn push_slot(&self, val: Slot) {
+        self.operand_stack(|o| o.push_slot(val))
+    }
+
+    #[inline]
+    pub fn pop_slot(&self) -> Slot {
+        self.operand_stack(|o| o.pop_slot())
+    }
+
+    #[inline]
+    pub fn get_ref_from_top(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+        let holder = (*self.core).borrow_mut();
+        let vars = holder.operand_stack.as_ref().expect("vars is none");
+        vars.get_ref_from_top(index)
     }
 }
 
@@ -161,8 +331,8 @@ mod test {
     fn test_frame() {
         let thread = Rc::new(RefCell::new(JavaThread::new_thread()));
         let mut frame = Frame::with_capacity(100, 100);
-        test_local_vars(&mut frame.local_vars.unwrap());
-        test_operand_stack(&mut frame.operand_stack.unwrap());
+        test_local_vars(&mut (*frame.core).borrow_mut().local_vars.take().unwrap());
+        test_operand_stack(&mut (*frame.core).borrow_mut().operand_stack.take().unwrap());
     }
 
     fn test_local_vars(vars: &mut LocalVars) {

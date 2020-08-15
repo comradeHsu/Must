@@ -16,12 +16,11 @@ impl AThrow {
         return AThrow(NoOperandsInstruction::new());
     }
 
-    fn find_and_goto_exception_handler(frame: &mut Frame, object: Rc<RefCell<Object>>) -> bool {
+    fn find_and_goto_exception_handler(frame: &Frame, object: Rc<RefCell<Object>>) -> bool {
         ///
-        fn get_handler_pc(frame: Rc<RefCell<Frame>>, object: Rc<RefCell<Object>>) -> i32 {
-            let pc = (*frame).borrow().next_pc() - 1;
-            let borrow_frame = (*frame).borrow();
-            return borrow_frame
+        fn get_handler_pc(frame: &Frame, object: Rc<RefCell<Object>>) -> i32 {
+            let pc = frame.next_pc() - 1;
+            return frame
                 .method()
                 .find_exception_handler((*object).borrow().class(), pc);
         }
@@ -34,9 +33,10 @@ impl AThrow {
             .method()
             .find_exception_handler((*object).borrow().class(), frame.next_pc() - 1);
         if pc > 0 {
-            let stack = frame.operand_stack().expect("stack is none");
-            stack.clear();
-            stack.push_ref(Some(object.clone()));
+            frame.operand_stack(|stack| {
+                stack.clear();
+                stack.push_ref(Some(object.clone()));
+            });
             frame.set_next_pc(pc);
             return true;
         }
@@ -53,13 +53,13 @@ impl AThrow {
                 display_frame(fra.deref());
             }
             **/
-            let handler_pc = get_handler_pc(frame.clone(), object.clone());
+            let handler_pc = get_handler_pc(&frame, object.clone());
             if handler_pc > 0 {
-                let mut mut_borrow = (*frame).borrow_mut();
-                let stack = mut_borrow.operand_stack().expect("stack is none");
-                stack.clear();
-                stack.push_ref(Some(object.clone()));
-                mut_borrow.set_next_pc(handler_pc);
+                frame.operand_stack(|stack| {
+                    stack.clear();
+                    stack.push_ref(Some(object.clone()));
+                });
+                frame.set_next_pc(handler_pc);
                 return true;
             }
             thread.pop_frame();
@@ -94,8 +94,8 @@ impl Instruction for AThrow {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let ex = frame.operand_stack().expect("stack is none").pop_ref();
+    fn execute(&mut self, frame: &Frame) {
+        let ex = frame.pop_ref();
         if ex.is_none() {
             panic!("java.lang.NullPointerException");
         }
@@ -118,8 +118,7 @@ fn display_frame(frame: &Frame) {
     if method.name() == "loadClass"
         && method.descriptor() == "(Ljava/lang/String;Z)Ljava/lang/Class;"
     {
-        let vars = frame.immutable_local_vars().unwrap();
-        let this = vars.get_this().unwrap();
+        let this = frame.get_this().unwrap();
         let class = (*this).borrow().class();
         let name = (*class).borrow().java_name();
         println!("java class:{}", name);

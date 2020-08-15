@@ -37,6 +37,7 @@ mod tests {
     use std::time::SystemTime;
     use std::path::{Path, PathBuf};
     use std::sync::Mutex;
+    use crate::runtime::slot::Slot;
 
     #[test]
     fn start_jvm() {

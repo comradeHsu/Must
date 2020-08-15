@@ -72,36 +72,31 @@ pub fn init() {
     Registry::register("sun/misc/Unsafe", "getLong", "(J)J", get_long);
 }
 
-pub fn array_base_offset(frame: &mut Frame) {
-    frame.operand_stack().expect("stack is none").push_int(0);
+pub fn array_base_offset(frame: &Frame) {
+    frame.push_int(0);
 }
 
-pub fn array_index_scale(frame: &mut Frame) {
-    frame.operand_stack().expect("stack is none").push_int(1);
+pub fn array_index_scale(frame: &Frame) {
+    frame.push_int(1);
 }
 
-pub fn address_size(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(size_of::<usize>() as i32);
+pub fn address_size(frame: &Frame) {
+    frame.push_int(size_of::<usize>() as i32);
 }
 
 // public native long objectFieldOffset(Field field);
 // (Ljava/lang/reflect/Field;)J
-pub fn object_field_offset(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let j_field = vars.get_ref(1).unwrap();
+pub fn object_field_offset(frame: &Frame) {
+    let j_field = frame.get_ref(1).unwrap();
 
     let offset = (*j_field).borrow().get_int_var("slot", "I");
 
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_long(offset as i64);
+    frame.push_long(offset as i64);
 }
 
 // public final native boolean compareAndSwapObject(Object o, long offset, Object expected, Object x)
 // (Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)Z
-pub fn compare_and_swap_object(frame: &mut Frame) {
+pub fn compare_and_swap_object(frame: &Frame) {
     //    vars := frame.LocalVars()
     //    obj := vars.GetRef(1)
     //    fields := obj.Data()
@@ -122,33 +117,34 @@ pub fn compare_and_swap_object(frame: &mut Frame) {
     //    // todo
     //        panic("todo: compareAndSwapObject!")
     //    }
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_boolean(true);
+    frame.push_boolean(true);
 }
 
 // public native boolean getInt(Object o, long offset);
 // (Ljava/lang/Object;J)I
-pub fn get_int_volatile(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let object = vars.get_ref(1).unwrap();
+pub fn get_int_volatile(frame: &Frame) {
+    let (object,offset) = frame.local_vars_get(|vars| {
+        let object = vars.get_ref(1).unwrap();
+        let offset = vars.get_long(2) as usize;
+        (object,offset)
+    });
+
     let borrow = (*object).borrow();
     let data = borrow.data();
-    let offset = vars.get_long(2) as usize;
 
-    let stack = frame.operand_stack().expect("stack is none");
     match data {
         StandardObject(inner) => {
             let slots = inner.as_ref().unwrap();
-            stack.push_int(slots.get_int(offset))
+            frame.push_int(slots.get_int(offset))
         }
-        Ints(inner) => stack.push_int(inner[offset]),
+        Ints(inner) => frame.push_int(inner[offset]),
         _ => panic!("getInt!"),
     }
 }
 
 // public final native boolean compareAndSwapInt(Object o, long offset, int expected, int x);
 // (Ljava/lang/Object;JII)Z
-pub fn compare_and_swap_int(frame: &mut Frame) {
+pub fn compare_and_swap_int(frame: &Frame) {
     //    vars := frame.LocalVars()
     //    fields := vars.GetRef(1).Data()
     //    offset := vars.GetLong(2)
@@ -177,36 +173,32 @@ pub fn compare_and_swap_int(frame: &mut Frame) {
     //        // todo
     //        panic("todo: compareAndSwapInt!")
     //    }
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_boolean(true);
+    frame.push_boolean(true);
 }
 
 /// public native long allocateMemory(long bytes);
 /// (J)J
-pub fn allocate_memory(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn allocate_memory(frame: &Frame) {
     // vars.GetRef(0) // this
-    let bytes = vars.get_long(1) as usize;
+    let bytes = frame.get_long(1) as usize;
     let layout =
         Layout::from_size_align(bytes, get_power_of_two(bytes)).expect("The layout init fail");
     unsafe {
         let ptr = std::alloc::alloc(layout) as usize;
-        let stack = frame.operand_stack().expect("stack is none");
         memory_size_map::insert(ptr, bytes);
-        stack.push_long(ptr as i64)
+        frame.push_long(ptr as i64)
     }
 }
 
 /// public native void putLong(long address, long x);
 /// (JJ)V
-pub fn put_long(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn put_long(frame: &Frame) {
+    let (address,value) = frame.local_vars_get(|vars|{
+        let address = vars.get_long(1);
+        let value = vars.get_long(3);
+        (address,value)
+    });
     // vars.GetRef(0) // this
-    let address = vars.get_long(1);
-    let value = vars.get_long(3);
-
     let ptr = (address as usize) as *mut u8;
     unsafe {
         *(ptr as *mut i64) = value;
@@ -215,26 +207,21 @@ pub fn put_long(frame: &mut Frame) {
 
 /// public native byte getByte(long address);
 /// (J)B
-pub fn get_byte(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn get_byte(frame: &Frame) {
     // vars.GetRef(0) // this
-    let address = vars.get_long(1);
+    let address = frame.get_long(1);
     let ptr = (address as usize) as *mut u8;
     unsafe {
         let value = *(ptr as *mut i8);
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_int(value as i32);
+        frame.push_int(value as i32);
     }
 }
 
 /// public native void freeMemory(long address);
 /// (J)V
-pub fn free_memory(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn free_memory(frame: &Frame) {
     // vars.GetRef(0) // this
-    let address = vars.get_long(1) as usize;
+    let address = frame.get_long(1) as usize;
     let size = memory_size_map::get(address);
     let layout =
         Layout::from_size_align(size, get_power_of_two(size)).expect("The layout init fail");
@@ -246,23 +233,23 @@ pub fn free_memory(frame: &mut Frame) {
 
 /// public native Object getObjectVolatile(Object o, long offset);
 /// (Ljava/lang/Object;J)Ljava/lang/Object;
-pub fn get_object_volatile(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn get_object_volatile(frame: &Frame) {
+    let (object,offset) = frame.local_vars_get(|vars|{
+        let object = vars.get_ref(1).unwrap();
+        let offset = vars.get_long(2) as usize;
+        (object,offset)
+    });
     // vars.GetRef(0) // this
-    let object = vars.get_ref(1).unwrap();
-    let offset = vars.get_long(2) as usize;
-
-    let stack = frame.operand_stack().expect("stack is none");
     if (*object).borrow().is_class_object() {
         let meta_class = (*object).borrow().class();
         let field = Class::get_static_ref_by_slot_id(meta_class, offset);
-        stack.push_ref(field);
+        frame.push_ref(field);
     } else if (*object).borrow().is_array_object() {
         let element = (*object).borrow().get_references_by_index(offset);
-        stack.push_ref(element);
+        frame.push_ref(element);
     } else {
         let field = (*object).borrow().get_ref_var_by_slot_id(offset);
-        stack.push_ref(field);
+        frame.push_ref(field);
     }
 }
 
@@ -270,15 +257,15 @@ pub fn get_object_volatile(frame: &mut Frame) {
 ///                                                   long expected,
 ///                                                   long x);
 /// (Ljava/lang/Object;JJJ)Z
-pub fn compare_and_swap_long(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn compare_and_swap_long(frame: &Frame) {
+    let (object,offset,expect,new_value) = frame.local_vars_get(|vars|{
+        let object = vars.get_ref(1).unwrap();
+        let offset = vars.get_long(2) as usize;
+        let expect = vars.get_long(3);
+        let new_value = vars.get_long(4);
+        (object,offset,expect,new_value)
+    });
     // vars.GetRef(0) // this
-    let object = vars.get_ref(1).unwrap();
-    let offset = vars.get_long(2) as usize;
-    let expect = vars.get_long(3);
-    let new_value = vars.get_long(4);
-
-    let stack = frame.operand_stack().expect("stack is none");
     let mut field = 0i64;
     let mut raw_class: Option<Rc<RefCell<Class>>> = None;
     if (*object).borrow().is_class_object() {
@@ -301,18 +288,17 @@ pub fn compare_and_swap_long(frame: &mut Frame) {
                 .borrow_mut()
                 .set_long_var_by_slot_id(offset, new_value);
         }
-        stack.push_boolean(true);
+        frame.push_boolean(true);
     } else {
-        stack.push_boolean(false);
+        frame.push_boolean(false);
     }
 }
 
 /// public native void ensureClassInitialized(Class c);
 /// (Ljava/lang/Class;)V
-pub fn ensure_class_initialized(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
+pub fn ensure_class_initialized(frame: &Frame) {
     // vars.GetRef(0) // this
-    let object = vars.get_ref(1).unwrap();
+    let object = frame.get_ref(1).unwrap();
     let raw_class = (*object).borrow().meta().unwrap();
     if !(*raw_class).borrow().initialized() {
         init_class(raw_class.clone());
@@ -321,16 +307,12 @@ pub fn ensure_class_initialized(frame: &mut Frame) {
 
 /// public native long getLong(long var1);
 /// (J)J
-pub fn get_long(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(1) as usize;
+pub fn get_long(frame: &Frame) {
+    let address = frame.get_long(1) as usize;
     let ptr = address as *mut i64;
     unsafe {
         let value = *ptr;
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(value);
+        frame.push_long(value);
     }
 }
 mod memory_size_map {

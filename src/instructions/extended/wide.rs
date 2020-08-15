@@ -81,7 +81,7 @@ impl Instruction for Wide {
         }
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         self.modified_instruction.execute(frame);
     }
 }

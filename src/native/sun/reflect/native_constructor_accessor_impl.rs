@@ -24,11 +24,13 @@ pub fn init() {
 // private static native Object newInstance0(Constructor<?> c, Object[] os)
 // throws InstantiationException, IllegalArgumentException, InvocationTargetException;
 // (Ljava/lang/reflect/Constructor;[Ljava/lang/Object;)Ljava/lang/Object;
-pub fn new_instance0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let constructor_obj = vars.get_ref(0).unwrap();
-    let arg_arr_obj = vars
-        .get_ref(1);
+pub fn new_instance0(frame: &Frame) {
+    let (constructor_obj,arg_arr_obj) = frame.local_vars_get(|vars|{
+        let constructor_obj = vars.get_ref(0).unwrap();
+        let arg_arr_obj = vars
+            .get_ref(1);
+        (constructor_obj,arg_arr_obj)
+    });
 
     let constructor = get_constructor(constructor_obj);
     let class = constructor.class();
@@ -39,8 +41,7 @@ pub fn new_instance0(frame: &mut Frame) {
         return;
     }
     let obj = Some(boxed(Class::new_object(&class)));
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_ref(obj.clone());
+    frame.push_ref(obj.clone());
 
 //    // call <init>
 //    let ops = convert_args(obj.unwrap(), arg_arr_obj, constructor.clone());

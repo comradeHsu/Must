@@ -76,96 +76,84 @@ pub fn init() {
     Registry::register("java/util/zip/ZipFile", "read", "(JJJ[BII)I", read);
 }
 
-pub fn init_ids(_frame: &mut Frame) {}
+pub fn init_ids(_frame: &Frame) {}
 
 ///private static native long open(String name, int mode, long lastModified,
 ///                                    boolean usemmap) throws IOException;
 /// (Ljava/lang/String;IJZ)J
-pub fn open(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let java_name = vars.get_ref(0);
+pub fn open(frame: &Frame) {
+    let java_name = frame.get_ref(0);
     let name = java_str_to_rust_str(java_name.unwrap());
     let zip_file = File::open(&name).unwrap();
     let metadata = zip_file.metadata().expect("not metadata");
     let zip = zip_file.read_zip().expect("This File not ZIP");
     let point = &zip as *const Archive as usize;
     zip_file_cache::insert(point, zip_file_cache::ZipFile::new(metadata, zip, zip_file));
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(point as i64);
+    frame.push_long(point as i64);
 }
 
 /// private static native int getTotal(long jzfile);
 /// (J)I
-pub fn get_total(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0) as usize;
+pub fn get_total(frame: &Frame) {
+    let address = frame.get_long(0) as usize;
     let file = zip_file_cache::get(address).expect("the file is not open");
     let total = file.metadata.len();
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(total as i32);
+    frame.push_int(total as i32);
 }
 
 /// private static native boolean startsWithLOC(long jzfile);
 /// (J)Z
-pub fn starts_with_loc(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_boolean(true);
+pub fn starts_with_loc(frame: &Frame) {
+    frame.push_boolean(true);
 }
 
 /// private static native long getEntry(long jzfile, byte[] name,
 ///                                        boolean addSlash);
 /// (J[BZ)J
-pub fn get_entry(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0) as usize;
-    let name_bytes = vars.get_ref(2).unwrap();
-    let add_slash = vars.get_boolean(3);
+pub fn get_entry(frame: &Frame) {
+    let (address,name_bytes,add_slash) = frame.local_vars_get(|vars|{
+        let address = vars.get_long(0) as usize;
+        let name_bytes = vars.get_ref(2).unwrap();
+        let add_slash = vars.get_boolean(3);
+        (address,name_bytes,add_slash)
+    });
+
     let bytes = jbytes_to_u8s(name_bytes);
     let name = String::from_utf8(bytes).unwrap();
     let zip_file = zip_file_cache::get(address).expect("the file is not open");
     let index = zip_file.indexes.get(name.as_str());
     if index.is_none() {
         println!("The file is not exist:{}", name);
-        frame.operand_stack().expect("stack is none").push_long(0);
+        frame.push_long(0);
     } else {
         println!("The file name:{}", name);
         let index = index.unwrap();
         let entry = zip_file.file.entries().get(*index).unwrap();
         let address = entry as *const StoredEntry as usize;
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(address as i64);
+        frame.push_long(address as i64);
     }
 }
 
 /// private static native int getEntryFlag(long jzentry);
 /// (J)I
-pub fn get_entry_flag(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_flag(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_int(entry.flags as i32);
+        frame.push_int(entry.flags as i32);
     }
 }
 
 /// private static native byte[] getEntryBytes(long jzentry, int type);
 /// (JI)[B
-pub fn get_entry_bytes(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
-    let param_type = vars.get_int(2);
+pub fn get_entry_bytes(frame: &Frame) {
+    let (address,param_type) = frame.local_vars_get(|vars|{
+        let address = vars.get_long(0);
+        let param_type = vars.get_int(2);
+        (address,param_type)
+    });
+
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
@@ -178,80 +166,63 @@ pub fn get_entry_bytes(frame: &mut Frame) {
         let bytes: Vec<i8> = name.bytes().map(|x| x as i8).collect();
         let boot = Jvm::boot_class_loader();
         let object = ArrayObject::from_data(boot.find_or_create("[B").unwrap(), Bytes(bytes));
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_ref(Some(boxed(object)));
+        frame.push_ref(Some(boxed(object)));
     }
 }
 
 /// private static native long getEntryTime(long jzentry);
 /// (J)J
-pub fn get_entry_time(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_time(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
         let zero: DateTime<Utc> = DateTime::from(SystemTime::UNIX_EPOCH);
         let time: &DateTime<Utc> = entry.created().unwrap_or(&zero);
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(time.timestamp_millis());
+        frame.push_long(time.timestamp_millis());
     }
 }
 
 /// private static native long getEntryCrc(long jzentry);
 /// (J)J
-pub fn get_entry_crc(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_crc(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
         let crc = entry.crc32 as i64;
-        frame.operand_stack().expect("stack is none").push_long(crc);
+        frame.push_long(crc);
     }
 }
 
 /// private static native long getEntrySize(long jzentry);
 /// (J)J
-pub fn get_entry_size(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_size(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
         let size = entry.uncompressed_size as i64;
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(size);
+        frame.push_long(size);
     }
 }
 
 /// private static native long getEntryCSize(long jzentry);
 /// (J)J
-pub fn get_entry_csize(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_csize(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
         let size = entry.compressed_size as i64;
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_long(size);
+        frame.push_long(size);
     }
 }
 
 /// private static native long getEntryMethod(long jzentry);
 /// (J)I
-pub fn get_entry_method(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let address = vars.get_long(0);
+pub fn get_entry_method(frame: &Frame) {
+    let address = frame.get_long(0);
     let pointer = address as *const StoredEntry;
     unsafe {
         let entry = &*pointer;
@@ -264,28 +235,29 @@ pub fn get_entry_method(frame: &mut Frame) {
             Lzma => 14,
             Unsupported(v) => v as i32,
         };
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_int(value);
+        frame.push_int(value);
     }
 }
 
 /// private static native void freeEntry(long jzentry);
 /// (JJ)V
-pub fn free_entry(_frame: &mut Frame) {}
+pub fn free_entry(_frame: &Frame) {}
 
 /// private static native int read(long jzfile, long jzentry,
 ///                                   long pos, byte[] b, int off, int len);
 /// (JJJ[BII)I
-pub fn read(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let file_address = vars.get_long(0) as usize;
-    let entry_address = vars.get_long(2);
-    let position = vars.get_long(4);
-    let buf = vars.get_ref(6);
-    let offset = vars.get_int(7) as usize;
-    let mut len = vars.get_int(8);
+pub fn read(frame: &Frame) {
+    let (file_address,entry_address,position,buf,offset,mut len) =
+        frame.local_vars_get(|vars| {
+        let file_address = vars.get_long(0) as usize;
+        let entry_address = vars.get_long(2);
+        let position = vars.get_long(4);
+        let buf = vars.get_ref(6);
+        let offset = vars.get_int(7) as usize;
+        let len = vars.get_int(8);
+        (file_address,entry_address,position,buf,offset,len)
+    });
+
 
     const BUFF_SIZE: i32 = 8192;
     if len > BUFF_SIZE {
@@ -309,10 +281,7 @@ pub fn read(frame: &mut Frame) {
         set_byte_array_region(buf, offset, length as usize, &buff);
     }
 
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(length as i32);
+    frame.push_int(length as i32);
 }
 
 fn zip_read(

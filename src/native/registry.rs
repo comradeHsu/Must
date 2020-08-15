@@ -1,7 +1,7 @@
 use crate::runtime::frame::Frame;
 use std::collections::HashMap;
 
-pub type NativeMethod = fn(frame: &mut Frame);
+pub type NativeMethod = fn(frame: &Frame);
 
 pub struct Registry {
     methods: HashMap<String, NativeMethod>,

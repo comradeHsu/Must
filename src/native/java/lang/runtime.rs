@@ -16,44 +16,32 @@ pub fn init() {
 
 /// public native int availableProcessors();
 /// ()I
-pub fn available_processors(frame: &mut Frame) {
+pub fn available_processors(frame: &Frame) {
     let num_cpu = num_cpus::get();
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_int(num_cpu as i32);
+    frame.push_int(num_cpu as i32);
 }
 
 /// public native long freeMemory();
 /// ()J
-pub fn free_memory(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(100_000);
+pub fn free_memory(frame: &Frame) {
+    frame.push_long(100_000);
 }
 
 /// public native long totalMemory();
 /// ()J
-pub fn total_memory(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(100_0000);
+pub fn total_memory(frame: &Frame) {
+    frame.push_long(100_0000);
 }
 
 /// public native long maxMemory();
 /// ()J
-pub fn max_memory(frame: &mut Frame) {
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_long(100_0000);
+pub fn max_memory(frame: &Frame) {
+    frame.push_long(100_0000);
 }
 
 /// public native void gc();
 /// ()V
-pub fn gc(frame: &mut Frame) {}
+pub fn gc(frame: &Frame) {}
 
 #[cfg(test)]
 mod test {

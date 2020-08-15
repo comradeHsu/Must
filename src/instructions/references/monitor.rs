@@ -16,8 +16,8 @@ impl Instruction for MonitorEnter {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let object = frame.operand_stack().expect("stack is none").pop_ref();
+    fn execute(&mut self, frame: &Frame) {
+        let object = frame.pop_ref();
         if object.is_none() {
             panic!("java.lang.NullPointerException")
         }
@@ -38,8 +38,8 @@ impl Instruction for MonitorExit {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let object = frame.operand_stack().expect("stack is none").pop_ref();
+    fn execute(&mut self, frame: &Frame) {
+        let object = frame.pop_ref();
         if object.is_none() {
             panic!("java.lang.NullPointerException")
         }

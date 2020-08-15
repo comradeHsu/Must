@@ -40,70 +40,71 @@ pub fn init() {
 /// public static native String findBuiltinLib(String name);
 /// java/lang/ClassLoader.findBuiltinLib
 /// (Ljava/lang/String;)Ljava/lang/String;
-pub fn find_built_in_lib(frame: &mut Frame) {
-    let name = frame.local_vars().expect("vars is none").get_ref(0);
-    let stack = frame.operand_stack().expect("stack is none");
-    stack.push_ref(name)
+pub fn find_built_in_lib(frame: &Frame) {
+    let name = frame.get_ref(0);
+    frame.push_ref(name)
 }
 
 /// java/lang/ClassLoader$NativeLibrary.load(Ljava/lang/String;Z)V'
-pub fn load(frame: &mut Frame) {
-    let name = frame.local_vars().expect("vars is none").get_ref(1);
+pub fn load(frame: &Frame) {
+    let name = frame.get_ref(1);
     println!("lib name:{}", java_str_to_rust_str(name.clone().unwrap()));
 }
 
 /// private native final Class<?> findLoadedClass0(String name);
 /// (Ljava/lang/String;)Ljava/lang/Class;
-pub fn find_loaded_class0(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let this = vars.get_this().unwrap();
+pub fn find_loaded_class0(frame: &Frame) {
+    let (this,name) = frame.local_vars_get(|vars|{
+        let this = vars.get_this().unwrap();
+        let name = vars.get_ref(1);
+        (this,name)
+    });
+
     let loader = (*this).borrow().get_class_loader();
-    let name = vars.get_ref(1);
+
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = (*loader)
         .borrow()
         .find_class(class_name.replace('.', "/").as_str());
     if class.is_none() {
-        frame.operand_stack().expect("stack is none").push_ref(None);
+        frame.push_ref(None);
     } else {
         let java_class = (*class.unwrap()).borrow().get_java_class();
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_ref(java_class);
+        frame.push_ref(java_class);
     }
 }
 
 /// private native Class<?> findBootstrapClass(String name);
 /// (Ljava/lang/String;)Ljava/lang/Class;
-pub fn find_bootstrap_class(frame: &mut Frame) {
+pub fn find_bootstrap_class(frame: &Frame) {
     let class = frame.method().class();
     let loader = Jvm::boot_class_loader();
-    let name = frame.local_vars().expect("vars is none").get_ref(1);
+    let name = frame.get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = loader.find_or_create(class_name.replace('.', "/").as_str());
     if class.is_none() {
-        frame.operand_stack().expect("stack is none").push_ref(None);
+        frame.push_ref(None);
     } else {
         let java_class = (*class.unwrap()).borrow().get_java_class();
-        frame
-            .operand_stack()
-            .expect("stack is none")
-            .push_ref(java_class);
+        frame.push_ref(java_class);
     }
 }
 /// private native Class<?> defineClass1(String name, byte[] b, int off, int len,
 ///                                         ProtectionDomain pd, String source);
 /// (Ljava/lang/String;[BIILjava/security/ProtectionDomain;Ljava/lang/String;)Ljava/lang/Class;
-pub fn define_class1(frame: &mut Frame) {
-    let vars = frame.local_vars().expect("vars is none");
-    let this = vars.get_ref(0).unwrap();
-    let java_string = vars.get_ref(1);
-    let byte_array = vars.get_ref(2);
-    let offset = vars.get_int(3) as usize;
-    let length = vars.get_int(4) as usize;
-    let protection_domain = vars.get_ref(5);
-    let source = vars.get_ref(6);
+pub fn define_class1(frame: &Frame) {
+    let (this,java_string,byte_array,offset,length,protection_domain,source) =
+        frame.local_vars_get(|vars|{
+        let this = vars.get_ref(0).unwrap();
+        let java_string = vars.get_ref(1);
+        let byte_array = vars.get_ref(2);
+        let offset = vars.get_int(3) as usize;
+        let length = vars.get_int(4) as usize;
+        let protection_domain = vars.get_ref(5);
+        let source = vars.get_ref(6);
+        (this,java_string,byte_array,offset,length,protection_domain,source)
+    });
+
 
     let class_name = java_str_to_rust_str(java_string.unwrap());
     let class = ClassLoader::define_class_internal(
@@ -116,8 +117,5 @@ pub fn define_class1(frame: &mut Frame) {
     );
     let java_class = (*class).borrow().get_java_class();
 
-    frame
-        .operand_stack()
-        .expect("stack is none")
-        .push_ref(java_class);
+    frame.push_ref(java_class);
 }

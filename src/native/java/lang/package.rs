@@ -25,7 +25,7 @@ pub fn init() {
 }
 
 /// private static native String[] getSystemPackages0();
-pub fn get_system_packages0(frame: &mut Frame) {
+pub fn get_system_packages0(frame: &Frame) {
     let boot_class_loader = Jvm::boot_class_loader();
     let class_loader = boot_class_loader.basic_loader();
     let borrow_loader = (*class_loader).borrow();
@@ -44,14 +44,12 @@ pub fn get_system_packages0(frame: &mut Frame) {
         data.push(Some(StringPool::java_string(iter.to_string())));
     }
     let packages = ArrayObject::from_data(string_class,DataType::References(data));
-    frame.operand_stack().expect("stack is none").push_ref(Some(boxed(packages)));
+    frame.push_ref(Some(boxed(packages)));
 }
 
 /// private static native String getSystemPackage0(String name);
-pub fn get_system_package0(frame: &mut Frame) {
+pub fn get_system_package0(frame: &Frame) {
     let name = frame
-        .local_vars()
-        .expect("vars is none")
         .get_ref(0)
         .unwrap();
     let rust_name = java_str_to_rust_str(name.clone());
@@ -70,8 +68,8 @@ pub fn get_system_package0(frame: &mut Frame) {
         }
     }
     if set.contains(&rust_name) {
-        frame.operand_stack().expect("stack is none").push_ref(Some(name));
+        frame.push_ref(Some(name));
     } else {
-        frame.operand_stack().expect("stack is none").push_ref(None);
+        frame.push_ref(None);
     }
 }

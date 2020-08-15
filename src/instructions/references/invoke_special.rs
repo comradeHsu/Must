@@ -22,7 +22,7 @@ impl Instruction for InvokeSpecial {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
         let (resolved_class,resolved_method) = self.
@@ -35,8 +35,6 @@ impl Instruction for InvokeSpecial {
             panic!("java.lang.IncompatibleClassChangeError")
         }
         let object = frame
-            .operand_stack()
-            .expect("stack is none")
             .get_ref_from_top(resolved_method.arg_slot_count() - 1);
         if object.is_none() {
             panic!("java.lang.NullPointerException");

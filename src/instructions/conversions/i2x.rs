@@ -16,10 +16,11 @@ impl Instruction for I2d {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int();
-        stack.push_double(v1 as f64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int();
+            stack.push_double(v1 as f64);
+        })
     }
 }
 
@@ -37,10 +38,11 @@ impl Instruction for I2f {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int();
-        stack.push_float(v1 as f32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int();
+            stack.push_float(v1 as f32);
+        })
     }
 }
 
@@ -58,10 +60,11 @@ impl Instruction for I2l {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int();
-        stack.push_long(v1 as i64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int();
+            stack.push_long(v1 as i64);
+        })
     }
 }
 
@@ -79,10 +82,11 @@ impl Instruction for I2b {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int() as i8;
-        stack.push_int(v1 as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int() as i8;
+            stack.push_int(v1 as i32);
+        })
     }
 }
 
@@ -100,10 +104,11 @@ impl Instruction for I2c {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int() as u16;
-        stack.push_int(v1 as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int() as u16;
+            stack.push_int(v1 as i32);
+        })
     }
 }
 
@@ -121,9 +126,10 @@ impl Instruction for I2s {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v1 = stack.pop_int() as i16;
-        stack.push_int(v1 as i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v1 = stack.pop_int() as i16;
+            stack.push_int(v1 as i32);
+        })
     }
 }

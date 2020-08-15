@@ -17,11 +17,8 @@ impl Instruction for AconstNull {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_ref(None);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_ref(None);
     }
 }
 
@@ -40,11 +37,8 @@ impl Instruction for Dconst0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_double(0.0f64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_double(0.0f64);
     }
 }
 
@@ -63,11 +57,8 @@ impl Instruction for Dconst1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_double(1.0f64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_double(1.0f64);
     }
 }
 
@@ -86,11 +77,8 @@ impl Instruction for Fconst0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_float(0.0f32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_float(0.0f32);
     }
 }
 
@@ -109,11 +97,8 @@ impl Instruction for Fconst1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_float(1.0f32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_float(1.0f32);
     }
 }
 
@@ -132,11 +117,8 @@ impl Instruction for Fconst2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_float(2.0f32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_float(2.0f32);
     }
 }
 
@@ -155,11 +137,8 @@ impl Instruction for IconstM1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(-1i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(-1i32);
     }
 }
 
@@ -178,11 +157,8 @@ impl Instruction for Iconst0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(0i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(0i32);
     }
 }
 
@@ -201,11 +177,8 @@ impl Instruction for Iconst1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(1i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(1i32);
     }
 }
 
@@ -224,11 +197,8 @@ impl Instruction for Iconst2 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(2i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(2i32);
     }
 }
 
@@ -247,11 +217,8 @@ impl Instruction for Iconst3 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(3i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(3i32);
     }
 }
 
@@ -270,11 +237,8 @@ impl Instruction for Iconst4 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(4i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(4i32);
     }
 }
 
@@ -293,11 +257,8 @@ impl Instruction for Iconst5 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_int(5i32);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_int(5i32);
     }
 }
 
@@ -316,11 +277,8 @@ impl Instruction for Lconst0 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_long(0i64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_long(0i64);
     }
 }
 
@@ -339,10 +297,7 @@ impl Instruction for Lconst1 {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        frame
-            .operand_stack()
-            .expect("operand_stack is empty")
-            .push_long(1i64);
+    fn execute(&mut self, frame: &Frame) {
+        frame.push_long(1i64);
     }
 }

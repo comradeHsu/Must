@@ -28,11 +28,8 @@ impl Instruction for LookUpSwitch {
         self.match_offsets = reader.read_i32_table((self.npairs * 2) as usize);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let val = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_int();
+    fn execute(&mut self, frame: &Frame) {
+        let val = frame.pop_int();
         for i in 0..self.npairs {
             let index = (i << 1) as usize;
             if self.match_offsets[index] == val {

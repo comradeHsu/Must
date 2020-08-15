@@ -4,17 +4,14 @@ use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub fn invoke_method(frame: &mut Frame, method: Rc<Method>) {
+pub fn invoke_method(frame: &Frame, method: Rc<Method>) {
     let thread = JavaThread::current();
     let mut new_frame = Frame::new(method.clone());
     let arg_slot_count = method.arg_slot_count();
     if arg_slot_count > 0 {
-        let stack = frame.operand_stack().expect("stack is none");
         for size in 0..arg_slot_count {
-            let slot = stack.pop_slot();
+            let slot = frame.pop_slot();
             new_frame
-                .local_vars()
-                .expect("vars is none")
                 .set_slot((arg_slot_count - 1 - size), slot);
         }
     }
@@ -31,17 +28,13 @@ pub fn invoke_method(frame: &mut Frame, method: Rc<Method>) {
 
 pub fn hack_invoke_method(method: Rc<Method>) {
     let mut thread = JavaThread::current();
-    let frame_ptr = thread.current_frame();
-    let mut frame = (*frame_ptr).borrow_mut();
+    let frame = thread.current_frame();
     let mut new_frame = Frame::new( method.clone());
     let arg_slot_count = method.arg_slot_count();
     if arg_slot_count > 0 {
-        let stack = frame.operand_stack().expect("stack is none");
         for size in 0..arg_slot_count {
-            let slot = stack.pop_slot();
+            let slot = frame.pop_slot();
             new_frame
-                .local_vars()
-                .expect("vars is none")
                 .set_slot((arg_slot_count - 1 - size), slot);
         }
     }

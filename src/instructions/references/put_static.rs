@@ -24,7 +24,7 @@ impl Instruction for PutStatic {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let current_method = frame.method_ptr();
         let current_class = current_method.class();
 
@@ -48,14 +48,13 @@ impl Instruction for PutStatic {
         let slot_id = field.slot_id();
         let mut borrow_class = (*class).borrow_mut();
         let slots = borrow_class.mut_static_vars().expect("slots is none");
-        let stack = frame.operand_stack().expect("stack is none");
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z' | 'B' | 'C' | 'S' | 'I' => slots.set_int(slot_id, stack.pop_int()),
-            'F' => slots.set_float(slot_id, stack.pop_float()),
-            'J' => slots.set_long(slot_id, stack.pop_long()),
-            'D' => slots.set_double(slot_id, stack.pop_double()),
-            'L' | '[' => slots.set_ref(slot_id, stack.pop_ref()),
+            'Z' | 'B' | 'C' | 'S' | 'I' => slots.set_int(slot_id, frame.pop_int()),
+            'F' => slots.set_float(slot_id, frame.pop_float()),
+            'J' => slots.set_long(slot_id, frame.pop_long()),
+            'D' => slots.set_double(slot_id, frame.pop_double()),
+            'L' | '[' => slots.set_ref(slot_id, frame.pop_ref()),
             _ => {}
         }
     }

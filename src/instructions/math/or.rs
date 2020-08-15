@@ -17,12 +17,13 @@ impl Instruction for IOr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_int();
-        let v1 = stack.pop_int();
-        let rs = v1 | v2;
-        stack.push_int(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_int();
+            let v1 = stack.pop_int();
+            let rs = v1 | v2;
+            stack.push_int(rs);
+        })
     }
 }
 
@@ -41,11 +42,12 @@ impl Instruction for LOr {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("operand_stack is none");
-        let v2 = stack.pop_long();
-        let v1 = stack.pop_long();
-        let rs = v1 | v2;
-        stack.push_long(rs);
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_long();
+            let v1 = stack.pop_long();
+            let rs = v1 | v2;
+            stack.push_long(rs);
+        })
     }
 }

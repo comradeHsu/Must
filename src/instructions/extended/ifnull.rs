@@ -17,11 +17,8 @@ impl Instruction for IfNull {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let reference = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_ref();
+    fn execute(&mut self, frame: &Frame) {
+        let reference = frame.pop_ref();
         if reference.is_none() {
             branch(frame, self.0.get_offset());
         }
@@ -42,11 +39,8 @@ impl Instruction for IfNonNull {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let reference = frame
-            .operand_stack()
-            .expect("operand_stack is none")
-            .pop_ref();
+    fn execute(&mut self, frame: &Frame) {
+        let reference = frame.pop_ref();
         if reference.is_some() {
             branch(frame, self.0.get_offset());
         }

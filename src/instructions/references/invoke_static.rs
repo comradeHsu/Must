@@ -20,7 +20,7 @@ impl Instruction for InvokeStatic {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
         let resolved_method = self.resolved_method_ref(class);

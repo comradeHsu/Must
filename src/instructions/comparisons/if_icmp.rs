@@ -3,11 +3,12 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime::frame::Frame;
 
-fn int_pop(frame: &mut Frame) -> (i32, i32) {
-    let stack = frame.operand_stack().expect("operand_stack is none");
-    let v2 = stack.pop_int();
-    let v1 = stack.pop_int();
-    return (v1, v2);
+fn int_pop(frame: &Frame) -> (i32, i32) {
+    frame.operand_stack(|stack|{
+        let v2 = stack.pop_int();
+        let v1 = stack.pop_int();
+        return (v1, v2);
+    })
 }
 
 pub struct IfICmpEq(BranchInstruction);
@@ -24,7 +25,7 @@ impl Instruction for IfICmpEq {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 == v2 {
             branch(frame, self.0.get_offset());
@@ -46,7 +47,7 @@ impl Instruction for IfICmpNe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 != v2 {
             branch(frame, self.0.get_offset());
@@ -68,7 +69,7 @@ impl Instruction for IfICmpLt {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 < v2 {
             branch(frame, self.0.get_offset());
@@ -90,7 +91,7 @@ impl Instruction for IfICmpLe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 <= v2 {
             branch(frame, self.0.get_offset());
@@ -112,7 +113,7 @@ impl Instruction for IfICmpGt {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 > v2 {
             branch(frame, self.0.get_offset());
@@ -134,7 +135,7 @@ impl Instruction for IfICmpGe {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
+    fn execute(&mut self, frame: &Frame) {
         let (v1, v2) = int_pop(frame);
         if v1 >= v2 {
             branch(frame, self.0.get_offset());

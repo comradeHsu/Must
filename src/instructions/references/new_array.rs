@@ -33,15 +33,16 @@ impl Instruction for NewArray {
         self.atype = reader.read_u8();
     }
 
-    fn execute(&mut self, frame: &mut Frame) {
-        let stack = frame.operand_stack().expect("stack is none");
-        let count = stack.pop_int();
-        if count < 0 {
-            panic!("java.lang.NegativeArraySizeException")
-        }
-        let array_class = get_primitive_array_class(self.atype);
-        let array_object = Class::new_array(&array_class, count as usize);
-        stack.push_ref(Some(boxed(array_object)));
+    fn execute(&mut self, frame: &Frame) {
+        frame.operand_stack(move |stack| {
+            let count = stack.pop_int();
+            if count < 0 {
+                panic!("java.lang.NegativeArraySizeException")
+            }
+            let array_class = get_primitive_array_class(self.atype);
+            let array_object = Class::new_array(&array_class, count as usize);
+            stack.push_ref(Some(boxed(array_object)));
+        })
     }
 }
 
