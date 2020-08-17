@@ -6,5 +6,5 @@ pub struct ClassVerifier();
 
 impl ClassVerifier {
     /// waiting for implementation
-    pub fn verify(class: &Rc<RefCell<Class>>) {}
+    pub fn verify(_class: &Rc<RefCell<Class>>) {}
 }

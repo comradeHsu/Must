@@ -1,13 +1,13 @@
-use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::jvm::Jvm;
-use std::collections::HashSet;
-use crate::oops::string_pool::StringPool;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::oops::object::{Object, DataType};
+use crate::native::registry::Registry;
 use crate::oops::array_object::ArrayObject;
-use crate::utils::{boxed, java_str_to_rust_str};
+use crate::oops::object::{DataType};
+use crate::oops::string_pool::StringPool;
+use crate::runtime::frame::Frame;
+use crate::utils::{java_str_to_rust_str};
+
+use std::collections::HashSet;
+
 
 pub fn init() {
     Registry::register(
@@ -31,34 +31,34 @@ pub fn get_system_packages0(frame: &Frame) {
     let borrow_loader = (*class_loader).borrow();
     let class_map = borrow_loader.class_map_immutable();
     let mut set = HashSet::with_capacity(class_map.len());
-    for (key,_) in class_map {
+    for (key, _) in class_map {
         if !key.starts_with('[') {
             let index = key.rfind('/').unwrap();
-            let (package, name) = key.split_at(index + 1);
+            let (package, _name) = key.split_at(index + 1);
             set.insert(package);
         }
     }
-    let string_class = boot_class_loader.find_or_create("[java/lang/String").unwrap();
+    let string_class = boot_class_loader
+        .find_or_create("[java/lang/String")
+        .unwrap();
     let mut data = Vec::with_capacity(set.len());
     for iter in set {
         data.push(Some(StringPool::java_string(iter.to_string())));
     }
-    let packages = ArrayObject::from_data(string_class,DataType::References(data));
+    let packages = ArrayObject::from_data(string_class, DataType::References(data));
     frame.push_ref(Some(packages));
 }
 
 /// private static native String getSystemPackage0(String name);
 pub fn get_system_package0(frame: &Frame) {
-    let name = frame
-        .get_ref(0)
-        .unwrap();
+    let name = frame.get_ref(0).unwrap();
     let rust_name = java_str_to_rust_str(name.clone());
     let boot_class_loader = Jvm::boot_class_loader();
     let class_loader = boot_class_loader.basic_loader();
     let borrow_loader = (*class_loader).borrow();
     let class_map = borrow_loader.class_map_immutable();
     let mut set = HashSet::with_capacity(class_map.len());
-    for (key,_) in class_map {
+    for (key, _) in class_map {
         if !key.starts_with('[') {
             let index = key.rfind('/');
             if index.is_some() {

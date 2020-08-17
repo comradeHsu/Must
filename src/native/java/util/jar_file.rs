@@ -1,10 +1,10 @@
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::array_object::ArrayObject;
 use crate::oops::object::DataType;
 use crate::oops::string_pool::StringPool;
-use crate::utils::boxed;
+use crate::runtime::frame::Frame;
+
 
 pub fn init() {
     Registry::register(

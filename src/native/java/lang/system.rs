@@ -1,18 +1,18 @@
 use crate::instructions::base::method_invoke_logic::hack_invoke_method;
+use crate::native::java::lang::object::hash_code;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::array_object::ArrayObject;
 use crate::oops::class::Class;
 use crate::oops::object::Object;
 use crate::oops::string_pool::StringPool;
+use crate::runtime::frame::Frame;
 use crate::runtime::operand_stack::OperandStack;
+use crate::runtime::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
 use chrono::Local;
-use std::cell::RefCell;
+
 use std::collections::HashMap;
-use std::rc::Rc;
-use crate::native::java::lang::object::hash_code;
-use crate::runtime::thread::JavaThread;
+
 
 pub fn init() {
     Registry::register(
@@ -58,18 +58,22 @@ pub fn init() {
         map_library_name,
     );
     Registry::register("java/lang/System", "nanoTime", "()J", nano_time);
-    Registry::register("java/lang/System", "identityHashCode", "(Ljava/lang/Object;)I", identity_hash_code);
+    Registry::register(
+        "java/lang/System",
+        "identityHashCode",
+        "(Ljava/lang/Object;)I",
+        identity_hash_code,
+    );
 }
 
 pub fn array_copy(frame: &Frame) {
-    let (src,src_pos,dest,dest_pos,length) =
-        frame.local_vars_get(|vars|{
+    let (src, src_pos, dest, dest_pos, length) = frame.local_vars_get(|vars| {
         let src = vars.get_ref(0);
         let src_pos = vars.get_int(1) as usize;
         let dest = vars.get_ref(2);
         let dest_pos = vars.get_int(3) as usize;
         let length = vars.get_int(4) as usize;
-        (src,src_pos,dest,dest_pos,length)
+        (src, src_pos, dest, dest_pos, length)
     });
 
     if src.is_none() || dest.is_none() {
@@ -80,9 +84,7 @@ pub fn array_copy(frame: &Frame) {
     if !check_array_copy(&src, &dest) {
         panic!("java.lang.ArrayStoreException");
     }
-    if src_pos + length > src.array_length()
-        || dest_pos + length > dest.array_length()
-    {
+    if src_pos + length > src.array_length() || dest_pos + length > dest.array_length() {
         panic!("java.lang.IndexOutOfBoundsException");
     }
     ArrayObject::array_copy(src, dest, src_pos, dest_pos, length);

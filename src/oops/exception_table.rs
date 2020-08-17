@@ -1,8 +1,8 @@
-use lark_classfile::code_attribute::ExceptionTableEntry;
 use crate::oops::class::Class;
 use crate::oops::class_ref::ClassRef;
 use crate::oops::constant_pool::Constant::ClassReference;
 use crate::oops::constant_pool::ConstantPool;
+use lark_classfile::code_attribute::ExceptionTableEntry;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -10,15 +10,11 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub struct ExceptionTable {
     table: Vec<ExceptionHandler>,
-    holder:Option<Rc<RefCell<Class>>>
+    holder: Option<Rc<RefCell<Class>>>,
 }
 
 impl ExceptionTable {
-
-    pub fn new(
-        entries: &Vec<ExceptionTableEntry>,
-        pool: &ConstantPool,
-    ) -> ExceptionTable {
+    pub fn new(entries: &Vec<ExceptionTableEntry>, pool: &ConstantPool) -> ExceptionTable {
         let mut table = Vec::with_capacity(entries.len());
         for entry in entries {
             table.push(ExceptionHandler {
@@ -28,7 +24,10 @@ impl ExceptionTable {
                 catch_type: Self::get_catch_type(entry.catch_type() as usize, pool),
             });
         }
-        return ExceptionTable { table, holder: Some(pool.class()) };
+        return ExceptionTable {
+            table,
+            holder: Some(pool.class()),
+        };
     }
 
     fn get_catch_type(index: usize, pool: &ConstantPool) -> Option<ClassRef> {
@@ -71,7 +70,10 @@ impl ExceptionTable {
 
 impl Default for ExceptionTable {
     fn default() -> Self {
-        return ExceptionTable { table: vec![], holder: None };
+        return ExceptionTable {
+            table: vec![],
+            holder: None,
+        };
     }
 }
 

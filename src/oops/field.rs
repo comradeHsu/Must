@@ -1,11 +1,11 @@
-use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
-use lark_classfile::member_info::MemberInfo;
-use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::oops::class::Class;
 use crate::oops::class_member::ClassMember;
 use crate::oops::class_name_helper::PrimitiveTypes;
 use crate::oops::object::Object;
+use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
+use lark_classfile::member_info::MemberInfo;
+use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -134,7 +134,8 @@ impl Field {
     fn get_class_loader(&self) -> Option<Object> {
         let class_object = (*self.class_member.class()).borrow().get_java_class();
         if class_object.is_some() {
-            return class_object.unwrap()
+            return class_object
+                .unwrap()
                 .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
         }
         return None;

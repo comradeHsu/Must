@@ -1,9 +1,9 @@
-use crate::class_loader::app_class_loader::ClassLoader;
+
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
-use crate::utils::boxed;
+use crate::runtime::frame::Frame;
+
 
 pub fn init() {
     Registry::register(

@@ -2,7 +2,7 @@ use crate::attribute_info::AttributeInfo;
 use crate::class_reader::ClassReader;
 use crate::constant_pool::ConstantPool;
 use crate::runtime_visible_annotations_attribute::ElementValue::*;
-use std::cell::{Ref, RefCell};
+use std::cell::{RefCell};
 use std::rc::Rc;
 
 pub struct AnnotationsAttribute {
@@ -58,7 +58,7 @@ impl AttributeInfo for AnnotationsAttribute {
     fn read_info(&mut self, reader: &mut ClassReader) {
         let num_annotations = reader.read_u16() as usize;
         let mut annotations = Vec::with_capacity(num_annotations);
-        for i in 0..num_annotations {
+        for _i in 0..num_annotations {
             annotations.push(AnnotationAttribute::new(reader, self.cp.clone()))
         }
         self.annotations = annotations;
@@ -71,7 +71,7 @@ impl AnnotationAttribute {
         let name = (*cp).borrow().get_utf8(type_index as usize).to_string();
         let num_element_value_pairs = reader.read_u16();
         let mut element_value_pairs = Vec::with_capacity(num_element_value_pairs as usize);
-        for i in 0..num_element_value_pairs {
+        for _i in 0..num_element_value_pairs {
             element_value_pairs.push(ElementValuePair::new(reader, cp.clone()));
         }
         //        println!("AnnotationAttribute:{},len:{}",name,num_element_value_pairs);

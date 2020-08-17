@@ -1,8 +1,8 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::ClassReference;
 use crate::instructions::references::ResolveClassRef;
+
+use crate::runtime::frame::Frame;
 
 pub struct CheckCast(ConstantPoolInstruction);
 

@@ -2,10 +2,10 @@ use crate::jvm::Jvm;
 use crate::oops::class::Class;
 use crate::oops::object::DataType::Chars;
 use crate::oops::object::Object;
-use crate::utils::{boxed, java_str_to_rust_str};
-use std::cell::RefCell;
+use crate::utils::{java_str_to_rust_str};
+
 use std::collections::HashMap;
-use std::rc::Rc;
+
 
 pub struct StringPool {
     pool: HashMap<String, Object>,

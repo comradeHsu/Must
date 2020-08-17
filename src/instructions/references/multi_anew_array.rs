@@ -1,13 +1,13 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
-use crate::runtime::frame::Frame;
+use crate::instructions::references::ResolveClassRef;
 use crate::oops::array_object::ArrayObject;
 use crate::oops::class::Class;
-use crate::oops::constant_pool::Constant::ClassReference;
-use crate::utils::boxed;
+
+use crate::runtime::frame::Frame;
+
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::instructions::references::ResolveClassRef;
 
 pub struct MultiANewArray {
     index: u16,
@@ -42,9 +42,9 @@ impl MultiANewArray {
         arr_class: Rc<RefCell<Class>>,
     ) -> ArrayObject {
         let count = counts[0] as usize;
-        let mut arr = Class::new_array(&arr_class, count);
+        let arr = Class::new_array(&arr_class, count);
         if counts.len() > 1 {
-            arr.mut_references(|refs|{
+            arr.mut_references(|refs| {
                 for i in 0..refs.len() {
                     refs[i] = Some(MultiANewArray::new_multi_dimensional_array(
                         counts.split_off(1),
@@ -69,8 +69,7 @@ impl Instruction for MultiANewArray {
         let array_class = self.resolve_class_ref(current_class);
         let counts = MultiANewArray::pop_and_check_counts(frame, self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts, array_class);
-        frame
-            .push_ref(Some(arr));
+        frame.push_ref(Some(arr));
     }
 }
 

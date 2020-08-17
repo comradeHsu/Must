@@ -1,9 +1,9 @@
-use lark_classfile::constant_pool::ConstantInterfaceMethodRefInfo;
 use crate::oops::class::Class;
-use crate::oops::constant_pool::ConstantPool;
+
 use crate::oops::member_ref::MemberRef;
 use crate::oops::method::Method;
 use crate::oops::method_ref::MethodRef;
+use lark_classfile::constant_pool::ConstantInterfaceMethodRefInfo;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -24,23 +24,19 @@ impl InterfaceMethodRef {
         return field_ref;
     }
 
-    pub fn resolved_interface_method(&mut self,holder:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
+    pub fn resolved_interface_method(&mut self, holder: Rc<RefCell<Class>>) -> Option<Rc<Method>> {
         if self.method.is_none() {
             self.resolved_interface_method_ref(holder);
         }
         return self.method.clone();
     }
 
-    pub fn resolved_interface_method_ref(&mut self,holder:Rc<RefCell<Class>>) {
+    pub fn resolved_interface_method_ref(&mut self, holder: Rc<RefCell<Class>>) {
         let class = self.member_ref.resolved_class(holder);
         if !(*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
-        let method = Self::look_up_interface_method(
-            class.clone(),
-            self.name(),
-            self.descriptor(),
-        );
+        let method = Self::look_up_interface_method(class.clone(), self.name(), self.descriptor());
         if method.is_none() {
             panic!("java.lang.NoSuchMethodError");
         }
@@ -81,7 +77,7 @@ impl InterfaceMethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         return self.member_ref.resolved_class(holder);
     }
 }

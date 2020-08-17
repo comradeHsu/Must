@@ -23,7 +23,7 @@ pub trait AttributeInfo {
 }
 
 pub fn read_attributes(reader: &mut ClassReader, cp: Rc<RefCell<ConstantPool>>) -> Vec<Attribute> {
-    let clone = reader.data.clone();
+    let _clone = reader.data.clone();
     let attr_count = reader.read_u16();
     let mut attributes = Vec::new();
     for _i in 0..attr_count {

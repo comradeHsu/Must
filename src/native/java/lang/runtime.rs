@@ -41,7 +41,7 @@ pub fn max_memory(frame: &Frame) {
 
 /// public native void gc();
 /// ()V
-pub fn gc(frame: &Frame) {}
+pub fn gc(_frame: &Frame) {}
 
 #[cfg(test)]
 mod test {

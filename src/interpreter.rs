@@ -1,14 +1,14 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::new_instruction;
 use crate::native::init;
-use crate::oops::class::Class;
-use crate::oops::object::Object;
+
+
 use crate::runtime::thread::JavaThread;
-use crate::utils::boxed;
+
 use chrono::Local;
-use std::cell::RefCell;
-use std::ops::DerefMut;
-use std::rc::Rc;
+
+
+
 //use std::time;
 
 pub fn interpret(thread: JavaThread) {
@@ -16,7 +16,7 @@ pub fn interpret(thread: JavaThread) {
 }
 
 #[inline]
-pub fn circulate(mut thread: JavaThread) {
+pub fn circulate(thread: JavaThread) {
     let mut reader = BytecodeReader::new();
     init();
     println!("start {:?}", Local::now());
@@ -49,8 +49,8 @@ mod test {
 
     #[test]
     fn test_rc() {
-        let mut vec = vec![0, 1, 2, 3];
-        let mut rc = Rc::new(vec);
+        let vec = vec![0, 1, 2, 3];
+        let rc = Rc::new(vec);
         //        rc.as_mut().push(4);
         println!("len:{}", rc.len())
     }

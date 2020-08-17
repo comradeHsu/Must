@@ -1,8 +1,8 @@
 use crate::instructions::base::class_init_logic::init_class;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
 use crate::oops::object::DataType::{Ints, StandardObject};
+use crate::runtime::frame::Frame;
 use crate::utils::numbers::get_power_of_two;
 use std::alloc::Layout;
 use std::cell::RefCell;
@@ -123,21 +123,19 @@ pub fn compare_and_swap_object(frame: &Frame) {
 // public native boolean getInt(Object o, long offset);
 // (Ljava/lang/Object;J)I
 pub fn get_int_volatile(frame: &Frame) {
-    let (object,offset) = frame.local_vars_get(|vars| {
+    let (object, offset) = frame.local_vars_get(|vars| {
         let object = vars.get_ref(1).unwrap();
         let offset = vars.get_long(2) as usize;
-        (object,offset)
+        (object, offset)
     });
 
-    object.data_with(|data|{
-        match data {
-            StandardObject(inner) => {
-                let slots = inner.as_ref().unwrap();
-                frame.push_int(slots.get_int(offset))
-            }
-            Ints(inner) => frame.push_int(inner[offset]),
-            _ => panic!("getInt!"),
+    object.data_with(|data| match data {
+        StandardObject(inner) => {
+            let slots = inner.as_ref().unwrap();
+            frame.push_int(slots.get_int(offset))
         }
+        Ints(inner) => frame.push_int(inner[offset]),
+        _ => panic!("getInt!"),
     });
 }
 
@@ -192,10 +190,10 @@ pub fn allocate_memory(frame: &Frame) {
 /// public native void putLong(long address, long x);
 /// (JJ)V
 pub fn put_long(frame: &Frame) {
-    let (address,value) = frame.local_vars_get(|vars|{
+    let (address, value) = frame.local_vars_get(|vars| {
         let address = vars.get_long(1);
         let value = vars.get_long(3);
-        (address,value)
+        (address, value)
     });
     // vars.GetRef(0) // this
     let ptr = (address as usize) as *mut u8;
@@ -233,10 +231,10 @@ pub fn free_memory(frame: &Frame) {
 /// public native Object getObjectVolatile(Object o, long offset);
 /// (Ljava/lang/Object;J)Ljava/lang/Object;
 pub fn get_object_volatile(frame: &Frame) {
-    let (object,offset) = frame.local_vars_get(|vars|{
+    let (object, offset) = frame.local_vars_get(|vars| {
         let object = vars.get_ref(1).unwrap();
         let offset = vars.get_long(2) as usize;
-        (object,offset)
+        (object, offset)
     });
     // vars.GetRef(0) // this
     if object.is_class_object() {
@@ -257,12 +255,12 @@ pub fn get_object_volatile(frame: &Frame) {
 ///                                                   long x);
 /// (Ljava/lang/Object;JJJ)Z
 pub fn compare_and_swap_long(frame: &Frame) {
-    let (object,offset,expect,new_value) = frame.local_vars_get(|vars|{
+    let (object, offset, expect, new_value) = frame.local_vars_get(|vars| {
         let object = vars.get_ref(1).unwrap();
         let offset = vars.get_long(2) as usize;
         let expect = vars.get_long(3);
         let new_value = vars.get_long(4);
-        (object,offset,expect,new_value)
+        (object, offset, expect, new_value)
     });
     // vars.GetRef(0) // this
     let mut field = 0i64;
@@ -342,18 +340,18 @@ mod memory_size_map {
 
 #[cfg(test)]
 mod java_unsafe {
-    use crate::class_path::class_path::ClassPath;
-    use crate::cmd::Cmd;
-    use crate::oops::class::Class;
-    use crate::oops::object::DataType::{Bytes, Ints};
+    
+    
+    
+    
     use crate::oops::object::Object;
     use crate::utils::boxed;
     use crate::utils::numbers::get_power_of_two;
     use std::alloc::Layout;
-    use std::cell::RefCell;
+    
     use std::mem::size_of;
     use std::ops::Deref;
-    use std::rc::Rc;
+    
 
     struct Test {
         len: usize,
@@ -373,7 +371,7 @@ mod java_unsafe {
             len: 0,
             data: vec![1, 2, 3].clone(),
         };
-        let b = Box::new(10);
+        let _b = Box::new(10);
         let ptr = boxed(test);
         let ptr = (*ptr).borrow();
         let first = ptr.data().get(0).unwrap();
@@ -430,22 +428,22 @@ mod java_unsafe {
 
     #[test]
     fn test_byte_array_offset() {
-//        let mut object = Object::new(boxed(Class::default()));
-//        object.data = Bytes(vec![1, 2, 3]);
-//        let ptr = boxed(object);
-//        let ptr = (*ptr).borrow();
-//        let bytes = ptr.bytes();
-//        let first = bytes.get(0).unwrap();
-//        let first_ref = first as *const i8;
-//        let ptr = ptr.deref() as *const Object;
-//        let hash = ptr as usize;
-//        let first_ptr = first_ref as usize;
-//        println!(
-//            "object ptr:{}, first element ptr:{},差距:{}",
-//            hash,
-//            first_ptr,
-//            first_ptr - hash
-//        );
+        //        let mut object = Object::new(boxed(Class::default()));
+        //        object.data = Bytes(vec![1, 2, 3]);
+        //        let ptr = boxed(object);
+        //        let ptr = (*ptr).borrow();
+        //        let bytes = ptr.bytes();
+        //        let first = bytes.get(0).unwrap();
+        //        let first_ref = first as *const i8;
+        //        let ptr = ptr.deref() as *const Object;
+        //        let hash = ptr as usize;
+        //        let first_ptr = first_ref as usize;
+        //        println!(
+        //            "object ptr:{}, first element ptr:{},差距:{}",
+        //            hash,
+        //            first_ptr,
+        //            first_ptr - hash
+        //        );
     }
 
     #[test]

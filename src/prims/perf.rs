@@ -1,18 +1,18 @@
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{ReturnType, JavaCall};
-use crate::jni::{JObject, JString};
+use crate::invoke_support::{JavaCall, ReturnType};
+
 use crate::jvm::Jvm;
-use crate::prims::perf_data::{PerfDataManager, Units, Variability};
 use crate::oops::class::Class;
 use crate::oops::object::Object;
-use crate::utils::{boxed, jstr_to_utf_nullable};
+use crate::prims::perf_data::{PerfDataManager, Units, Variability};
+use crate::utils::{jstr_to_utf_nullable};
 use std::mem::size_of;
 
 pub struct Perf();
 
 impl Perf {
     pub fn create_long(
-        perf: Option<Object>,
+        _perf: Option<Object>,
         name: Option<Object>,
         variability: i32,
         units: i32,

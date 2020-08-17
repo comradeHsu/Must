@@ -1,7 +1,5 @@
-use crate::attribute_info::Attribute::{
-    Code, ConstantValue, RuntimeVisibleAnnotations,
-};
-use crate::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::attribute_info::Attribute::{Code, ConstantValue};
+use crate::attribute_info::{read_attributes, Attribute};
 use crate::class_reader::ClassReader;
 use crate::code_attribute::CodeAttribute;
 use crate::constant_pool::ConstantPool;

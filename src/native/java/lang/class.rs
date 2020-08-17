@@ -1,23 +1,23 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::instructions::base::class_init_logic::init_class;
-use crate::instructions::base::method_invoke_logic::{hack_invoke_method, invoke_method};
+
+use crate::invoke_support::parameter::{Parameter, Parameters};
+use crate::invoke_support::{JavaCall, ReturnType};
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::array_object::ArrayObject;
 use crate::oops::class::Class;
 use crate::oops::object::DataType::Bytes;
 use crate::oops::object::MetaData::{Field, Method};
 use crate::oops::object::Object;
 use crate::oops::string_pool::StringPool;
-use crate::runtime::operand_stack::OperandStack;
-use crate::utils::{boxed, java_str_to_rust_str};
+use crate::runtime::frame::Frame;
+
+use crate::runtime::thread::JavaThread;
+use crate::utils::{java_str_to_rust_str};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use crate::runtime::thread::JavaThread;
-use crate::invoke_support::{JavaCall, ReturnType};
-use crate::invoke_support::parameter::{Parameters, Parameter};
 
 pub fn init() {
     Registry::register(
@@ -93,9 +93,7 @@ pub fn init() {
 }
 
 pub fn get_primitive_class(frame: &Frame) {
-    let name_obj = frame
-        .get_this()
-        .unwrap();
+    let name_obj = frame.get_this().unwrap();
     let target = java_str_to_rust_str(name_obj);
 
     let class = Jvm::boot_class_loader()
@@ -106,9 +104,7 @@ pub fn get_primitive_class(frame: &Frame) {
 }
 
 pub fn get_name0(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     let name = (*class).borrow().java_name();
     let name_obj = StringPool::java_string(name);
@@ -120,13 +116,12 @@ pub fn desired_assertion_status0(frame: &Frame) {
 }
 
 pub fn for_name0(frame: &Frame) {
-    let (name,initialize,java_loader) = frame.local_vars_get(|vars|{
+    let (name, initialize, java_loader) = frame.local_vars_get(|vars| {
         let name = vars.get_ref(0);
         let initialize = vars.get_boolean(1);
         let java_loader = vars.get_ref(2);
-        (name,initialize,java_loader)
+        (name, initialize, java_loader)
     });
-
 
     let rust_name = java_str_to_rust_str(name.unwrap()).replace('.', "/");
 
@@ -141,35 +136,25 @@ pub fn for_name0(frame: &Frame) {
 }
 
 pub fn is_interface(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame
-        .push_boolean((*class).borrow().is_interface());
+    frame.push_boolean((*class).borrow().is_interface());
 }
 
 pub fn is_primitive(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     frame.push_boolean((*class).borrow().is_primitive());
 }
 
 pub fn get_modifiers(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame
-        .push_int((*class).borrow().access_flags() as i32);
+    frame.push_int((*class).borrow().access_flags() as i32);
 }
 
 pub fn get_superclass(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     let super_class = (*class).borrow().super_class();
     let mut java_class: Option<Object> = None;
@@ -180,9 +165,7 @@ pub fn get_superclass(frame: &Frame) {
 }
 
 pub fn get_interfaces0(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     let borrow = (*class).borrow();
     let interfaces = borrow.interfaces();
@@ -198,10 +181,10 @@ fn to_class_arr(classes: &Vec<Rc<RefCell<Class>>>) -> ArrayObject {
     let class_arr_class = (*bootstrap_loader.find_or_create("java/lang/Class").unwrap())
         .borrow()
         .array_class();
-    let mut class_arr = Class::new_array(&class_arr_class, arr_len);
+    let class_arr = Class::new_array(&class_arr_class, arr_len);
 
     if arr_len > 0 {
-        class_arr.mut_references(|class_objs|{
+        class_arr.mut_references(|class_objs| {
             for i in 0..arr_len {
                 class_objs[i] = (*classes[i].clone()).borrow().get_java_class();
             }
@@ -225,9 +208,7 @@ fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
 }
 
 pub fn is_array(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     frame.push_boolean((*class).borrow().is_array());
 }
@@ -235,9 +216,7 @@ pub fn is_array(frame: &Frame) {
 // public native Class<?> getComponentType();
 // ()Ljava/lang/Class;
 pub fn get_component_type(frame: &Frame) {
-    let this = frame
-        .get_this()
-        .unwrap();
+    let this = frame.get_this().unwrap();
     let class = this.meta();
     let component_class = (*class).borrow().component_class();
     frame.push_ref((*component_class).borrow().get_java_class());
@@ -246,10 +225,10 @@ pub fn get_component_type(frame: &Frame) {
 // public native boolean isAssignableFrom(Class<?> cls);
 // (Ljava/lang/Class;)Z
 pub fn is_assignable_from(frame: &Frame) {
-    let (this,cls) = frame.local_vars_get(|vars|{
+    let (this, cls) = frame.local_vars_get(|vars| {
         let this = vars.get_this();
         let cls = vars.get_ref(1);
-        (this,cls)
+        (this, cls)
     });
 
     let this_class = this.unwrap().meta();
@@ -267,10 +246,10 @@ const _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR: &str =
 // private native Constructor<T>[] getDeclaredConstructors0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Constructor;
 pub fn get_declared_constructors0(frame: &Frame) {
-    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+    let (class_obj, public_only) = frame.local_vars_get(|vars| {
         let class_obj = vars.get_this().unwrap();
         let public_only = vars.get_boolean(1);
-        (class_obj,public_only)
+        (class_obj, public_only)
     });
 
     let class = class_obj.meta();
@@ -288,42 +267,41 @@ pub fn get_declared_constructors0(frame: &Frame) {
     frame.push_ref(boxed_arr.clone());
 
     if constructor_count > 0 {
-        let thread = JavaThread::current();
+        let _thread = JavaThread::current();
         let arr = boxed_arr.unwrap();
 
         let constructor_init_method = Class::get_constructor(
             constructor_class.clone(),
             _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR,
         );
-        arr.mut_references(|constructor_objs|{
+        arr.mut_references(|constructor_objs| {
             for i in 0..constructors.len() {
                 let constructor = &constructors[i];
-                let mut constructor_obj = Class::new_object(&constructor_class);
+                let constructor_obj = Class::new_object(&constructor_class);
                 constructor_obj.set_meta_data(Method(constructor.clone()));
                 let object = Some(constructor_obj);
                 constructor_objs[i] = object.clone();
 
                 let parameter_types = constructor.parameter_types().unwrap();
                 let exception_types = constructor.exception_types().unwrap_or_else(|| Vec::new());
-                let mut data: Vec<u8> = vec![0, 20];
-                let mut pas: Vec<u8> = vec![0, 20];
+                let data: Vec<u8> = vec![0, 20];
+                let pas: Vec<u8> = vec![0, 20];
                 // init constructor_obj
-                let parameters = Parameters::with_parameters(
-                    vec![
-                        Parameter::Object(object),// this
-                        Parameter::Object(Some(class_obj.clone())),// declaringClass
-                        Parameter::Object(Some(to_class_arr(&parameter_types))),// parameterTypes
-                        Parameter::Object(Some(to_class_arr(&exception_types))),// checkedExceptions
-                        Parameter::Int(constructor.access_flags() as i32),// modifiers
-                        Parameter::Int(0),// todo slot
-                        Parameter::Object(get_signature_str(constructor.signature())),// signature
-                        Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())),// annotations
-                        Parameter::Object(Some(to_byte_arr(Some(pas)).unwrap())),// parameterAnnotations
-                    ]
-                );
-                JavaCall::invoke(constructor_init_method.clone().unwrap(),
-                                 Some(parameters),
-                                 ReturnType::Void
+                let parameters = Parameters::with_parameters(vec![
+                    Parameter::Object(object),                                     // this
+                    Parameter::Object(Some(class_obj.clone())),                    // declaringClass
+                    Parameter::Object(Some(to_class_arr(&parameter_types))),       // parameterTypes
+                    Parameter::Object(Some(to_class_arr(&exception_types))), // checkedExceptions
+                    Parameter::Int(constructor.access_flags() as i32),       // modifiers
+                    Parameter::Int(0),                                       // todo slot
+                    Parameter::Object(get_signature_str(constructor.signature())), // signature
+                    Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())), // annotations
+                    Parameter::Object(Some(to_byte_arr(Some(pas)).unwrap())), // parameterAnnotations
+                ]);
+                JavaCall::invoke(
+                    constructor_init_method.clone().unwrap(),
+                    Some(parameters),
+                    ReturnType::Void,
                 );
             }
         });
@@ -336,10 +314,10 @@ const _FIELD_CONSTRUCTOR_DESCRIPTOR: &str =
 // private native Field[] getDeclaredFields0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Field;
 pub fn get_declared_fields0(frame: &Frame) {
-    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+    let (class_obj, public_only) = frame.local_vars_get(|vars| {
         let class_obj = vars.get_this().unwrap();
         let public_only = vars.get_boolean(1);
-        (class_obj,public_only)
+        (class_obj, public_only)
     });
 
     let class = class_obj.meta();
@@ -359,33 +337,33 @@ pub fn get_declared_fields0(frame: &Frame) {
         let arr = boxed_arr.unwrap();
         let field_init_method =
             Class::get_constructor(field_class.clone(), _FIELD_CONSTRUCTOR_DESCRIPTOR);
-        arr.mut_references(|field_objs|{
+        arr.mut_references(|field_objs| {
             for i in 0..fields.len() {
                 let field = fields[i].clone();
-                let mut field_obj = Class::new_object(&field_class);
+                let field_obj = Class::new_object(&field_class);
                 field_obj.set_meta_data(Field(field.clone()));
                 let object = Some(field_obj);
                 field_objs[i] = object.clone();
 
-                let mut data: Vec<u8> = vec![0, 20];
+                let data: Vec<u8> = vec![0, 20];
                 // init field_obj
-                let parameters = Parameters::with_parameters(
-                    vec![
-                        Parameter::Object(object.clone()),///this
-                        Parameter::Object(Some(class_obj.clone())),// declaringClass
-                        Parameter::Object(Some(StringPool::java_string(
-                            (*field).borrow().name().to_string(),
-                        ))),// name
-                        Parameter::Object((*(*field).borrow().r#type()).borrow().get_java_class()),// type
-                        Parameter::Int((*field).borrow().access_flags() as i32),// modifiers
-                        Parameter::Int((*field).borrow().slot_id() as i32),// slot
-                        Parameter::Object(get_signature_str((*field).borrow().signature())),// signature
-                        Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())),// annotations
-                    ]
-                );
-                JavaCall::invoke(field_init_method.clone().unwrap(),
-                                 Some(parameters),
-                                 ReturnType::Void
+                let parameters = Parameters::with_parameters(vec![
+                    Parameter::Object(object.clone()),
+                    ///this
+                    Parameter::Object(Some(class_obj.clone())), // declaringClass
+                    Parameter::Object(Some(StringPool::java_string(
+                        (*field).borrow().name().to_string(),
+                    ))), // name
+                    Parameter::Object((*(*field).borrow().r#type()).borrow().get_java_class()), // type
+                    Parameter::Int((*field).borrow().access_flags() as i32), // modifiers
+                    Parameter::Int((*field).borrow().slot_id() as i32),      // slot
+                    Parameter::Object(get_signature_str((*field).borrow().signature())), // signature
+                    Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())), // annotations
+                ]);
+                JavaCall::invoke(
+                    field_init_method.clone().unwrap(),
+                    Some(parameters),
+                    ReturnType::Void,
                 );
             }
         });
@@ -405,10 +383,10 @@ const _METHOD_CONSTRUCTOR_DESCRIPTOR:&str =
 // private native Method[] getDeclaredMethods0(boolean publicOnly);
 // (Z)[Ljava/lang/reflect/Method;
 pub fn get_declared_methods0(frame: &Frame) {
-    let (class_obj,public_only) = frame.local_vars_get(|vars|{
+    let (class_obj, public_only) = frame.local_vars_get(|vars| {
         let class_obj = vars.get_this().unwrap();
         let public_only = vars.get_boolean(1);
-        (class_obj,public_only)
+        (class_obj, public_only)
     });
 
     let class = class_obj.meta();
@@ -427,41 +405,36 @@ pub fn get_declared_methods0(frame: &Frame) {
     // create method objs
     if method_count > 0 {
         let arr = boxed_arr.unwrap();
-        let method_constructor =
+        let _method_constructor =
             Class::get_constructor(method_class.clone(), _METHOD_CONSTRUCTOR_DESCRIPTOR);
-        arr.mut_references(|method_objs|{
+        arr.mut_references(|method_objs| {
             for i in 0..method_count {
                 let method = methods[i].clone();
-                let mut method_obj = Class::new_object(&method_class);
+                let method_obj = Class::new_object(&method_class);
                 method_obj.set_meta_data(Method(method.clone()));
                 let object = Some(method_obj);
                 method_objs[i] = object.clone();
 
                 let parameter_types = method.parameter_types().unwrap();
                 let exception_types = method.exception_types().unwrap_or_else(|| Vec::new());
-                let mut data: Vec<u8> = vec![0, 20];
+                let data: Vec<u8> = vec![0, 20];
 
                 /// init methodObj
-                let parameters = Parameters::with_parameters(
-                    vec![
-                        Parameter::Object(object),// this
-                        Parameter::Object(Some(class_obj.clone())),// declaringClass
-                        Parameter::Object(Some(StringPool::java_string(method.name().to_string()))),// name
-                        Parameter::Object(Some(to_class_arr(&parameter_types))),// parameterTypes
-                        Parameter::Object((*method.return_type()).borrow().get_java_class()),// returnType
-                        Parameter::Object(Some(to_class_arr(&exception_types))),// checkedExceptions
-                        Parameter::Int(method.access_flags() as i32),// modifiers
-                        Parameter::Int(0),// todo slot
-                        Parameter::Object(get_signature_str(method.signature())),// signature
-                        Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())),// annotations
-                        Parameter::Object(None),// parameterAnnotations
-                        Parameter::Object(None),// annotationDefault
-                    ]
-                );
-                JavaCall::invoke(method,
-                                 Some(parameters),
-                                 ReturnType::Void
-                );
+                let parameters = Parameters::with_parameters(vec![
+                    Parameter::Object(object),                  // this
+                    Parameter::Object(Some(class_obj.clone())), // declaringClass
+                    Parameter::Object(Some(StringPool::java_string(method.name().to_string()))), // name
+                    Parameter::Object(Some(to_class_arr(&parameter_types))), // parameterTypes
+                    Parameter::Object((*method.return_type()).borrow().get_java_class()), // returnType
+                    Parameter::Object(Some(to_class_arr(&exception_types))), // checkedExceptions
+                    Parameter::Int(method.access_flags() as i32),            // modifiers
+                    Parameter::Int(0),                                       // todo slot
+                    Parameter::Object(get_signature_str(method.signature())), // signature
+                    Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())), // annotations
+                    Parameter::Object(None),                                 // parameterAnnotations
+                    Parameter::Object(None),                                 // annotationDefault
+                ]);
+                JavaCall::invoke(method, Some(parameters), ReturnType::Void);
             }
         });
     }

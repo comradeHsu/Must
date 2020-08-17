@@ -1,10 +1,10 @@
-use crate::class_loader::app_class_loader::ClassLoader;
+
 use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
 use crate::oops::string_pool::StringPool;
-use crate::utils::boxed;
+use crate::runtime::frame::Frame;
+
 use std::{thread, time};
 
 pub fn init() {
@@ -23,7 +23,7 @@ pub fn init() {
 }
 
 pub fn current_thread(frame: &Frame) {
-    let class = frame.method().class();
+    let _class = frame.method().class();
     let loader = Jvm::boot_class_loader();
     let thread_class = loader.find_or_create("java/lang/Thread").unwrap();
     let mut java_thread = Class::new_object(&thread_class);
@@ -34,7 +34,7 @@ pub fn current_thread(frame: &Frame) {
     );
 
     let thread_group_class = loader.find_or_create("java/lang/ThreadGroup").unwrap();
-    let mut java_thread_group = Class::new_object(&thread_group_class);
+    let java_thread_group = Class::new_object(&thread_group_class);
     java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", java_thread_group);
     java_thread.set_int_var("priority", "I", 1);
 
@@ -43,7 +43,7 @@ pub fn current_thread(frame: &Frame) {
 
 // private native void setPriority0(int newPriority);
 // (I)V
-pub fn set_priority0(frame: &Frame) {
+pub fn set_priority0(_frame: &Frame) {
     // vars := frame.LocalVars()
     // this := vars.GetThis()
     // newPriority := vars.GetInt(1))
@@ -58,7 +58,7 @@ pub fn is_alive(frame: &Frame) {
 
 // private native void start0();
 // ()V
-pub fn start0(frame: &Frame) {
+pub fn start0(_frame: &Frame) {
     // todo
 }
 
@@ -72,7 +72,7 @@ pub fn sleep(frame: &Frame) {
 
 //  public static native void yield();
 // ()V
-pub fn java_yield(frame: &Frame) {
+pub fn java_yield(_frame: &Frame) {
     thread::yield_now();
 }
 

@@ -26,7 +26,7 @@ impl Instruction for AAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_references(|references|{
+            object.mut_references(|references| {
                 check_index(references.len(), index);
                 references[index] = val;
             });
@@ -57,7 +57,7 @@ impl Instruction for BAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_bytes(|bytes|{
+            object.mut_bytes(|bytes| {
                 check_index(bytes.len(), index);
                 bytes[index] = val as i8;
             });
@@ -88,7 +88,7 @@ impl Instruction for CAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_chars(|chars|{
+            object.mut_chars(|chars| {
                 check_index(chars.len(), index);
                 chars[index] = val as u16;
             });
@@ -119,7 +119,7 @@ impl Instruction for DAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_doubles(|doubles|{
+            object.mut_doubles(|doubles| {
                 check_index(doubles.len(), index);
                 doubles[index] = val;
             });
@@ -150,7 +150,7 @@ impl Instruction for FAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_floats(|floats|{
+            object.mut_floats(|floats| {
                 check_index(floats.len(), index);
                 floats[index] = val;
             });
@@ -181,7 +181,7 @@ impl Instruction for IAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_ints(|ints|{
+            object.mut_ints(|ints| {
                 check_index(ints.len(), index);
                 ints[index] = val;
             });
@@ -212,7 +212,7 @@ impl Instruction for LAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_longs(|longs|{
+            object.mut_longs(|longs| {
                 check_index(longs.len(), index);
                 longs[index] = val;
             });
@@ -243,7 +243,7 @@ impl Instruction for SAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.mut_shorts(|shorts|{
+            object.mut_shorts(|shorts| {
                 check_index(shorts.len(), index);
                 shorts[index] = val as i16;
             });

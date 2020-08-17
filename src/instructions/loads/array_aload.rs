@@ -25,7 +25,7 @@ impl Instruction for AAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.references(|references|{
+            object.references(|references| {
                 check_index(references.len(), index);
                 stack.push_ref(references[index].clone());
             });
@@ -55,7 +55,7 @@ impl Instruction for BAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.bytes(|bytes|{
+            object.bytes(|bytes| {
                 check_index(bytes.len(), index);
                 stack.push_int(bytes[index] as i32);
             });
@@ -85,7 +85,7 @@ impl Instruction for CAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.chars(|chars|{
+            object.chars(|chars| {
                 check_index(chars.len(), index);
                 stack.push_int(chars[index] as i32);
             });
@@ -115,7 +115,7 @@ impl Instruction for DAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.doubles(|doubles|{
+            object.doubles(|doubles| {
                 check_index(doubles.len(), index);
                 stack.push_double(doubles[index]);
             });
@@ -145,7 +145,7 @@ impl Instruction for FAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.floats(|floats|{
+            object.floats(|floats| {
                 check_index(floats.len(), index);
                 stack.push_float(floats[index]);
             });
@@ -175,7 +175,7 @@ impl Instruction for IAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.ints(|ints|{
+            object.ints(|ints| {
                 check_index(ints.len(), index);
                 stack.push_int(ints[index]);
             });
@@ -205,7 +205,7 @@ impl Instruction for LAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.longs(|longs|{
+            object.longs(|longs| {
                 check_index(longs.len(), index);
                 stack.push_long(longs[index]);
             });
@@ -235,7 +235,7 @@ impl Instruction for SAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            object.shorts(|shorts|{
+            object.shorts(|shorts| {
                 check_index(shorts.len(), index);
                 stack.push_int(shorts[index] as i32);
             });

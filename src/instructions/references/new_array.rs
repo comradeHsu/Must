@@ -1,10 +1,10 @@
-use crate::class_loader::app_class_loader::ClassLoader;
+
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::jvm::Jvm;
-use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
-use crate::utils::boxed;
+use crate::runtime::frame::Frame;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

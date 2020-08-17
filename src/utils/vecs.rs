@@ -1,5 +1,5 @@
 use std::convert::From;
-use std::error::Error;
+
 
 pub fn flat_map<T, S>(data: Vec<S>) -> Vec<T>
 where

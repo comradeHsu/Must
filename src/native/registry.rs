@@ -50,7 +50,7 @@ impl Registry {
             return Some(*result.unwrap());
         }
         if method_desc == "()V" && method_name == "registerNatives" {
-            return Some(|f| {});
+            return Some(|_f| {});
         }
         return None;
     }
@@ -59,16 +59,16 @@ impl Registry {
 #[cfg(test)]
 mod test {
     use crate::native::registry::Registry;
-    use crate::runtime::frame::Frame;
     use crate::oops::method::Method;
-    use crate::runtime::thread::JavaThread;
-    use crate::utils::boxed;
+    use crate::runtime::frame::Frame;
+    
+    
     use std::rc::Rc;
 
     #[test]
     fn test_register() {
-        Registry::register("java/lang/Object", "clone", "V", |f| println!("clone"));
-        Registry::register("java/lang/Object", "init", "V", |f| println!("init"));
+        Registry::register("java/lang/Object", "clone", "V", |_f| println!("clone"));
+        Registry::register("java/lang/Object", "init", "V", |_f| println!("init"));
         let mut frame = Frame::new(Rc::new(Method::new()));
         let clone = Registry::find_native_method("java/lang/Object", "clone", "V").unwrap();
         clone(&mut frame);

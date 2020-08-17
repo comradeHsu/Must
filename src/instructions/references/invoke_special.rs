@@ -1,12 +1,12 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::MethodReference;
+use crate::instructions::references::ResolveMethodRef;
+
 use crate::oops::method_ref::MethodRef;
+use crate::runtime::frame::Frame;
 use std::borrow::Borrow;
 use std::ops::Deref;
-use crate::instructions::references::ResolveMethodRef;
 
 pub struct InvokeSpecial(ConstantPoolInstruction);
 
@@ -25,8 +25,7 @@ impl Instruction for InvokeSpecial {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let (resolved_class,resolved_method) = self.
-            resolved_method_ref_tuple(class.clone());
+        let (resolved_class, resolved_method) = self.resolved_method_ref_tuple(class.clone());
 
         if resolved_method.name() == "<init>" && resolved_method.class() != resolved_class {
             panic!("java.lang.NoSuchMethodError")
@@ -34,8 +33,7 @@ impl Instruction for InvokeSpecial {
         if resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError")
         }
-        let object = frame
-            .get_ref_from_top(resolved_method.arg_slot_count() - 1);
+        let object = frame.get_ref_from_top(resolved_method.arg_slot_count() - 1);
         if object.is_none() {
             panic!("java.lang.NullPointerException");
         }

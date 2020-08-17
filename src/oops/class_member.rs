@@ -1,8 +1,6 @@
-use lark_classfile::member_info::MemberInfo;
-use crate::oops::access_flags::{
-    ABSTRACT, FINAL, PRIVATE, PROTECTED, PUBLIC, STATIC, SYNTHETIC,
-};
+use crate::oops::access_flags::{ABSTRACT, FINAL, PRIVATE, PROTECTED, PUBLIC, STATIC, SYNTHETIC};
 use crate::oops::class::Class;
+use lark_classfile::member_info::MemberInfo;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;

@@ -1,9 +1,9 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::FieldReference;
 use crate::instructions::references::ResolveFieldRef;
+
+use crate::runtime::frame::Frame;
 
 pub struct GetStatic(ConstantPoolInstruction);
 

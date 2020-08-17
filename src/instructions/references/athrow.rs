@@ -1,12 +1,12 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{Instruction, NoOperandsInstruction};
-use crate::runtime::frame::Frame;
 use crate::oops::object::Object;
+use crate::runtime::frame::Frame;
 use crate::runtime::thread::JavaThread;
 use crate::utils::java_str_to_rust_str;
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::rc::Rc;
+
+
+
 
 pub struct AThrow(NoOperandsInstruction);
 
@@ -20,39 +20,15 @@ impl AThrow {
         ///
         fn get_handler_pc(frame: &Frame, object: Object) -> i32 {
             let pc = frame.next_pc() - 1;
-            return frame
-                .method()
-                .find_exception_handler(object.class(), pc);
+            return frame.method().find_exception_handler(object.class(), pc);
         }
 
         let thread = JavaThread::current();
-
-        //display_frame(frame);
-
-        let pc = frame
-            .method()
-            .find_exception_handler(object.class(), frame.next_pc() - 1);
-        if pc > 0 {
-            frame.operand_stack(|stack| {
-                stack.clear();
-                stack.push_ref(Some(object.clone()));
-            });
-            frame.set_next_pc(pc);
-            return true;
-        }
-        thread.pop_frame();
         loop {
             if thread.is_stack_empty() {
                 break;
             }
             let frame = thread.current_frame();
-            /**
-             **
-            {
-                let fra = (*frame).borrow();
-                display_frame(fra.deref());
-            }
-            **/
             let handler_pc = get_handler_pc(&frame, object.clone());
             if handler_pc > 0 {
                 frame.operand_stack(|stack| {
@@ -70,18 +46,17 @@ impl AThrow {
     fn handle_uncaught_exception(object: Object) {
         let thread = JavaThread::current();
         thread.clear_stack();
-        let _java_msg = object
-            .get_ref_var("detailMessage", "Ljava/lang/String;");
+        let _java_msg = object.get_ref_var("detailMessage", "Ljava/lang/String;");
         //        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
         let ex_class = object.class();
         let detail_message = object
             .get_ref_var("detailMessage", "Ljava/lang/String;")
             .map_or("".to_string(), |v| java_str_to_rust_str(v));
         println!("\t{},{}", (*ex_class).borrow().java_name(), detail_message);
-        object.trace(|elements|{
+        object.trace(|elements| {
             let len = elements.len() - 1;
             for index in 0..=len {
-                println!("\tat {}", elements[len-index].to_string());
+                println!("\tat {}", elements[len - index].to_string());
             }
         })
     }
@@ -102,8 +77,8 @@ impl Instruction for AThrow {
         //        let meta = (*object).borrow().meta();
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
         {
-            let method = frame.method();
-            let class = object.class();
+            let _method = frame.method();
+            let _class = object.class();
         }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(object);

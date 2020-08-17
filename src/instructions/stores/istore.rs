@@ -5,10 +5,8 @@ use crate::instructions::base::instruction::{
 use crate::runtime::frame::Frame;
 
 fn i_store(frame: &Frame, index: usize) {
-    let val = frame
-        .pop_int();
-    frame
-        .set_int(index, val);
+    let val = frame.pop_int();
+    frame.set_int(index, val);
 }
 
 ///istore

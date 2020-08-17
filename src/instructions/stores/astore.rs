@@ -5,8 +5,7 @@ use crate::instructions::base::instruction::{
 use crate::runtime::frame::Frame;
 
 fn a_store(frame: &Frame, index: usize) {
-    let val = frame
-        .pop_ref();
+    let val = frame.pop_ref();
     frame.set_ref(index, val);
 }
 

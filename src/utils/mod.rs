@@ -1,4 +1,4 @@
-use crate::jni::JString;
+
 use crate::oops::object::Object;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -12,29 +12,22 @@ pub fn boxed<T>(data: T) -> Rc<RefCell<T>> {
 }
 
 pub fn java_str_to_rust_str(name_obj: Object) -> String {
-    let mete_str = name_obj
-        .get_ref_var("value", "[C")
-        .expect("str is null");
-    let mut target = mete_str.chars(|string|{
-        String::from_utf16(string).expect("u16 seqs has mistake")
-    });
+    let mete_str = name_obj.get_ref_var("value", "[C").expect("str is null");
+    let mut target =
+        mete_str.chars(|string| String::from_utf16(string).expect("u16 seqs has mistake"));
     target = target.replace("%5c", "\\");
     target.replace("%3f", "?")
 }
 
 pub fn jstr_to_utf_nullable(j_string: Option<Object>) -> String {
     let name_obj = j_string.expect("this string is null");
-    let mete_str = name_obj
-        .get_ref_var("value", "[C")
-        .expect("str is null");
-    let target = mete_str.chars(|string|{
-        String::from_utf16(string).expect("u16 seqs has mistake")
-    });
+    let mete_str = name_obj.get_ref_var("value", "[C").expect("str is null");
+    let target = mete_str.chars(|string| String::from_utf16(string).expect("u16 seqs has mistake"));
     target
 }
 
 pub fn jbytes_to_u8s(jbytes: Object) -> Vec<u8> {
-    jbytes.bytes(|bytes|{
+    jbytes.bytes(|bytes| {
         let mut data = Vec::with_capacity(bytes.len());
         for byte in bytes {
             data.push(*byte as u8);

@@ -1,19 +1,19 @@
-use crate::jni::JObject;
+
 use crate::jvm::Jvm;
 use crate::native::java::util::zip_file::zip_file_cache::ZipFile;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::array_object::ArrayObject;
 use crate::oops::object::DataType::Bytes;
-use crate::utils::{boxed, java_str_to_rust_str, jbytes_to_u8s};
+use crate::oops::object::Object;
+use crate::runtime::frame::Frame;
+use crate::utils::{java_str_to_rust_str, jbytes_to_u8s};
 use chrono::{DateTime, Utc};
-use podio::ReadPodExt;
+
 use rc_zip::{Archive, ReadZip, StoredEntry};
 use std::fs::File;
 use std::io::{ErrorKind, Read};
 use std::time::SystemTime;
-use zip::ZipArchive;
-use crate::oops::object::Object;
+
 
 pub fn init() {
     Registry::register("java/util/zip/ZipFile", "initIDs", "()V", init_ids);
@@ -112,11 +112,11 @@ pub fn starts_with_loc(frame: &Frame) {
 ///                                        boolean addSlash);
 /// (J[BZ)J
 pub fn get_entry(frame: &Frame) {
-    let (address,name_bytes,add_slash) = frame.local_vars_get(|vars|{
+    let (address, name_bytes, _add_slash) = frame.local_vars_get(|vars| {
         let address = vars.get_long(0) as usize;
         let name_bytes = vars.get_ref(2).unwrap();
         let add_slash = vars.get_boolean(3);
-        (address,name_bytes,add_slash)
+        (address, name_bytes, add_slash)
     });
 
     let bytes = jbytes_to_u8s(name_bytes);
@@ -149,10 +149,10 @@ pub fn get_entry_flag(frame: &Frame) {
 /// private static native byte[] getEntryBytes(long jzentry, int type);
 /// (JI)[B
 pub fn get_entry_bytes(frame: &Frame) {
-    let (address,param_type) = frame.local_vars_get(|vars|{
+    let (address, param_type) = frame.local_vars_get(|vars| {
         let address = vars.get_long(0);
         let param_type = vars.get_int(2);
-        (address,param_type)
+        (address, param_type)
     });
 
     let pointer = address as *const StoredEntry;
@@ -248,17 +248,16 @@ pub fn free_entry(_frame: &Frame) {}
 ///                                   long pos, byte[] b, int off, int len);
 /// (JJJ[BII)I
 pub fn read(frame: &Frame) {
-    let (file_address,entry_address,position,buf,offset,mut len) =
+    let (file_address, entry_address, position, buf, offset, mut len) =
         frame.local_vars_get(|vars| {
-        let file_address = vars.get_long(0) as usize;
-        let entry_address = vars.get_long(2);
-        let position = vars.get_long(4);
-        let buf = vars.get_ref(6);
-        let offset = vars.get_int(7) as usize;
-        let len = vars.get_int(8);
-        (file_address,entry_address,position,buf,offset,len)
-    });
-
+            let file_address = vars.get_long(0) as usize;
+            let entry_address = vars.get_long(2);
+            let position = vars.get_long(4);
+            let buf = vars.get_ref(6);
+            let offset = vars.get_int(7) as usize;
+            let len = vars.get_int(8);
+            (file_address, entry_address, position, buf, offset, len)
+        });
 
     const BUFF_SIZE: i32 = 8192;
     if len > BUFF_SIZE {
@@ -297,7 +296,7 @@ fn zip_read(
         false => entry.uncompressed_size,
     } as i64;
 
-    let mut read_len = 0;
+    let _read_len = 0;
     /* Check specified position */
     if position < 0 || position > (entry_size - 1) {
         //        zip->msg = "ZIP_Read: specified offset out of range";
@@ -319,7 +318,7 @@ fn zip_read(
 fn read_fully(zip: &ZipFile, entry: &StoredEntry, mut buf: &mut [u8], mut len: usize) -> isize {
     while len > 0 {
         let limit = (1 << 31) - 1;
-        let count = match len < limit {
+        let _count = match len < limit {
             true => len,
             false => limit,
         };
@@ -345,7 +344,7 @@ fn read_fully(zip: &ZipFile, entry: &StoredEntry, mut buf: &mut [u8], mut len: u
 
 fn set_byte_array_region(bytes: Option<Object>, offset: usize, len: usize, buff: &[u8]) {
     let bytes = bytes.unwrap();
-    bytes.mut_bytes(|bytes|{
+    bytes.mut_bytes(|bytes| {
         for index in 0..len {
             bytes[index + offset] = buff[index] as i8;
         }
@@ -356,8 +355,8 @@ pub mod zip_file_cache {
     use rc_zip::Archive;
     use std::collections::HashMap;
     use std::fs::{File, Metadata};
-    use std::io::Read;
-    use zip::ZipArchive;
+    
+    
 
     pub struct ZipFile {
         pub metadata: Metadata,

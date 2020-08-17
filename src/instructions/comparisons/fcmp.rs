@@ -41,7 +41,7 @@ impl Instruction for Fcmpl {
 }
 
 fn fcmp(frame: &Frame, flag: bool) {
-    frame.operand_stack(|stack|{
+    frame.operand_stack(|stack| {
         let v2 = stack.pop_float();
         let v1 = stack.pop_float();
         if v1 > v2 {

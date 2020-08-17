@@ -1,6 +1,6 @@
 use crate::class_reader::ClassReader;
 use crate::constant_pool::ConstantInfoEnum::*;
-use crate::makers_attribute::DeprecatedAttribute;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -23,13 +23,13 @@ impl ConstantPool {
         while i < cp_count {
             let constant_info = read_constant_info(reader, cp.clone());
             match &constant_info {
-                Long(info) => {
+                Long(_info) => {
                     i = i + 2;
                     vec.push(constant_info);
                     vec.push(None);
                     continue;
                 }
-                Double(info) => {
+                Double(_info) => {
                     i = i + 2;
                     vec.push(constant_info);
                     vec.push(None);

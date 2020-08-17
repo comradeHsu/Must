@@ -1,15 +1,15 @@
-use lark_classfile::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
 use crate::oops::class::Class;
 use crate::oops::class_ref::ClassRef;
 use crate::oops::constant_pool::Constant::*;
-use crate::oops::field::Field;
+
 use crate::oops::field_ref::FieldRef;
 use crate::oops::interface_method_ref::InterfaceMethodRef;
+
 use crate::oops::method_ref::MethodRef;
 use core::mem;
+use lark_classfile::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::oops::method::Method;
 
 #[derive(Debug)]
 pub struct ConstantPool {
@@ -18,7 +18,6 @@ pub struct ConstantPool {
 }
 
 impl ConstantPool {
-
     pub fn new_constant_pool(
         class: Option<Rc<RefCell<Class>>>,
         pool: Rc<RefCell<Pool>>,
@@ -57,21 +56,21 @@ impl ConstantPool {
             }
             index += 1;
         }
-        let mut pool = ConstantPool { class, constants };
+        let pool = ConstantPool { class, constants };
         return pool;
     }
 
-//    pub fn lazy_init_for_constants(&mut self, class: &Rc<RefCell<Class>>) {
-//        for constant in &mut self.constants {
-//            match constant {
-//                ClassReference(c) => c.set_holder(class.clone()),
-//                FieldReference(c) => c.set_holder(class.clone()),
-//                MethodReference(c) => c.set_holder(class.clone()),
-//                InterfaceMethodReference(c) => c.set_holder(class.clone()),
-//                _ => {}
-//            }
-//        }
-//    }
+    //    pub fn lazy_init_for_constants(&mut self, class: &Rc<RefCell<Class>>) {
+    //        for constant in &mut self.constants {
+    //            match constant {
+    //                ClassReference(c) => c.set_holder(class.clone()),
+    //                FieldReference(c) => c.set_holder(class.clone()),
+    //                MethodReference(c) => c.set_holder(class.clone()),
+    //                InterfaceMethodReference(c) => c.set_holder(class.clone()),
+    //                _ => {}
+    //            }
+    //        }
+    //    }
 
     pub fn get_constant(&mut self, index: usize) -> &mut Constant {
         let constant = self.constants.get_mut(index - 1);
@@ -89,7 +88,7 @@ impl ConstantPool {
         return constant.unwrap().take();
     }
 
-    pub fn restoration_constant(&mut self, index: usize, other:Constant) {
+    pub fn restoration_constant(&mut self, index: usize, other: Constant) {
         let constant = self.constants.get_mut(index - 1);
         if constant.is_none() {
             panic!("No constants at index {}", index);
@@ -120,7 +119,6 @@ impl ConstantPool {
     pub fn size(&self) -> usize {
         return self.constants.len();
     }
-
 }
 
 impl Default for ConstantPool {
@@ -151,7 +149,7 @@ impl Constant {
         return mem::take(self);
     }
 
-    pub fn replace(&mut self, mut other:Self) {
+    pub fn replace(&mut self, mut other: Self) {
         mem::swap(self, &mut other)
     }
 }

@@ -67,7 +67,7 @@ impl ClassPath {
         };
     }
 
-    pub fn parse(jre_option: &String, cp_option: &Vec<String>) -> ClassPath {
+    pub fn parse(jre_option: &String, _cp_option: &Vec<String>) -> ClassPath {
         let mut class_path = ClassPath {
             boot_class_path: None,
         };
@@ -160,7 +160,7 @@ mod tests {
     use std::io::{Error, Read};
     use std::path::Path;
     use std::time::SystemTime;
-    use std::{env, time};
+    use std::{env};
     use zip::read::ZipFile;
 
     #[test]
@@ -189,7 +189,7 @@ mod tests {
         let time = SystemTime::now();
         println!("zip:{:?}", time);
         for i in 0..zip.len() {
-            let mut file: ZipFile = zip.by_index(i).unwrap();
+            let file: ZipFile = zip.by_index(i).unwrap();
             println!("class_name:{}", file.name());
         }
     }

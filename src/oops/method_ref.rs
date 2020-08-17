@@ -1,8 +1,8 @@
-use lark_classfile::constant_pool::ConstantMethodRefInfo;
 use crate::oops::class::{Class, Interfaces};
-use crate::oops::constant_pool::ConstantPool;
+
 use crate::oops::member_ref::MemberRef;
 use crate::oops::method::Method;
+use lark_classfile::constant_pool::ConstantMethodRefInfo;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -36,18 +36,18 @@ impl MethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         return self.member_ref.resolved_class(holder);
     }
 
-    pub fn resolved_method(&mut self,holder:Rc<RefCell<Class>>) -> Option<Rc<Method>> {
+    pub fn resolved_method(&mut self, holder: Rc<RefCell<Class>>) -> Option<Rc<Method>> {
         if self.method.is_none() {
             self.resolved_method_ref(holder);
         }
         return self.method.clone();
     }
 
-    fn resolved_method_ref(&mut self,holder:Rc<RefCell<Class>>) {
+    fn resolved_method_ref(&mut self, holder: Rc<RefCell<Class>>) {
         let class = self.member_ref.resolved_class(holder);
         if (*class).borrow().is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");

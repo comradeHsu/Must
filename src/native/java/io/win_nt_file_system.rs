@@ -1,12 +1,12 @@
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::string_pool::StringPool;
+use crate::runtime::frame::Frame;
 use crate::utils::java_str_to_rust_str;
-use chrono::Local;
+
+use std::fs;
 use std::fs::File;
 use std::path::Path;
 use std::time::UNIX_EPOCH;
-use std::fs;
 
 pub fn init() {
     Registry::register("java/io/WinNTFileSystem", "initIDs", "()V", init_ids);
@@ -66,8 +66,7 @@ pub fn canonicalize0(frame: &Frame) {
 /// (Ljava/io/File;)I
 pub fn get_boolean_attributes(frame: &Frame) {
     let java_file = frame.get_ref(1).unwrap();
-    let java_path = java_file
-        .get_ref_var("path", "Ljava/lang/String;");
+    let java_path = java_file.get_ref_var("path", "Ljava/lang/String;");
     let native_path = java_str_to_rust_str(java_path.unwrap());
     let path = Path::new(&native_path);
     let mut attribute = 0;
@@ -105,8 +104,7 @@ fn is_hidden(filename: &str) -> bool {
 /// (Ljava/io/File;)J
 pub fn get_last_modified_time(frame: &Frame) {
     let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
-    let java_path =java_file
-        .get_ref_var("path", "Ljava/lang/String;");
+    let java_path = java_file.get_ref_var("path", "Ljava/lang/String;");
     let rust_path = java_str_to_rust_str(java_path.unwrap());
     let path = Path::new(&rust_path);
     let file = File::open(path).expect("can not find file");
@@ -122,13 +120,12 @@ pub fn get_last_modified_time(frame: &Frame) {
 /// (Ljava/io/File;)J
 pub fn get_length(frame: &Frame) {
     let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
-    let java_path = java_file
-        .get_ref_var("path", "Ljava/lang/String;");
+    let java_path = java_file.get_ref_var("path", "Ljava/lang/String;");
     let rust_path = java_str_to_rust_str(java_path.unwrap());
     let metadata = fs::metadata(rust_path);
     let len = match metadata.is_ok() {
         true => metadata.unwrap().len(),
-        false => 0
+        false => 0,
     };
     frame.push_long(len as i64);
 }
@@ -140,6 +137,6 @@ mod tests {
     #[test]
     fn len() {
         let metadata = fs::metadata("D:\\vedio").unwrap();
-        println!("the file len:{}",metadata.len());
+        println!("the file len:{}", metadata.len());
     }
 }

@@ -3,19 +3,19 @@ use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
 use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
-use crate::instructions::base::instruction::Instruction;
-use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::instructions::references::athrow::AThrow;
-use crate::interpreter::{interpret};
+
+
+
+use crate::interpreter::interpret;
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{ReturnType, JavaCall};
-use crate::prims::perf_data::Variability;
-use crate::runtime::frame::Frame;
+use crate::invoke_support::{JavaCall, ReturnType};
 use crate::oops::class::Class;
 use crate::oops::object::Object;
 use crate::oops::string_pool::StringPool;
+
+use crate::runtime::frame::Frame;
 use crate::runtime::thread::JavaThread;
-use crate::utils::{boxed, java_str_to_rust_str};
+use crate::utils::{java_str_to_rust_str};
 use chrono::Local;
 use std::borrow::Borrow;
 use std::cell::RefCell;
@@ -119,7 +119,7 @@ impl Jvm {
             return;
         }
         let args_arr = self.create_args_array();
-        let mut frame = Frame::new(main_method.unwrap());
+        let frame = Frame::new(main_method.unwrap());
         frame.set_ref(0, Some(args_arr));
         self.main_thread.push_frame(frame);
         interpret(self.main_thread.clone());
@@ -131,8 +131,8 @@ impl Jvm {
             .find_or_create("java/lang/String")
             .unwrap();
         let args_arr_class = (*string_class).borrow().array_class();
-        let mut args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
-        args_arr.mut_references(|java_args|{
+        let args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
+        args_arr.mut_references(|java_args| {
             for i in 0..java_args.len() {
                 java_args[i] = Some(StringPool::java_string(self.cmd.args[i].clone()));
             }
@@ -168,11 +168,9 @@ impl Jvm {
 
 fn display_loader_url(class_loader: Option<Object>) {
     let obj = class_loader.unwrap();
-    let ucp = obj
-        .get_ref_var("ucp", "Lsun/misc/URLClassPath;");
+    let ucp = obj.get_ref_var("ucp", "Lsun/misc/URLClassPath;");
 
-    let parent = obj
-        .get_ref_var("parent", "Ljava/lang/ClassLoader;");
+    let parent = obj.get_ref_var("parent", "Ljava/lang/ClassLoader;");
     if parent.is_some() {
         let parent = parent.unwrap().class();
         println!("parent:{}", (*parent).borrow().java_name());
@@ -183,17 +181,16 @@ fn display_loader_url(class_loader: Option<Object>) {
     let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();
     if ucp.is_some() {
         let ucp = ucp.unwrap();
-        let path = ucp
-            .get_ref_var("path", "Ljava/util/ArrayList;")
-            .unwrap();
+        let path = ucp.get_ref_var("path", "Ljava/util/ArrayList;").unwrap();
         let data = path
             .get_ref_var("elementData", "[Ljava/lang/Object;")
             .unwrap();
-        data.references(|objs|{
+        data.references(|objs| {
             for ob in objs {
                 if ob.is_some() {
                     let param = Parameters::with_parameters(vec![Parameter::Object(ob.clone())]);
-                    let string = JavaCall::invoke(method.clone(), Some(param), ReturnType::Object).object();
+                    let string =
+                        JavaCall::invoke(method.clone(), Some(param), ReturnType::Object).object();
                     let rust_str = java_str_to_rust_str(string.unwrap());
                     println!("URL:{}", rust_str);
                 }

@@ -61,9 +61,7 @@ impl AttributeInfo for LineNumberTableAttribute {
 
 #[cfg(test)]
 mod line {
-    use crate::line_number_table_attribute::{
-        LineNumberTableAttribute, LineNumberTableEntry,
-    };
+    use crate::line_number_table_attribute::{LineNumberTableAttribute, LineNumberTableEntry};
 
     #[test]
     fn test_unsafe_copy() {

@@ -1,8 +1,8 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::FieldReference;
 use crate::instructions::references::ResolveFieldRef;
+
+use crate::runtime::frame::Frame;
 
 pub struct GetField(ConstantPoolInstruction);
 
@@ -36,15 +36,13 @@ impl Instruction for GetField {
 
             let object = reference.unwrap();
             let first_char = desc.chars().next().unwrap();
-            let func = object.fields_with(|slots|{
-                match first_char {
-                    'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
-                    'F' => stack.push_float(slots.get_float(slot_id)),
-                    'J' => stack.push_long(slots.get_long(slot_id)),
-                    'D' => stack.push_double(slots.get_double(slot_id)),
-                    'L' | '[' => stack.push_ref(slots.get_ref(slot_id)),
-                    _ => {}
-                }
+            let _func = object.fields_with(|slots| match first_char {
+                'Z' | 'B' | 'C' | 'S' | 'I' => stack.push_int(slots.get_int(slot_id)),
+                'F' => stack.push_float(slots.get_float(slot_id)),
+                'J' => stack.push_long(slots.get_long(slot_id)),
+                'D' => stack.push_double(slots.get_double(slot_id)),
+                'L' | '[' => stack.push_ref(slots.get_ref(slot_id)),
+                _ => {}
             });
         })
     }

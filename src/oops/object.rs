@@ -3,17 +3,17 @@ use crate::native::java::lang::throwable::StackTraceElement;
 use crate::oops::class::Class;
 use crate::oops::field::Field;
 use crate::oops::method::Method;
-use crate::oops::object::DataType::{StandardObject, Bytes, Shorts, Ints, Longs};
-use crate::oops::object::MetaData::{Null};
+use crate::oops::object::DataType::{StandardObject};
+use crate::oops::object::MetaData::Null;
 use crate::oops::slots::Slots;
+use crate::utils::boxed;
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::fs::File;
-use crate::utils::boxed;
 use std::ops::Deref;
+use std::rc::Rc;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Data {
     pub class: Rc<RefCell<Class>>,
     pub data: DataType,
@@ -33,13 +33,13 @@ impl Data {
 
 #[derive(Debug, Clone)]
 pub struct Object {
-    pub data: Rc<RefCell<Data>>
+    pub data: Rc<RefCell<Data>>,
 }
 
 impl Object {
     pub fn new(class: Rc<RefCell<Class>>) -> Object {
-        return Object{
-            data: boxed(Data::new(class))
+        return Object {
+            data: boxed(Data::new(class)),
         };
     }
 
@@ -52,7 +52,7 @@ impl Object {
     pub fn meta(&self) -> Rc<RefCell<Class>> {
         match &(*self.data).borrow().meta_data {
             MetaData::MetaClass(class) => class.clone(),
-            _ => panic!()
+            _ => panic!(),
         }
     }
 
@@ -62,13 +62,13 @@ impl Object {
     }
 
     #[inline]
-    pub fn trace<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&Vec<StackTraceElement>) -> R,
+    pub fn trace<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&Vec<StackTraceElement>) -> R,
     {
         match &(*self.data).borrow().meta_data {
             MetaData::StackTrace(elements) => func(elements),
-            _ => panic!("this object isn't exception")
+            _ => panic!("this object isn't exception"),
         }
     }
 
@@ -82,44 +82,44 @@ impl Object {
         (*self.data).borrow_mut().meta_data = data;
     }
 
-    pub fn mut_fields_with<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&mut Slots) -> R,
+    pub fn mut_fields_with<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&mut Slots) -> R,
     {
         match &mut (*self.data).borrow_mut().data {
             StandardObject(data) => {
                 let slots = data.as_mut().expect("The Object haven't member variable");
                 func(slots)
-            },
+            }
             _ => panic!("The Object is array"),
         }
     }
 
-    pub fn fields_with<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&Slots) -> R,
+    pub fn fields_with<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&Slots) -> R,
     {
         match &(*self.data).borrow().data {
             StandardObject(data) => {
                 let slots = data.as_ref().expect("The Object haven't member variable");
                 func(slots)
-            },
+            }
             _ => panic!("The Object is array"),
         }
     }
 
     #[inline]
-    pub fn mut_data_with<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&mut DataType) -> R,
+    pub fn mut_data_with<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&mut DataType) -> R,
     {
-       func(&mut (*self.data).borrow_mut().data)
+        func(&mut (*self.data).borrow_mut().data)
     }
 
     #[inline]
-    pub fn data_with<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&DataType) -> R,
+    pub fn data_with<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&DataType) -> R,
     {
         func(&(*self.data).borrow_mut().data)
     }
@@ -172,7 +172,7 @@ impl Object {
 
     pub fn set_ref_var(&mut self, name: &str, descriptor: &str, reference: Object) {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
-        self.mut_fields_with(|slots|{
+        self.mut_fields_with(|slots| {
             slots.set_ref((*field.unwrap()).borrow().slot_id(), Some(reference));
         })
     }
@@ -180,48 +180,48 @@ impl Object {
     pub fn get_ref_var(&self, name: &str, descriptor: &str) -> Option<Object> {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
         let field = field.unwrap();
-        self.fields_with(|slots|{
+        self.fields_with(|slots| {
             return slots.get_ref((*field).borrow().slot_id());
         })
     }
 
     pub fn set_int_var(&mut self, name: &str, descriptor: &str, val: i32) {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
-        self.mut_fields_with(|slots|{
+        self.mut_fields_with(|slots| {
             slots.set_int((*field.unwrap()).borrow().slot_id(), val);
         })
     }
 
     pub fn get_int_var(&self, name: &str, descriptor: &str) -> i32 {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
-        self.fields_with(|slots|{
+        self.fields_with(|slots| {
             return slots.get_int((*field.unwrap()).borrow().slot_id());
         })
     }
 
     pub fn get_long_var(&self, name: &str, descriptor: &str) -> i64 {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
-        self.fields_with(|slots|{
+        self.fields_with(|slots| {
             return slots.get_long((*field.unwrap()).borrow().slot_id());
         })
     }
 
     pub fn get_ref_var_by_slot_id(&self, slot_id: usize) -> Option<Object> {
-        self.fields_with(|slots|{
+        self.fields_with(|slots| {
             return slots.get_ref(slot_id);
         })
     }
 
     #[inline]
     pub fn get_long_var_by_slot_id(&self, slot_id: usize) -> i64 {
-        self.fields_with(|slots|{
+        self.fields_with(|slots| {
             return slots.get_long(slot_id);
         })
     }
 
     #[inline]
     pub fn set_long_var_by_slot_id(&self, slot_id: usize, value: i64) {
-        self.mut_fields_with(|slots|{
+        self.mut_fields_with(|slots| {
             return slots.set_long(slot_id, value);
         })
     }
@@ -232,10 +232,8 @@ impl Object {
     }
 
     pub fn deep_clone(&self) -> Self {
-        return Object{
-            data: Rc::new(RefCell::new(
-                (*self.data).borrow().clone()
-            ))
+        return Object {
+            data: Rc::new(RefCell::new((*self.data).borrow().clone())),
         };
     }
 }
@@ -272,7 +270,7 @@ pub enum MetaData {
     ClassLoader(Rc<RefCell<ClassLoader>>),
     File(Rc<RefCell<File>>),
     MetaClass(Rc<RefCell<Class>>),
-    StackTrace(Vec<StackTraceElement>)
+    StackTrace(Vec<StackTraceElement>),
 }
 
 impl MetaData {

@@ -1,5 +1,5 @@
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::jvm::{Jvm, JVM};
+use crate::jvm::{Jvm};
 use crate::native::registry::Registry;
 use crate::runtime::frame::Frame;
 use crate::utils::java_str_to_rust_str;
@@ -54,10 +54,10 @@ pub fn load(frame: &Frame) {
 /// private native final Class<?> findLoadedClass0(String name);
 /// (Ljava/lang/String;)Ljava/lang/Class;
 pub fn find_loaded_class0(frame: &Frame) {
-    let (this,name) = frame.local_vars_get(|vars|{
+    let (this, name) = frame.local_vars_get(|vars| {
         let this = vars.get_this().unwrap();
         let name = vars.get_ref(1);
-        (this,name)
+        (this, name)
     });
 
     let loader = this.get_class_loader();
@@ -77,7 +77,7 @@ pub fn find_loaded_class0(frame: &Frame) {
 /// private native Class<?> findBootstrapClass(String name);
 /// (Ljava/lang/String;)Ljava/lang/Class;
 pub fn find_bootstrap_class(frame: &Frame) {
-    let class = frame.method().class();
+    let _class = frame.method().class();
     let loader = Jvm::boot_class_loader();
     let name = frame.get_ref(1);
     let class_name = java_str_to_rust_str(name.unwrap());
@@ -93,18 +93,25 @@ pub fn find_bootstrap_class(frame: &Frame) {
 ///                                         ProtectionDomain pd, String source);
 /// (Ljava/lang/String;[BIILjava/security/ProtectionDomain;Ljava/lang/String;)Ljava/lang/Class;
 pub fn define_class1(frame: &Frame) {
-    let (this,java_string,byte_array,offset,length,protection_domain,source) =
-        frame.local_vars_get(|vars|{
-        let this = vars.get_ref(0).unwrap();
-        let java_string = vars.get_ref(1);
-        let byte_array = vars.get_ref(2);
-        let offset = vars.get_int(3) as usize;
-        let length = vars.get_int(4) as usize;
-        let protection_domain = vars.get_ref(5);
-        let source = vars.get_ref(6);
-        (this,java_string,byte_array,offset,length,protection_domain,source)
-    });
-
+    let (this, java_string, byte_array, offset, length, protection_domain, _source) = frame
+        .local_vars_get(|vars| {
+            let this = vars.get_ref(0).unwrap();
+            let java_string = vars.get_ref(1);
+            let byte_array = vars.get_ref(2);
+            let offset = vars.get_int(3) as usize;
+            let length = vars.get_int(4) as usize;
+            let protection_domain = vars.get_ref(5);
+            let source = vars.get_ref(6);
+            (
+                this,
+                java_string,
+                byte_array,
+                offset,
+                length,
+                protection_domain,
+                source,
+            )
+        });
 
     let class_name = java_str_to_rust_str(java_string.unwrap());
     let class = ClassLoader::define_class_internal(

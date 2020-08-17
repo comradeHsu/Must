@@ -17,7 +17,7 @@ impl Instruction for Return {
         self.0.fetch_operands(reader);
     }
 
-    fn execute(&mut self, frame: &Frame) {
+    fn execute(&mut self, _frame: &Frame) {
         let thread = JavaThread::current();
         thread.pop_frame();
     }

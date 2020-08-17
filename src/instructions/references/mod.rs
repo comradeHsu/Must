@@ -1,12 +1,14 @@
-use std::rc::Rc;
-use std::cell::RefCell;
 use crate::oops::class::Class;
+use crate::oops::constant_pool::Constant;
+use crate::oops::constant_pool::Constant::{
+    ClassReference, FieldReference, InterfaceMethodReference, MethodReference,
+};
 use crate::oops::field::Field;
 use crate::oops::method::Method;
-use crate::oops::constant_pool::Constant::{MethodReference, FieldReference, ClassReference, InterfaceMethodReference};
-use std::ops::Deref;
-use crate::oops::constant_pool::Constant;
-use crate::runtime::frame::Frame;
+
+use std::cell::RefCell;
+
+use std::rc::Rc;
 
 pub mod anew_array;
 pub mod array_length;
@@ -27,7 +29,7 @@ pub mod put_field;
 pub mod put_static;
 
 trait ResolveFieldRef {
-    fn resolve_field_ref(&self, class:Rc<RefCell<Class>>) -> Rc<RefCell<Field>> {
+    fn resolve_field_ref(&self, class: Rc<RefCell<Class>>) -> Rc<RefCell<Field>> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -40,7 +42,7 @@ trait ResolveFieldRef {
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::FieldReference(field_ref));
+            .restoration_constant(self.get_index(), Constant::FieldReference(field_ref));
         return field;
     }
 
@@ -48,7 +50,7 @@ trait ResolveFieldRef {
 }
 
 trait ResolveClassRef {
-    fn resolve_class_ref(&self,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    fn resolve_class_ref(&self, class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -61,7 +63,7 @@ trait ResolveClassRef {
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::ClassReference(class_ref));
+            .restoration_constant(self.get_index(), Constant::ClassReference(class_ref));
         return resolved_class;
     }
 
@@ -69,7 +71,7 @@ trait ResolveClassRef {
 }
 
 trait ResolveMethodRef {
-    fn resolved_method_ref(&self,class:Rc<RefCell<Class>>) -> Rc<Method> {
+    fn resolved_method_ref(&self, class: Rc<RefCell<Class>>) -> Rc<Method> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -78,37 +80,40 @@ trait ResolveMethodRef {
             MethodReference(refe) => refe,
             _ => panic!("Unknown constant type"),
         };
-        let method =  method_ref.resolved_method(class.clone());
+        let method = method_ref.resolved_method(class.clone());
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::MethodReference(method_ref));
+            .restoration_constant(self.get_index(), Constant::MethodReference(method_ref));
         return method.unwrap();
     }
 
-    fn resolved_method_ref_tuple(&self, class:Rc<RefCell<Class>>) -> (Rc<RefCell<Class>>,Rc<Method>) {
+    fn resolved_method_ref_tuple(
+        &self,
+        class: Rc<RefCell<Class>>,
+    ) -> (Rc<RefCell<Class>>, Rc<Method>) {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
             .take_constant(self.get_index());
         let mut method_ref = match constant {
             MethodReference(refe) => refe,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let method = method_ref.resolved_method(class.clone());
         let resolved_class = method_ref.resolved_class(class.clone());
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::MethodReference(method_ref));
-        return (resolved_class,method.unwrap());
+            .restoration_constant(self.get_index(), Constant::MethodReference(method_ref));
+        return (resolved_class, method.unwrap());
     }
 
     fn get_index(&self) -> usize;
 }
 
 trait ResolveInterfaceMethodRef {
-    fn resolved_interface_method_ref(&self,class:Rc<RefCell<Class>>) -> Rc<Method> {
+    fn resolved_interface_method_ref(&self, class: Rc<RefCell<Class>>) -> Rc<Method> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -121,26 +126,35 @@ trait ResolveInterfaceMethodRef {
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::InterfaceMethodReference(method_ref));
+            .restoration_constant(
+                self.get_index(),
+                Constant::InterfaceMethodReference(method_ref),
+            );
         return method.unwrap();
     }
 
-    fn resolved_interface_method_ref_tuple(&self,class:Rc<RefCell<Class>>) -> (Rc<RefCell<Class>>,Rc<Method>) {
+    fn resolved_interface_method_ref_tuple(
+        &self,
+        class: Rc<RefCell<Class>>,
+    ) -> (Rc<RefCell<Class>>, Rc<Method>) {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
             .take_constant(self.get_index());
         let mut method_ref = match constant {
             InterfaceMethodReference(refe) => refe,
-            _ => panic!("Unknown constant type")
+            _ => panic!("Unknown constant type"),
         };
         let method = method_ref.resolved_interface_method(class.clone());
         let resolved_class = method_ref.resolved_class(class.clone());
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(self.get_index(),Constant::InterfaceMethodReference(method_ref));
-        return (resolved_class,method.unwrap());
+            .restoration_constant(
+                self.get_index(),
+                Constant::InterfaceMethodReference(method_ref),
+            );
+        return (resolved_class, method.unwrap());
     }
 
     fn get_index(&self) -> usize;

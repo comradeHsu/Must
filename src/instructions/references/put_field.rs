@@ -1,12 +1,12 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::FieldReference;
-use std::cell::RefCell;
-use std::rc::Rc;
-use crate::oops::class::Class;
-use crate::oops::field::Field;
 use crate::instructions::references::ResolveFieldRef;
+
+
+
+use crate::runtime::frame::Frame;
+
+
 
 pub struct PutField(ConstantPoolInstruction);
 
@@ -49,7 +49,9 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                reference.unwrap().mut_fields_with(|fields| fields.set_int(slot_id,val));
+                reference
+                    .unwrap()
+                    .mut_fields_with(|fields| fields.set_int(slot_id, val));
             }
             'F' => {
                 let val = frame.pop_float();
@@ -57,7 +59,9 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                reference.unwrap().mut_fields_with(|fields| fields.set_float(slot_id,val));
+                reference
+                    .unwrap()
+                    .mut_fields_with(|fields| fields.set_float(slot_id, val));
             }
             'J' => {
                 let val = frame.pop_long();
@@ -65,7 +69,9 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                reference.unwrap().mut_fields_with(|fields| fields.set_long(slot_id,val));
+                reference
+                    .unwrap()
+                    .mut_fields_with(|fields| fields.set_long(slot_id, val));
             }
             'D' => {
                 let val = frame.pop_double();
@@ -73,7 +79,9 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                reference.unwrap().mut_fields_with(|fields| fields.set_double(slot_id,val));
+                reference
+                    .unwrap()
+                    .mut_fields_with(|fields| fields.set_double(slot_id, val));
             }
             'L' | '[' => {
                 let val = frame.pop_ref();
@@ -81,7 +89,9 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                reference.unwrap().mut_fields_with(|fields| fields.set_ref(slot_id,val));
+                reference
+                    .unwrap()
+                    .mut_fields_with(|fields| fields.set_ref(slot_id, val));
             }
             _ => {}
         }

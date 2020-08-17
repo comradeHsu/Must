@@ -12,9 +12,9 @@ mod invoke_support;
 mod jni;
 mod jvm;
 mod native;
+mod oops;
 mod prims;
 mod runtime;
-mod oops;
 mod utils;
 
 fn main() {
@@ -33,11 +33,11 @@ fn main() {
 mod tests {
     use crate::cmd::Cmd;
     use crate::jvm::Jvm;
+    
     use std::mem::size_of;
-    use std::time::SystemTime;
     use std::path::{Path, PathBuf};
     use std::sync::Mutex;
-    use crate::runtime::slot::Slot;
+    use std::time::SystemTime;
 
     #[test]
     fn start_jvm() {
@@ -62,9 +62,12 @@ mod tests {
         let file_path = Path::new("./README.md").canonicalize();
         if file_path.is_ok() {
             let path = file_path.unwrap();
-//            assert_eq!(buf, path);
-            println!("canonicalize0:{:?}",path.to_str().unwrap());
-            println!("canonicalize0:{:?}",Path::new(path.to_str().unwrap()).exists());
+            //            assert_eq!(buf, path);
+            println!("canonicalize0:{:?}", path.to_str().unwrap());
+            println!(
+                "canonicalize0:{:?}",
+                Path::new(path.to_str().unwrap()).exists()
+            );
         }
     }
 
@@ -113,7 +116,7 @@ mod tests {
         let p = &c as *const i32;
         let add = p as usize;
         let t = add as *const i32;
-        let s = Mutex::new(5);
+        let _s = Mutex::new(5);
         println!("{}: {}", add, unsafe { *t });
     }
 }

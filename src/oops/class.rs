@@ -1,15 +1,12 @@
-use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
-use lark_classfile::class_file::ClassFile;
-use lark_classfile::member_info::MemberInfo;
-use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::jvm::Jvm;
 use crate::oops::access_flags::{
-    AccessFlag, ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
+    ABSTRACT, ANNOTATION, ENUM, FINAL, INTERFACE, PUBLIC, SUPER, SYNTHETIC,
 };
 use crate::oops::array_object::ArrayObject;
 use crate::oops::class_name_helper::PrimitiveTypes;
-use crate::oops::constant_pool::{ConstantPool, Constant};
+
+use crate::oops::constant_pool::{Constant, ConstantPool};
 use crate::oops::field::Field;
 use crate::oops::method::Method;
 use crate::oops::object::DataType::{
@@ -17,18 +14,19 @@ use crate::oops::object::DataType::{
 };
 use crate::oops::object::{MetaData, Object};
 use crate::oops::slots::Slots;
+use crate::oops::string_pool::StringPool;
 use crate::utils::boxed;
+use lark_classfile::attribute_info::Attribute::RuntimeVisibleAnnotations;
+use lark_classfile::class_file::ClassFile;
+
+use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use crate::oops::string_pool::StringPool;
-use crate::oops::constant_pool::Constant::{FieldReference, ClassReference, MethodReference};
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
-struct Raw {
-
-}
+struct Raw {}
 
 #[derive(Debug)]
 pub struct Class {
@@ -52,11 +50,10 @@ pub struct Class {
 }
 
 impl Class {
-
     #[inline]
     pub fn new(class_file: ClassFile) -> Rc<RefCell<Class>> {
         let super_name = class_file.super_class_name();
-        let mut class = Class {
+        let class = Class {
             access_flags: class_file.access_flags(),
             name: class_file.class_name().to_string(),
             super_class_name: super_name,
@@ -76,17 +73,14 @@ impl Class {
             annotations: Class::copy_annotations(&class_file),
         };
         //        println!("class:{:?}",class.name.as_str());
-        let mut point = Rc::new(RefCell::new(class));
+        let point = Rc::new(RefCell::new(class));
 
-        (*point)
-            .borrow_mut()
-            .constant_pool
-            .set_class(point.clone());
+        (*point).borrow_mut().constant_pool.set_class(point.clone());
 
-//        (*point)
-//            .borrow_mut()
-//            .constant_pool
-//            .lazy_init_for_constants(&point);
+        //        (*point)
+        //            .borrow_mut()
+        //            .constant_pool
+        //            .lazy_init_for_constants(&point);
 
         (*point).borrow_mut().methods = Method::new_methods(point.clone(), class_file.methods());
         (*point).borrow_mut().fields = Field::new_fields(point.clone(), class_file.fields());
@@ -422,7 +416,7 @@ impl Class {
 
     #[inline]
     pub fn new_class_loader_object(class: &Rc<RefCell<Class>>) -> Object {
-        let mut object = Object::new(class.clone());
+        let object = Object::new(class.clone());
         object.set_meta_data(MetaData::ClassLoader(boxed(ClassLoader::with_verbose(
             false,
         ))));
@@ -623,10 +617,7 @@ impl Class {
     }
 
     #[inline]
-    pub fn get_static_ref_by_slot_id(
-        class: Rc<RefCell<Self>>,
-        slot_id: usize,
-    ) -> Option<Object> {
+    pub fn get_static_ref_by_slot_id(class: Rc<RefCell<Self>>, slot_id: usize) -> Option<Object> {
         let borrow = (*class).borrow();
         return borrow
             .static_vars
@@ -751,7 +742,7 @@ impl Class {
         return ClassLoader::load_class(class_loader, array_class_name.as_str());
     }
 
-    pub fn create_array_class(class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn create_array_class(class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         let class_name = (*class).borrow().name.to_string();
         let array_class_name = PrimitiveTypes::instance()
             .unwrap()
@@ -773,7 +764,8 @@ impl Class {
         if java_class.is_none() {
             return None;
         }
-        return java_class.unwrap()
+        return java_class
+            .unwrap()
             .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
     }
 

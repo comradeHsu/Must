@@ -2,7 +2,7 @@ use crate::instrument::create_instrumentation;
 use crate::oops::class::Class;
 use crate::oops::method::Method;
 use crate::oops::object::Object;
-use std::cell::RefCell;
+
 use std::rc::Rc;
 
 pub struct JavaLangInstrument {

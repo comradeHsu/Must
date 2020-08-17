@@ -4,7 +4,7 @@ use crate::instructions::base::instruction::{BranchInstruction, Instruction};
 use crate::runtime::frame::Frame;
 
 fn int_pop(frame: &Frame) -> (i32, i32) {
-    frame.operand_stack(|stack|{
+    frame.operand_stack(|stack| {
         let v2 = stack.pop_int();
         let v1 = stack.pop_int();
         return (v1, v2);

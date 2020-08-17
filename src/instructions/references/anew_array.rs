@@ -1,10 +1,10 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::class::Class;
-use crate::oops::constant_pool::Constant::ClassReference;
-use crate::utils::boxed;
 use crate::instructions::references::ResolveClassRef;
+use crate::oops::class::Class;
+
+use crate::runtime::frame::Frame;
+
 
 pub struct ANewArray(ConstantPoolInstruction);
 

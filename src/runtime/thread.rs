@@ -1,12 +1,12 @@
+
 use crate::runtime::frame::Frame;
-use crate::oops::method::Method;
 use crate::runtime::stack::Stack;
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
-use std::thread;
-use std::thread::{Builder, Thread};
-use std::borrow::Borrow;
+
+
 
 struct Inner {
     pub pc: i32,
@@ -16,31 +16,27 @@ struct Inner {
 
 #[derive(Clone)]
 pub struct JavaThread {
-    inner:Rc<RefCell<Inner>>
+    inner: Rc<RefCell<Inner>>,
 }
 
-thread_local!{static CURRENT_THREAD:RefCell<Option<JavaThread>> = RefCell::new(None) }
+thread_local! {static CURRENT_THREAD:RefCell<Option<JavaThread>> = RefCell::new(None) }
 
 impl JavaThread {
     pub fn new_thread() -> JavaThread {
         return JavaThread {
-            inner: Rc::new(RefCell::new(
-                Inner {
-                    pc: 0,
-                    stack: Stack::new(1024),
-                }
-            )),
+            inner: Rc::new(RefCell::new(Inner {
+                pc: 0,
+                stack: Stack::new(1024),
+            })),
         };
     }
 
     pub fn new_main_thread() -> JavaThread {
         return JavaThread {
-            inner: Rc::new(RefCell::new(
-                Inner {
-                    pc: 0,
-                    stack: Stack::new(1024),
-                }
-            )),
+            inner: Rc::new(RefCell::new(Inner {
+                pc: 0,
+                stack: Stack::new(1024),
+            })),
         };
     }
 
@@ -83,9 +79,9 @@ impl JavaThread {
         (*self.inner).borrow_mut().stack.clear();
     }
 
-    pub fn frames_with<R, F>(&self,func: F) -> R
-        where
-            F: FnOnce(&VecDeque<Frame>) -> R,
+    pub fn frames_with<R, F>(&self, func: F) -> R
+    where
+        F: FnOnce(&VecDeque<Frame>) -> R,
     {
         let borrow = (*self.inner).borrow();
         func(borrow.stack.get_frames())
@@ -105,9 +101,7 @@ impl JavaThread {
 
     pub fn set(&self) {
         CURRENT_THREAD
-            .try_with(move |c| {
-                *c.borrow_mut() = Some(self.clone())
-            })
+            .try_with(move |c| *c.borrow_mut() = Some(self.clone()))
             .ok();
     }
 }

@@ -1,11 +1,11 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::Instruction;
 use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::InterfaceMethodReference;
+use crate::instructions::references::{ResolveInterfaceMethodRef};
+
 use crate::oops::method_ref::MethodRef;
+use crate::runtime::frame::Frame;
 use std::ops::Deref;
-use crate::instructions::references::{ResolveMethodRef, ResolveInterfaceMethodRef};
 
 pub struct InvokeInterface {
     index: usize,
@@ -27,8 +27,7 @@ impl Instruction for InvokeInterface {
 
     fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
-        let (interface,resolved_method) = self.
-            resolved_interface_method_ref_tuple(current_class);
+        let (interface, resolved_method) = self.resolved_interface_method_ref_tuple(current_class);
         if resolved_method.is_static() || resolved_method.is_private() {
             panic!("java.lang.IncompatibleClassChangeError")
         }

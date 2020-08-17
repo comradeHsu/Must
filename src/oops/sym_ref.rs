@@ -1,8 +1,8 @@
-use lark_classfile::constant_pool::ConstantClassInfo;
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::jvm::Jvm;
+
 use crate::oops::class::Class;
-use crate::oops::object::Object;
+
+use lark_classfile::constant_pool::ConstantClassInfo;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -35,7 +35,7 @@ impl SymbolRef {
         self.class_name = name;
     }
 
-    pub fn resolved_class(&mut self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         if self.class.is_none() {
             self.resolved_class_ref(holder);
         }
@@ -43,7 +43,7 @@ impl SymbolRef {
         return class.clone();
     }
 
-    pub fn resolved_class_ref(&mut self, holder:Rc<RefCell<Class>>) {
+    pub fn resolved_class_ref(&mut self, holder: Rc<RefCell<Class>>) {
         let ref_class = self.resolve_load(holder.clone());
         if !(*ref_class)
             .borrow()
@@ -54,7 +54,7 @@ impl SymbolRef {
         self.class = Some(ref_class);
     }
 
-    fn resolve_load(&self,holder:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    fn resolve_load(&self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         let class_loader = (*holder).borrow().get_class_loader();
         return ClassLoader::load_class(class_loader, self.class_name.as_str());
     }

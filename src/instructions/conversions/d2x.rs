@@ -17,7 +17,7 @@ impl Instruction for D2f {
     }
 
     fn execute(&mut self, frame: &Frame) {
-        frame.operand_stack(|stack|{
+        frame.operand_stack(|stack| {
             let v1 = stack.pop_double();
             stack.push_float(v1 as f32);
         })
@@ -39,7 +39,7 @@ impl Instruction for D2i {
     }
 
     fn execute(&mut self, frame: &Frame) {
-        frame.operand_stack(|stack|{
+        frame.operand_stack(|stack| {
             let v1 = stack.pop_double();
             stack.push_int(v1 as i32);
         })
@@ -61,7 +61,7 @@ impl Instruction for D2l {
     }
 
     fn execute(&mut self, frame: &Frame) {
-        frame.operand_stack(|stack|{
+        frame.operand_stack(|stack| {
             let v1 = stack.pop_double();
             stack.push_long(v1 as i64);
         })

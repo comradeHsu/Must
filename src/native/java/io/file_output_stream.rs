@@ -16,11 +16,11 @@ pub fn init() {
 // private native void writeBytes(byte b[], int off, int len, boolean append) throws IOException;
 // ([BIIZ)V
 pub fn write_bytes(frame: &Frame) {
-    let (b,off,len) =frame.local_vars_get(|vars|{
+    let (b, off, len) = frame.local_vars_get(|vars| {
         let b = vars.get_ref(1).unwrap();
         let off = vars.get_int(2) as usize;
         let len = vars.get_int(3) as usize;
-        (b,off,len)
+        (b, off, len)
     });
     let bytes = b.bytes(|java_bytes| byte_change(java_bytes));
     let slice = &bytes[off..(off + len)];
@@ -39,7 +39,7 @@ fn byte_change(java_bytes: &Vec<i8>) -> Vec<u8> {
     return vec;
 }
 
-pub fn init_ids(frame: &Frame) {}
+pub fn init_ids(_frame: &Frame) {}
 
 #[cfg(test)]
 mod test {

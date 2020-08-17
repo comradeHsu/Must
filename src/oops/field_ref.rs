@@ -1,8 +1,8 @@
-use lark_classfile::constant_pool::ConstantFieldRefInfo;
 use crate::oops::class::Class;
-use crate::oops::constant_pool::ConstantPool;
+
 use crate::oops::field::Field;
 use crate::oops::member_ref::MemberRef;
+use lark_classfile::constant_pool::ConstantFieldRefInfo;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -24,7 +24,7 @@ impl FieldRef {
         return field_ref;
     }
 
-    pub fn resolved_field(&mut self,holder:Rc<RefCell<Class>>) -> Option<Rc<RefCell<Field>>> {
+    pub fn resolved_field(&mut self, holder: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Field>>> {
         if self.field.is_none() {
             self.resolve_field_ref(holder)
         }
@@ -32,7 +32,7 @@ impl FieldRef {
     }
 
     // jvms 5.4.3.2
-    fn resolve_field_ref(&mut self,holder:Rc<RefCell<Class>>) {
+    fn resolve_field_ref(&mut self, holder: Rc<RefCell<Class>>) {
         let resolved_class = self.member_ref.resolved_class(holder.clone());
         let field = FieldRef::lookup_field(
             &resolved_class,

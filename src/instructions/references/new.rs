@@ -1,14 +1,14 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::class::Class;
-use crate::oops::constant_pool::Constant::ClassReference;
-use crate::utils::boxed;
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::instructions::references::ResolveClassRef;
-use crate::runtime::thread::JavaThread;
+use crate::oops::class::Class;
+
+use crate::runtime::frame::Frame;
+
+
+
+
 
 pub struct New(ConstantPoolInstruction);
 
@@ -41,13 +41,12 @@ impl Instruction for New {
             true => Class::new_class_loader_object(&class),
             false => Class::new_object(&class),
         };
-        frame
-            .push_ref(Some(object));
+        frame.push_ref(Some(object));
     }
 }
 
 impl ResolveClassRef for New {
     fn get_index(&self) -> usize {
-       return self.0.index();
+        return self.0.index();
     }
 }

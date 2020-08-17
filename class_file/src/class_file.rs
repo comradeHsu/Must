@@ -1,5 +1,5 @@
 use crate::attribute_info::Attribute::SourceFile;
-use crate::attribute_info::{read_attributes, Attribute, AttributeInfo};
+use crate::attribute_info::{read_attributes, Attribute};
 use crate::class_reader::ClassReader;
 use crate::constant_pool::ConstantPool;
 use crate::member_info::MemberInfo;
@@ -174,7 +174,7 @@ impl ClassFile {
 #[cfg(test)]
 mod test {
     use core::mem;
-    use std::cell::RefCell;
+    
     use std::rc::Rc;
 
     #[test]

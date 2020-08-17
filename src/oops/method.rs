@@ -1,21 +1,21 @@
-use lark_classfile::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
-use lark_classfile::exceptions_attribute::ExceptionsAttribute;
-use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
-use lark_classfile::member_info::MemberInfo;
-use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::oops::access_flags::NATIVE;
 use crate::oops::class::Class;
 use crate::oops::class_member::ClassMember;
 use crate::oops::class_name_helper::PrimitiveTypes;
+use crate::oops::constant_pool::Constant;
 use crate::oops::constant_pool::Constant::ClassReference;
 use crate::oops::exception_table::ExceptionTable;
 use crate::oops::method_descriptor::{MethodDescriptor, MethodDescriptorParser};
+use lark_classfile::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
+
+use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
+use lark_classfile::member_info::MemberInfo;
+use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use std::cell::RefCell;
+
 use std::ptr;
 use std::rc::Rc;
-use std::ops::Deref;
-use crate::oops::constant_pool::Constant;
 
 #[derive(Debug)]
 pub struct Method {
@@ -269,7 +269,8 @@ impl Method {
                 .unwrap()
                 .to_class_name(param_type.as_str());
             /// todo
-            let param_type = ClassLoader::load_class(class_loader.clone(),param_class_name.as_str());
+            let param_type =
+                ClassLoader::load_class(class_loader.clone(), param_class_name.as_str());
             param_classes.push(param_type);
         }
 
@@ -283,18 +284,18 @@ impl Method {
 
         let mut ex_classes = Vec::with_capacity(self.exceptions.len());
         let class = self.class();
-//        let cp = (*class).borrow().constant_pool();
-//        let mut borrow = (*cp).borrow_mut();
+        //        let cp = (*class).borrow().constant_pool();
+        //        let mut borrow = (*cp).borrow_mut();
 
         for i in 0..self.exceptions.len() {
             let ex_index = self.exceptions[i];
-            ex_classes.push(Self::resolve_class_ref(ex_index as usize,class.clone()));
+            ex_classes.push(Self::resolve_class_ref(ex_index as usize, class.clone()));
         }
 
         return Some(ex_classes);
     }
 
-    fn resolve_class_ref(index:usize,class:Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    fn resolve_class_ref(index: usize, class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
         let constant = (*class)
             .borrow_mut()
             .mut_constant_pool()
@@ -307,7 +308,7 @@ impl Method {
         (*class)
             .borrow_mut()
             .mut_constant_pool()
-            .restoration_constant(index,Constant::ClassReference(class_ref));
+            .restoration_constant(index, Constant::ClassReference(class_ref));
         return resolved_class;
     }
 
@@ -325,7 +326,7 @@ impl Method {
     }
 
     pub fn shim_return_method() -> Method {
-        let mut class = Class::default();
+        let class = Class::default();
         return Method {
             class_member: ClassMember::shim(class),
             max_stack: 0,

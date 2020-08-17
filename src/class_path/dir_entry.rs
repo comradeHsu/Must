@@ -48,17 +48,17 @@ impl Entry for DirEntry {
 
 #[cfg(test)]
 mod tests {
-    use crate::class_path::class_path::FindClassError;
+    
     use std::fs;
-    use std::fs::File;
+    
     use std::path::Path;
 
     #[test]
     fn open_file() {
         let path = Path::new("D:\\test");
         let result = fs::read_dir(path);
-        let file = match result {
-            Err(e) => panic!("打不开"),
+        let _file = match result {
+            Err(_e) => panic!("打不开"),
             Ok(f) => f,
         };
     }

@@ -1,11 +1,11 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::class_loader::class_linker::ClassLinker;
-use crate::class_path::class_path::{ClassPath, Entry, FindClassError, new_entry};
+use crate::class_path::class_path::{new_entry, ClassPath, Entry, FindClassError};
 use crate::oops::class::Class;
 use crate::oops::class_name_helper::PrimitiveTypes;
 use crate::utils::boxed;
 use std::cell::RefCell;
-use std::collections::HashMap;
+
 use std::rc::Rc;
 
 pub struct BootstrapClassLoader {
@@ -36,11 +36,11 @@ impl BootstrapClassLoader {
         let java_lang_class = self.find_or_create("java/lang/Class").unwrap();
         let borrow = (*self.class_loader).borrow();
         let maps = borrow.class_map_immutable();
-        for (k, v) in maps {
+        for (_k, v) in maps {
             let mut borrow_class = (**v).borrow_mut();
             let j_l_class = borrow_class.java_class();
             if j_l_class.is_none() {
-                let mut class_object = Class::new_object(&java_lang_class);
+                let class_object = Class::new_object(&java_lang_class);
                 class_object.set_meta(v.clone());
                 borrow_class.set_java_class(Some(class_object));
             }
@@ -50,7 +50,7 @@ impl BootstrapClassLoader {
     fn load_primitive_classes(&self) {
         let primitives = PrimitiveTypes::instance().unwrap();
         let maps = primitives.primitive_types();
-        for (k, v) in maps {
+        for (k, _v) in maps {
             self.load_primitive_class(k);
         }
     }
@@ -58,7 +58,7 @@ impl BootstrapClassLoader {
     fn load_primitive_class(&self, class_name: &str) {
         let class = Class::primitive_class(class_name);
         let class_class = self.find_or_create("java/lang/Class").unwrap();
-        let mut class_object = Class::new_object(&class_class);
+        let class_object = Class::new_object(&class_class);
         let boxed_class = boxed(class);
         class_object.set_meta(boxed_class.clone());
         (*boxed_class)
@@ -87,7 +87,7 @@ impl BootstrapClassLoader {
         }
         if class.is_some() {
             let value = class.clone().unwrap();
-            ClassLoader::setting_class_object(None,value);
+            ClassLoader::setting_class_object(None, value);
         }
         return class;
     }
@@ -106,15 +106,16 @@ impl BootstrapClassLoader {
         return Some(class);
     }
 
-    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>, Box<dyn Entry>),FindClassError> {
+    fn read_class(&self, class_name: &str) -> Result<(Vec<u8>, Box<dyn Entry>), FindClassError> {
         let mut result = self.lib_path.read_class(class_name);
-//        if result.is_err() {
-//            panic!("java.lang.ClassNotFoundException:{}", class_name);
-//        }
-        if class_name == "testJava/ClassPathTest" ||
-            class_name == "testJava/ClassPathTest$FileLoader" ||
-            class_name == "testJava/ClassPathTest$Loader" ||
-            class_name == "testJava/ClassPathTest$FileLoader$1"{
+        //        if result.is_err() {
+        //            panic!("java.lang.ClassNotFoundException:{}", class_name);
+        //        }
+        if class_name == "testJava/ClassPathTest"
+            || class_name == "testJava/ClassPathTest$FileLoader"
+            || class_name == "testJava/ClassPathTest$Loader"
+            || class_name == "testJava/ClassPathTest$FileLoader$1"
+        {
             let cp = new_entry(&"D:/workspace/rust-jvm/".to_string());
             let name = class_name.to_string() + ".class";
             result = cp.read_class(name.as_str());

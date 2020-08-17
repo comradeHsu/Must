@@ -41,21 +41,19 @@ impl Instruction for Dcmpl {
 }
 
 fn dcmp(frame: &Frame, flag: bool) {
-    frame.operand_stack(|stack|
-        {
-            let v2 = stack.pop_double();
-            let v1 = stack.pop_double();
-            if v1 > v2 {
-                stack.push_int(1);
-            } else if v1 == v2 {
-                stack.push_int(0);
-            } else if v1 < v2 {
-                stack.push_int(-1);
-            } else if flag {
-                stack.push_int(1);
-            } else {
-                stack.push_int(-1);
-            }
+    frame.operand_stack(|stack| {
+        let v2 = stack.pop_double();
+        let v1 = stack.pop_double();
+        if v1 > v2 {
+            stack.push_int(1);
+        } else if v1 == v2 {
+            stack.push_int(0);
+        } else if v1 < v2 {
+            stack.push_int(-1);
+        } else if flag {
+            stack.push_int(1);
+        } else {
+            stack.push_int(-1);
         }
-    );
+    });
 }

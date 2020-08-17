@@ -1,14 +1,14 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::class_init_logic::init_class;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::FieldReference;
-use std::rc::Rc;
-use std::cell::RefCell;
-use crate::oops::field::Field;
-use crate::oops::class::Class;
 use crate::instructions::references::ResolveFieldRef;
-use crate::runtime::thread::JavaThread;
+
+
+
+use crate::runtime::frame::Frame;
+
+
+
 
 pub struct PutStatic(ConstantPoolInstruction);
 

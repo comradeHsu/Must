@@ -26,7 +26,7 @@ pub fn get_caller_class(frame: &Frame) {
         frame.push_ref(java_class);
     } else {
         let thread = JavaThread::current();
-        let class = thread.frames_with(|frames|{
+        let class = thread.frames_with(|frames| {
             let mut index = frames.len() - 2;
             loop {
                 let pre_frame = frames.get(index).unwrap();

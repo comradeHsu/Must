@@ -1,22 +1,22 @@
+use crate::class_loader::app_class_loader::ClassLoader;
 use crate::instructions::base::bytecode_reader::BytecodeReader;
+use crate::instructions::base::instruction::Instruction;
 use crate::instructions::new_instruction;
+use crate::instructions::references::athrow::AThrow;
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::return_value::ReturnValue;
-use crate::jvm::JVM;
-use crate::runtime::frame::Frame;
+
+use crate::oops::class::Class;
 use crate::oops::method::Method;
 use crate::oops::string_pool::StringPool;
+use crate::runtime::frame::Frame;
 use crate::runtime::thread::JavaThread;
-use crate::utils::boxed;
-use std::cell::RefCell;
-use std::ops::DerefMut;
+
+
+
 use std::process::exit;
 use std::rc::Rc;
-use std::thread::sleep_ms;
-use crate::class_loader::app_class_loader::ClassLoader;
-use crate::oops::class::Class;
-use crate::instructions::references::athrow::AThrow;
-use crate::instructions::base::instruction::Instruction;
+
 
 pub mod parameter;
 pub mod return_value;
@@ -26,22 +26,18 @@ pub struct JavaCall {
     thread: JavaThread,
     method: Rc<Method>,
     params: Option<Parameters>,
-    return_type: ReturnType
+    return_type: ReturnType,
 }
 
 impl JavaCall {
-
-    fn new(method: Rc<Method>,
-           params: Option<Parameters>,
-           return_type: ReturnType,
-    ) -> JavaCall {
+    fn new(method: Rc<Method>, params: Option<Parameters>, return_type: ReturnType) -> JavaCall {
         let thread = JavaThread::current();
-        return JavaCall{
+        return JavaCall {
             current_pc: thread.get_pc(),
-            thread ,
+            thread,
             method,
             params,
-            return_type
+            return_type,
         };
     }
 
@@ -50,21 +46,21 @@ impl JavaCall {
         params: Option<Parameters>,
         return_type: ReturnType,
     ) -> ReturnValue {
-        let call = Self::new(method,params,return_type);
-        let thread = call.create_execute_env();
+        let call = Self::new(method, params, return_type);
+        let _thread = call.create_execute_env();
         let return_value = call.executable();
         return return_value;
     }
 
     fn create_execute_env(&self) {
-        let mut dummy_frame = Frame::new_barrier_frame();
-        let mut frame =  Frame::new_intrinsic_frame(self.method.clone());
+        let dummy_frame = Frame::new_barrier_frame();
+        let mut frame = Frame::new_intrinsic_frame(self.method.clone());
         self.prepare_parameter(&mut frame);
         self.thread.push_frame(dummy_frame);
         self.thread.push_frame(frame);
     }
 
-    fn prepare_parameter(&self,frame: &mut Frame) {
+    fn prepare_parameter(&self, frame: &mut Frame) {
         if self.params.is_some() {
             frame.local_vars_set(|vars| {
                 let params = self.params.as_ref().unwrap();
@@ -132,7 +128,6 @@ impl JavaCall {
         };
         return value;
     }
-
 }
 
 impl Drop for JavaCall {
@@ -157,26 +152,30 @@ pub enum ReturnType {
 pub fn throw_exception(frame: &Frame, class_name: &str, msg: Option<&str>) {
     let class = frame.method().class();
     let class_loader = (*class).borrow().get_class_loader();
-    let exception_class = ClassLoader::load_class(class_loader,class_name);
-    let mut object = Class::new_object(&exception_class);
+    let exception_class = ClassLoader::load_class(class_loader, class_name);
+    let object = Class::new_object(&exception_class);
     let constructor_desc = "(Ljava/lang/String;)V";
     let detail_message = match msg.is_some() {
         true => Some(StringPool::java_string(msg.unwrap().to_string())),
-        false => None
+        false => None,
     };
     let constructor = Class::get_constructor(exception_class.clone(), constructor_desc);
     let object_ptr = Some(object);
     let parameters = vec![
         Parameter::Object(object_ptr.clone()),
-        Parameter::Object(detail_message)
+        Parameter::Object(detail_message),
     ];
-    JavaCall::invoke(constructor.unwrap(),Some(Parameters::with_parameters(parameters)),ReturnType::Void);
+    JavaCall::invoke(
+        constructor.unwrap(),
+        Some(Parameters::with_parameters(parameters)),
+        ReturnType::Void,
+    );
     frame.push_ref(object_ptr);
     let mut athrow = AThrow::new();
     athrow.execute(frame);
 }
 
-fn to_hex_str(seq:&Vec<u8>) -> String {
+fn to_hex_str(seq: &Vec<u8>) -> String {
     let mut string = String::new();
     string.push_str("[");
     for s in seq {

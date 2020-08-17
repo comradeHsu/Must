@@ -3,12 +3,12 @@ mod class_loader;
 mod double;
 mod float;
 pub mod object;
+mod package;
 mod runtime;
 mod string;
 pub mod system;
 mod thread;
 pub mod throwable;
-mod package;
 
 pub fn init() {
     object::init();

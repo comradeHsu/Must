@@ -1,12 +1,12 @@
+use crate::invoke_support::throw_exception;
 use crate::native::registry::Registry;
+
 use crate::runtime::frame::Frame;
-use crate::oops::object::{MetaData, Object};
 use crate::utils::java_str_to_rust_str;
+
 use std::fs::File;
 use std::io::{stderr, stdin, stdout, Read, Seek, SeekFrom};
 use std::path::Path;
-use crate::invoke_support::throw_exception;
-use std::error::Error;
 
 pub fn init() {
     Registry::register("java/io/FileInputStream", "initIDs", "()V", init_ids);
@@ -25,15 +25,15 @@ pub fn init() {
     );
 }
 
-pub fn init_ids(frame: &Frame) {}
+pub fn init_ids(_frame: &Frame) {}
 
 /// private native void open0(String name) throws FileNotFoundException;
 /// (Ljava/lang/String;)V
 pub fn open0(frame: &Frame) {
-    let (this,name) = frame.local_vars_get(|vars|{
+    let (this, name) = frame.local_vars_get(|vars| {
         let this = vars.get_ref(0).unwrap();
         let name = vars.get_ref(1);
-        return (this,name)
+        return (this, name);
     });
     let rust_str = java_str_to_rust_str(name.unwrap());
     let path = Path::new(&rust_str);
@@ -44,7 +44,7 @@ pub fn open0(frame: &Frame) {
         msg.push_str(path.to_str().unwrap());
         msg.push(' ');
         msg.push_str(error.to_string().as_str());
-        throw_exception(frame,"java/io/FileNotFoundException",Some(msg.as_str()));
+        throw_exception(frame, "java/io/FileNotFoundException", Some(msg.as_str()));
     } else {
         this.set_file(file.unwrap());
     }
@@ -53,12 +53,12 @@ pub fn open0(frame: &Frame) {
 /// private native int readBytes(byte b[], int off, int len) throws IOException;
 /// ([BII)I
 pub fn read_bytes(frame: &Frame) {
-    let (this,byte_array,offset,length) = frame.local_vars_get(|vars|{
+    let (this, byte_array, offset, length) = frame.local_vars_get(|vars| {
         let this = vars.get_ref(0).unwrap();
         let byte_array = vars.get_ref(1).unwrap();
         let offset = vars.get_int(2) as usize;
         let length = vars.get_int(3);
-        return (this,byte_array,offset,length)
+        return (this, byte_array, offset, length);
     });
 
     if length <= 0 {
@@ -74,7 +74,7 @@ pub fn read_bytes(frame: &Frame) {
     let mut size = -1;
     let read_size = rs.expect("the file seek has error");
     if read_size != 0 {
-        byte_array.mut_bytes(|mut_array|{
+        byte_array.mut_bytes(|mut_array| {
             for i in 0..read_size {
                 mut_array[offset + i] = bytes[i] as i8;
             }
@@ -100,7 +100,7 @@ fn unique_path(path: String) -> String {
 
 /// private native void close0() throws IOException;
 /// ()V
-pub fn close0(frame: &Frame) {
+pub fn close0(_frame: &Frame) {
     //    let vars = frame.local_vars().expect("LocalVars is none");
     //    let name = vars.get_ref(1);
     //    let rust_str = java_str_to_rust_str(name.unwrap());

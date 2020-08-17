@@ -2,12 +2,10 @@ use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{
     ConstantPoolInstruction, Instruction, LocalVarsInstruction,
 };
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::{
-    ClassReference, Double, Float, Integer, Long, Str,
-};
+
+use crate::oops::constant_pool::Constant::{ClassReference, Double, Float, Integer, Long, Str};
 use crate::oops::string_pool::StringPool;
-use crate::oops::constant_pool::Constant;
+use crate::runtime::frame::Frame;
 
 pub struct LDC(LocalVarsInstruction);
 
@@ -78,7 +76,10 @@ impl Instruction for LDC2w {
 fn ldc(frame: &Frame, index: usize) {
     //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
-    let mut constant = (*class).borrow_mut().mut_constant_pool().take_constant(index);
+    let mut constant = (*class)
+        .borrow_mut()
+        .mut_constant_pool()
+        .take_constant(index);
     match &mut constant {
         Integer(v) => frame.push_int(*v),
         Float(v) => frame.push_float(*v),
@@ -97,5 +98,5 @@ fn ldc(frame: &Frame, index: usize) {
     (*class)
         .borrow_mut()
         .mut_constant_pool()
-        .restoration_constant(index,constant);
+        .restoration_constant(index, constant);
 }

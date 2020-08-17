@@ -1,13 +1,13 @@
+use crate::jvm::Jvm;
 use crate::native::registry::Registry;
-use crate::runtime::frame::Frame;
 use crate::oops::class::Class;
 use crate::oops::object::Object;
+use crate::oops::string_pool::StringPool;
+use crate::runtime::frame::Frame;
 use crate::runtime::thread::JavaThread;
+
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::jvm::Jvm;
-use crate::oops::string_pool::StringPool;
-use crate::utils::boxed;
 
 pub fn init() {
     Registry::register(
@@ -53,36 +53,33 @@ pub fn get_stack_trace_element(frame: &Frame) {
     let this = frame.get_this();
     let index = frame.get_int(1) as usize;
     let ptr = this.unwrap();
-    let java_element = ptr.trace(|elements| {
-        create_java_stack_trace_element(elements.get(index).unwrap())
-    });
+    let java_element =
+        ptr.trace(|elements| create_java_stack_trace_element(elements.get(index).unwrap()));
     frame.push_ref(java_element);
 }
 
-fn create_java_stack_trace_element(element:&StackTraceElement) -> Option<Object> {
+fn create_java_stack_trace_element(element: &StackTraceElement) -> Option<Object> {
     let loader = Jvm::boot_class_loader();
-    let class = loader.find_or_create("java/lang/StackTraceElement").unwrap();
+    let class = loader
+        .find_or_create("java/lang/StackTraceElement")
+        .unwrap();
     let mut object = Class::new_object(&class);
     object.set_ref_var(
         "declaringClass",
         "Ljava/lang/String;",
-        StringPool::java_string(element.class_name.clone())
+        StringPool::java_string(element.class_name.clone()),
     );
     object.set_ref_var(
         "fileName",
         "Ljava/lang/String;",
-        StringPool::java_string(element.file_name.clone())
+        StringPool::java_string(element.file_name.clone()),
     );
     object.set_ref_var(
         "methodName",
         "Ljava/lang/String;",
-        StringPool::java_string(element.method_name.clone())
+        StringPool::java_string(element.method_name.clone()),
     );
-    object.set_int_var(
-        "lineNumber",
-        "I",
-        element.line_number
-    );
+    object.set_int_var("lineNumber", "I", element.line_number);
     Some(object)
 }
 
@@ -95,12 +92,10 @@ pub struct StackTraceElement {
 }
 
 impl StackTraceElement {
-    fn create_stack_trace_elements(
-        object: &Object
-    ) -> Vec<StackTraceElement> {
+    fn create_stack_trace_elements(object: &Object) -> Vec<StackTraceElement> {
         let skip = StackTraceElement::distance_to_object(object.class()) as usize + 2;
         let thread = JavaThread::current();
-        thread.frames_with(|frames|{
+        thread.frames_with(|frames| {
             let mut stes = Vec::with_capacity(frames.len() - skip);
             for i in 0..(frames.len() - skip) {
                 stes.push(Self::create_stack_trace_element(&frames[i]));

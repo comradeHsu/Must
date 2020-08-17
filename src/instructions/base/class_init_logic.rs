@@ -1,8 +1,8 @@
 use crate::oops::class::Class;
+use crate::runtime::frame::Frame;
 use crate::runtime::thread::JavaThread;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::runtime::frame::Frame;
 
 pub fn init_class(class: Rc<RefCell<Class>>) {
     (*class).borrow_mut().set_initialized();

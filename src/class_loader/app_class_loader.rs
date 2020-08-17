@@ -1,17 +1,17 @@
-use lark_classfile::class_file::ClassFile;
+use crate::class_loader::class_init_preparation::ClassPreparation;
 use crate::instrument::java_lang_instrument::JavaLangInstrument;
 use crate::invoke_support::parameter::{Parameter, Parameters};
-use crate::invoke_support::{ReturnType, JavaCall};
+use crate::invoke_support::{JavaCall, ReturnType};
 use crate::jvm::Jvm;
 use crate::oops::class::Class;
 use crate::oops::object::Object;
 use crate::oops::string_pool::StringPool;
-use crate::utils::{boxed, java_str_to_rust_str};
+use crate::utils::{boxed};
+use lark_classfile::class_file::ClassFile;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Debug, Error, Formatter};
 use std::rc::Rc;
-use crate::class_loader::class_init_preparation::ClassPreparation;
 
 pub struct ClassLoader {
     pub(in crate::class_loader) verbose_class: bool,
@@ -54,7 +54,7 @@ impl ClassLoader {
         ClassPreparation::prepare(class);
     }
 
-    fn verify(class: &Rc<RefCell<Class>>) {}
+    fn verify(_class: &Rc<RefCell<Class>>) {}
 
     pub fn define_class_internal(
         class_name: &str,
@@ -100,7 +100,7 @@ impl ClassLoader {
             .borrow_mut()
             .class_map
             .insert((*class).borrow().name().to_string(), class.clone());
-        Self::setting_class_object(Some(java_loader),class.clone());
+        Self::setting_class_object(Some(java_loader), class.clone());
         return class;
     }
 
@@ -145,15 +145,12 @@ impl ClassLoader {
         }
     }
 
-    pub fn load_class(
-        loader_object: Option<Object>,
-        class_name: &str,
-    ) -> Rc<RefCell<Class>> {
+    pub fn load_class(loader_object: Option<Object>, class_name: &str) -> Rc<RefCell<Class>> {
         if loader_object.is_none() {
             let bootstrap_loader = Jvm::boot_class_loader();
-            let class =  bootstrap_loader.find_or_create(class_name);
+            let class = bootstrap_loader.find_or_create(class_name);
             if class.is_none() {
-                println!("class not found {}",class_name);
+                println!("class not found {}", class_name);
             }
             return class.unwrap();
         }
@@ -176,19 +173,20 @@ impl ClassLoader {
 
     pub(in crate::class_loader) fn setting_class_object(
         loader_object: Option<Object>,
-        value: Rc<RefCell<Class>>) {
+        value: Rc<RefCell<Class>>,
+    ) {
         let boot_loader = Jvm::boot_class_loader();
         let class_class = boot_loader.find_class("java/lang/Class");
         if class_class.is_some() {
             let class_of_class = class_class.unwrap();
-            let mut class_object = Class::new_object(&class_of_class);
+            let class_object = Class::new_object(&class_of_class);
             class_object.set_meta(value.clone());
             let constructor_desc = "(Ljava/lang/ClassLoader;)V";
             let constructor = Class::get_constructor(class_of_class.clone(), constructor_desc);
             let object = Some(class_object);
             let parameters = vec![
                 Parameter::Object(object.clone()),
-                Parameter::Object(loader_object)
+                Parameter::Object(loader_object),
             ];
             JavaCall::invoke(
                 constructor.unwrap(),
@@ -199,10 +197,7 @@ impl ClassLoader {
         }
     }
 
-    fn invoke_load_class(
-        loader: Object,
-        class_name: &str,
-    ) -> Option<Rc<RefCell<Class>>> {
+    fn invoke_load_class(loader: Object, class_name: &str) -> Option<Rc<RefCell<Class>>> {
         let loader_class = loader.class();
         let method = Class::get_instance_method(
             loader_class,
@@ -214,7 +209,8 @@ impl ClassLoader {
             Parameter::Object(Some(loader)),
             Parameter::Object(Some(java_name)),
         ]);
-        let return_value = JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
+        let return_value =
+            JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return Some(return_value.unwrap().meta());
     }
 
@@ -234,7 +230,7 @@ impl ClassLoader {
 }
 
 impl Debug for ClassLoader {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> Result<(), Error> {
         unimplemented!()
     }
 }

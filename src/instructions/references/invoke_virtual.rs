@@ -1,17 +1,17 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::base::instruction::{ConstantPoolInstruction, Instruction};
 use crate::instructions::base::method_invoke_logic::invoke_method;
-use crate::jvm::Jvm;
-use crate::runtime::frame::Frame;
-use crate::oops::constant_pool::Constant::MethodReference;
-use crate::oops::method_ref::MethodRef;
-use std::ops::Deref;
-use std::rc::Rc;
-use crate::oops::method::Method;
-use std::cell::RefCell;
-use crate::oops::class::Class;
 use crate::instructions::references::ResolveMethodRef;
 use crate::invoke_support::throw_exception;
+
+
+
+
+use crate::oops::method_ref::MethodRef;
+use crate::runtime::frame::Frame;
+
+use std::ops::Deref;
+
 
 pub struct InvokeVirtual(ConstantPoolInstruction);
 
@@ -35,8 +35,7 @@ impl Instruction for InvokeVirtual {
             panic!("java.lang.IncompatibleClassChangeError");
         }
 
-        let object = frame
-            .get_ref_from_top(resolved_method.arg_slot_count() - 1);
+        let object = frame.get_ref_from_top(resolved_method.arg_slot_count() - 1);
         if object.is_none() {
             //            if method_ref.name() == "println" {
             //                InvokeVirtual::hack_println(frame,method_ref.descriptor());

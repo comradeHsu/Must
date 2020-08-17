@@ -18,18 +18,16 @@ impl Instruction for Lcmp {
     }
 
     fn execute(&mut self, frame: &Frame) {
-        frame.operand_stack(|stack|
-            {
-                let v2 = stack.pop_long();
-                let v1 = stack.pop_long();
-                if v1 > v2 {
-                    stack.push_int(1);
-                } else if v1 == v2 {
-                    stack.push_int(0);
-                } else {
-                    stack.push_int(-1);
-                }
+        frame.operand_stack(|stack| {
+            let v2 = stack.pop_long();
+            let v1 = stack.pop_long();
+            if v1 > v2 {
+                stack.push_int(1);
+            } else if v1 == v2 {
+                stack.push_int(0);
+            } else {
+                stack.push_int(-1);
             }
-        );
+        });
     }
 }

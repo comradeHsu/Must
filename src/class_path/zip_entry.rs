@@ -101,8 +101,8 @@ impl FileCache {
 
 #[cfg(test)]
 mod test {
-    use crate::class_path::zip_entry::ZipEntry;
-    use podio::ReadPodExt;
+    
+    
     use std::io::Read;
     use std::{fs, io};
 

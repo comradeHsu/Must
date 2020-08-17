@@ -19,7 +19,7 @@ pub mod string_pool;
 pub mod sym_ref;
 
 #[cfg(test)]
-mod test{
+mod test {
     use std::cell::UnsafeCell;
 
     #[test]

@@ -1,8 +1,8 @@
 use crate::oops::class::Class;
-use crate::oops::constant_pool::Constant;
+
 use crate::oops::field::Field;
 use crate::oops::slots::Slots;
-use crate::oops::string_pool::StringPool;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
