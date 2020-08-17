@@ -70,16 +70,6 @@ impl Frame {
         };
     }
 
-    //    #[inline]
-    //    pub fn operand_stack(&mut self) -> Option<&mut OperandStack> {
-    //        return (*self.core).borrow_mut().operand_stack.as_mut();
-    //    }
-    //
-    //    #[inline]
-    //    pub fn local_vars(&mut self) -> Option<&mut LocalVars> {
-    //        return (*self.core).borrow_mut().local_vars.as_mut();
-    //    }
-
     #[inline]
     pub fn next_pc(&self) -> i32 {
         return (*self.core).borrow().next_pc;
@@ -98,18 +88,6 @@ impl Frame {
     #[inline]
     pub fn method(&self) -> Rc<Method> {
         return (*self.core).borrow().method.clone();
-    }
-
-    pub fn new_shim_frame(ops: OperandStack) -> Frame {
-        return Frame {
-            core: Rc::new(RefCell::new(Core {
-                local_vars: None,
-                method: Rc::new(Method::shim_return_method()),
-                operand_stack: Some(ops),
-                next_pc: 0,
-                frame_type: Default::default(),
-            })),
-        };
     }
 
     #[inline]

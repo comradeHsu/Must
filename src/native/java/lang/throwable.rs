@@ -96,9 +96,13 @@ impl StackTraceElement {
         let skip = StackTraceElement::distance_to_object(object.class()) as usize + 2;
         let thread = JavaThread::current();
         thread.frames_with(|frames| {
-            let mut stes = Vec::with_capacity(frames.len() - skip);
-            for i in 0..(frames.len() - skip) {
-                stes.push(Self::create_stack_trace_element(&frames[i]));
+            let count = frames.len() - skip;
+            let mut stes = Vec::with_capacity(count);
+            for i in 0..count {
+                let index = count - i - 1;
+                if !frames[index].is_barrier_frame() {
+                    stes.push(Self::create_stack_trace_element(&frames[index]));
+                }
             }
             return stes;
         })

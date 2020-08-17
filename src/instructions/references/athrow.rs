@@ -54,9 +54,8 @@ impl AThrow {
             .map_or("".to_string(), |v| java_str_to_rust_str(v));
         println!("\t{},{}", (*ex_class).borrow().java_name(), detail_message);
         object.trace(|elements| {
-            let len = elements.len() - 1;
-            for index in 0..=len {
-                println!("\tat {}", elements[len - index].to_string());
+            for element in elements {
+                println!("\tat {}", element.to_string());
             }
         })
     }

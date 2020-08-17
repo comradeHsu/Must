@@ -1,4 +1,3 @@
-use crate::instructions::base::method_invoke_logic::hack_invoke_method;
 use crate::native::java::lang::object::hash_code;
 use crate::native::registry::Registry;
 use crate::oops::array_object::ArrayObject;
@@ -12,6 +11,8 @@ use crate::utils::java_str_to_rust_str;
 use chrono::Local;
 
 use std::collections::HashMap;
+use crate::invoke_support::parameter::{Parameters, Parameter};
+use crate::invoke_support::{JavaCall, ReturnType};
 
 
 pub fn init() {
@@ -126,14 +127,13 @@ pub fn init_properties(frame: &Frame) {
     for (key, val) in _sys_props() {
         let j_key = StringPool::java_string(key);
         let j_val = StringPool::java_string(val);
-        let mut ops = OperandStack::new(3).unwrap();
-        ops.push_ref(props.clone());
-        ops.push_ref(Some(j_key));
-        ops.push_ref(Some(j_val));
-        let shim_frame = Frame::new_shim_frame(ops);
-        thread.push_frame(shim_frame);
+        let parameters = Parameters::with_parameters(vec![
+            Parameter::Object(props.clone()),
+            Parameter::Object(Some(j_key)),
+            Parameter::Object(Some(j_val)),
 
-        hack_invoke_method(set_prop_method.clone().unwrap());
+        ]);
+        JavaCall::invoke(set_prop_method.clone().unwrap(), Some(parameters), ReturnType::Void);
     }
 }
 
