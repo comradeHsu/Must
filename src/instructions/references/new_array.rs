@@ -41,7 +41,7 @@ impl Instruction for NewArray {
             }
             let array_class = get_primitive_array_class(self.atype);
             let array_object = Class::new_array(&array_class, count as usize);
-            stack.push_ref(Some(boxed(array_object)));
+            stack.push_ref(Some(array_object));
         })
     }
 }

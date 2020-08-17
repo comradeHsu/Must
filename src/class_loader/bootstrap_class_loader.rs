@@ -42,8 +42,7 @@ impl BootstrapClassLoader {
             if j_l_class.is_none() {
                 let mut class_object = Class::new_object(&java_lang_class);
                 class_object.set_meta(v.clone());
-                let boxed = boxed(class_object);
-                borrow_class.set_java_class(Some(boxed));
+                borrow_class.set_java_class(Some(class_object));
             }
         }
     }
@@ -64,7 +63,7 @@ impl BootstrapClassLoader {
         class_object.set_meta(boxed_class.clone());
         (*boxed_class)
             .borrow_mut()
-            .set_java_class(Some(boxed(class_object)));
+            .set_java_class(Some(class_object));
         (*self.class_loader)
             .borrow_mut()
             .class_map

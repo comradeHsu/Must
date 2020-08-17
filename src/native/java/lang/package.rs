@@ -44,7 +44,7 @@ pub fn get_system_packages0(frame: &Frame) {
         data.push(Some(StringPool::java_string(iter.to_string())));
     }
     let packages = ArrayObject::from_data(string_class,DataType::References(data));
-    frame.push_ref(Some(boxed(packages)));
+    frame.push_ref(Some(packages));
 }
 
 /// private static native String getSystemPackage0(String name);

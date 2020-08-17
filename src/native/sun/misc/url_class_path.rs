@@ -24,5 +24,5 @@ pub fn get_lookup_cache_urls(frame: &Frame) {
         .unwrap();
     let array_class = (*url_class).borrow().array_class();
     let array = Class::new_array(&array_class, 0);
-    frame.push_ref(Some(boxed(array)));
+    frame.push_ref(Some(array));
 }

@@ -77,20 +77,20 @@ pub fn array_copy(frame: &Frame) {
     }
     let src = src.unwrap();
     let dest = dest.unwrap();
-    if !check_array_copy(src.clone(), dest.clone()) {
+    if !check_array_copy(&src, &dest) {
         panic!("java.lang.ArrayStoreException");
     }
-    if src_pos + length > (*src).borrow().array_length()
-        || dest_pos + length > (*dest).borrow().array_length()
+    if src_pos + length > src.array_length()
+        || dest_pos + length > dest.array_length()
     {
         panic!("java.lang.IndexOutOfBoundsException");
     }
     ArrayObject::array_copy(src, dest, src_pos, dest_pos, length);
 }
 
-fn check_array_copy(src: Rc<RefCell<Object>>, dest: Rc<RefCell<Object>>) -> bool {
-    let src_class = (*src).borrow().class();
-    let dest_class = (*dest).borrow().class();
+fn check_array_copy(src: &Object, dest: &Object) -> bool {
+    let src_class = src.class();
+    let dest_class = dest.class();
     if !(*src_class).borrow().is_array() || !(*dest_class).borrow().is_array() {
         return false;
     }
@@ -114,7 +114,7 @@ pub fn init_properties(frame: &Frame) {
     frame.push_ref(props.clone());
 
     // public synchronized Object setProperty(String key, String value)
-    let class = (*props.clone().unwrap()).borrow().class();
+    let class = props.clone().unwrap().class();
     let set_prop_method = Class::get_instance_method(
         class,
         "setProperty",

@@ -77,12 +77,12 @@ impl LocalVars {
         return i64_to_f64(long);
     }
 
-    pub fn set_ref(&mut self, index: usize, val: Option<Rc<RefCell<Object>>>) {
+    pub fn set_ref(&mut self, index: usize, val: Option<Object>) {
         let slot = self.vars.get_mut(index).expect("index is wrong");
         slot.set_ref(val);
     }
 
-    pub fn get_ref(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref(&self, index: usize) -> Option<Object> {
         let slot = self.vars.get(index).expect("index is wrong");
         return slot.get_ref();
     }
@@ -92,7 +92,7 @@ impl LocalVars {
     }
 
     #[inline]
-    pub fn get_this(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_this(&self) -> Option<Object> {
         return self.get_ref(0);
     }
 }

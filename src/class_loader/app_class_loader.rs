@@ -58,11 +58,11 @@ impl ClassLoader {
 
     pub fn define_class_internal(
         class_name: &str,
-        mut byte_array: Option<Rc<RefCell<Object>>>,
+        mut byte_array: Option<Object>,
         offset: usize,
         length: usize,
-        class_loader: Rc<RefCell<Object>>,
-        protection_domain: Option<Rc<RefCell<Object>>>,
+        class_loader: Object,
+        protection_domain: Option<Object>,
     ) -> Rc<RefCell<Class>> {
         let java_name = StringPool::java_string(class_name.to_string());
         let method = JavaLangInstrument::instance().get_transform_method();
@@ -89,8 +89,8 @@ impl ClassLoader {
         return Self::define_class(class_loader, data);
     }
 
-    fn define_class(java_loader: Rc<RefCell<Object>>, data: Vec<u8>) -> Rc<RefCell<Class>> {
-        let loader = (*java_loader).borrow().get_class_loader();
+    fn define_class(java_loader: Object, data: Vec<u8>) -> Rc<RefCell<Class>> {
+        let loader = java_loader.get_class_loader();
         let class = Self::parse_class(data);
         (*class).borrow_mut().set_class_loader(loader.clone());
         Self::resolve_super_class(java_loader.clone(), class.clone());
@@ -109,18 +109,18 @@ impl ClassLoader {
         return Class::new(class_file);
     }
 
-    fn extract_data(byte_array: Rc<RefCell<Object>>, offset: usize, length: usize) -> Vec<u8> {
-        let mut borrow = (*byte_array).borrow_mut();
-        let mut_bytes = borrow.mut_bytes();
-        let slice = &mut_bytes[offset..(offset + length)];
-        let mut bytes = vec![0u8; length];
-        for i in 0..length {
-            bytes[i] = slice[i] as u8;
-        }
-        return bytes;
+    fn extract_data(byte_array: Object, offset: usize, length: usize) -> Vec<u8> {
+        byte_array.mut_bytes(|array| {
+            let slice = &array[offset..(offset + length)];
+            let mut bytes = vec![0u8; length];
+            for i in 0..length {
+                bytes[i] = slice[i] as u8;
+            }
+            return bytes;
+        })
     }
 
-    fn resolve_super_class(java_loader: Rc<RefCell<Object>>, class: Rc<RefCell<Class>>) {
+    fn resolve_super_class(java_loader: Object, class: Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let super_class_name = class.super_class_name();
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
@@ -131,7 +131,7 @@ impl ClassLoader {
             class.set_super_class(super_class);
         }
     }
-    fn resolve_interfaces(java_loader: Rc<RefCell<Object>>, class: Rc<RefCell<Class>>) {
+    fn resolve_interfaces(java_loader: Object, class: Rc<RefCell<Class>>) {
         let mut class = (*class).borrow_mut();
         let interfaces_name = class.interfaces_name();
         let len = interfaces_name.len();
@@ -146,7 +146,7 @@ impl ClassLoader {
     }
 
     pub fn load_class(
-        loader_object: Option<Rc<RefCell<Object>>>,
+        loader_object: Option<Object>,
         class_name: &str,
     ) -> Rc<RefCell<Class>> {
         if loader_object.is_none() {
@@ -158,7 +158,7 @@ impl ClassLoader {
             return class.unwrap();
         }
         let loader = loader_object.unwrap();
-        let class_loader = (*loader).borrow().get_class_loader();
+        let class_loader = loader.get_class_loader();
         let class_op: Option<Rc<RefCell<Class>>> = (*class_loader).borrow().find_class(class_name);
         if class_op.is_some() {
             return class_op.unwrap().clone();
@@ -175,7 +175,7 @@ impl ClassLoader {
     }
 
     pub(in crate::class_loader) fn setting_class_object(
-        loader_object: Option<Rc<RefCell<Object>>>,
+        loader_object: Option<Object>,
         value: Rc<RefCell<Class>>) {
         let boot_loader = Jvm::boot_class_loader();
         let class_class = boot_loader.find_class("java/lang/Class");
@@ -185,7 +185,7 @@ impl ClassLoader {
             class_object.set_meta(value.clone());
             let constructor_desc = "(Ljava/lang/ClassLoader;)V";
             let constructor = Class::get_constructor(class_of_class.clone(), constructor_desc);
-            let object = Some(boxed(class_object));
+            let object = Some(class_object);
             let parameters = vec![
                 Parameter::Object(object.clone()),
                 Parameter::Object(loader_object)
@@ -200,10 +200,10 @@ impl ClassLoader {
     }
 
     fn invoke_load_class(
-        loader: Rc<RefCell<Object>>,
+        loader: Object,
         class_name: &str,
     ) -> Option<Rc<RefCell<Class>>> {
-        let loader_class = (*loader).borrow().class();
+        let loader_class = loader.class();
         let method = Class::get_instance_method(
             loader_class,
             "loadClass",
@@ -215,7 +215,7 @@ impl ClassLoader {
             Parameter::Object(Some(java_name)),
         ]);
         let return_value = JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
-        return (*return_value.unwrap()).borrow().meta();
+        return Some(return_value.unwrap().meta());
     }
 
     ///load array's class

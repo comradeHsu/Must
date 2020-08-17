@@ -5,7 +5,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug)]
 pub struct Slot {
     pub num: i32,
-    pub reference: Option<Rc<RefCell<Object>>>,
+    pub reference: Option<Object>,
 }
 
 impl Slot {
@@ -26,7 +26,7 @@ impl Slot {
     }
 
     #[inline]
-    pub fn with_ref(reference: Option<Rc<RefCell<Object>>>) -> Slot {
+    pub fn with_ref(reference: Option<Object>) -> Slot {
         return Slot { num: 0, reference };
     }
 
@@ -41,12 +41,12 @@ impl Slot {
     }
 
     #[inline]
-    pub fn set_ref(&mut self, reference: Option<Rc<RefCell<Object>>>) {
+    pub fn set_ref(&mut self, reference: Option<Object>) {
         self.reference = reference;
     }
 
     #[inline]
-    pub fn get_ref(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref(&self) -> Option<Object> {
         return self.reference.clone();
     }
 }

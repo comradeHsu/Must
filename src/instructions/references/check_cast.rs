@@ -30,7 +30,7 @@ impl Instruction for CheckCast {
         let c = frame.method().class();
 
         let class = self.resolve_class_ref(c);
-        if !(*reference.unwrap()).borrow().is_instance_of(class) {
+        if !reference.unwrap().is_instance_of(class) {
             panic!("java.lang.ClassCastException");
         }
     }

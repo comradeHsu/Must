@@ -30,7 +30,7 @@ pub fn get_caller_class(frame: &Frame) {
             let mut index = frames.len() - 2;
             loop {
                 let pre_frame = frames.get(index).unwrap();
-                let method = pre_frame.method_ptr();
+                let method = pre_frame.method();
                 //            println!("method name:{}",method.name());
                 if !method.has_annotation("Lsun/reflect/CallerSensitive;") {
                     let class = method.class();
@@ -52,7 +52,7 @@ pub fn get_caller_class(frame: &Frame) {
 pub fn get_class_access_flags(frame: &Frame) {
     let type_ = frame.get_ref(0).unwrap();
 
-    let class = (*type_).borrow().meta().unwrap();
+    let class = type_.meta();
     let flags = (*class).borrow().access_flags();
     frame.push_int(flags as i32);
 }

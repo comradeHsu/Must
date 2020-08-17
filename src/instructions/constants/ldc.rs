@@ -83,7 +83,7 @@ fn ldc(frame: &Frame, index: usize) {
         Integer(v) => frame.push_int(*v),
         Float(v) => frame.push_float(*v),
         Str(v) => {
-            let string = StringPool::java_string(v.clone());
+            let string = StringPool::java_string(v.to_string());
             frame.push_ref(Some(string))
         }
         ClassReference(v) => {

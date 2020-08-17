@@ -89,7 +89,7 @@ pub fn address_size(frame: &Frame) {
 pub fn object_field_offset(frame: &Frame) {
     let j_field = frame.get_ref(1).unwrap();
 
-    let offset = (*j_field).borrow().get_int_var("slot", "I");
+    let offset = j_field.get_int_var("slot", "I");
 
     frame.push_long(offset as i64);
 }
@@ -129,17 +129,16 @@ pub fn get_int_volatile(frame: &Frame) {
         (object,offset)
     });
 
-    let borrow = (*object).borrow();
-    let data = borrow.data();
-
-    match data {
-        StandardObject(inner) => {
-            let slots = inner.as_ref().unwrap();
-            frame.push_int(slots.get_int(offset))
+    object.data_with(|data|{
+        match data {
+            StandardObject(inner) => {
+                let slots = inner.as_ref().unwrap();
+                frame.push_int(slots.get_int(offset))
+            }
+            Ints(inner) => frame.push_int(inner[offset]),
+            _ => panic!("getInt!"),
         }
-        Ints(inner) => frame.push_int(inner[offset]),
-        _ => panic!("getInt!"),
-    }
+    });
 }
 
 // public final native boolean compareAndSwapInt(Object o, long offset, int expected, int x);
@@ -240,15 +239,15 @@ pub fn get_object_volatile(frame: &Frame) {
         (object,offset)
     });
     // vars.GetRef(0) // this
-    if (*object).borrow().is_class_object() {
-        let meta_class = (*object).borrow().class();
+    if object.is_class_object() {
+        let meta_class = object.class();
         let field = Class::get_static_ref_by_slot_id(meta_class, offset);
         frame.push_ref(field);
-    } else if (*object).borrow().is_array_object() {
-        let element = (*object).borrow().get_references_by_index(offset);
+    } else if object.is_array_object() {
+        let element = object.get_references_by_index(offset);
         frame.push_ref(element);
     } else {
-        let field = (*object).borrow().get_ref_var_by_slot_id(offset);
+        let field = object.get_ref_var_by_slot_id(offset);
         frame.push_ref(field);
     }
 }
@@ -268,25 +267,23 @@ pub fn compare_and_swap_long(frame: &Frame) {
     // vars.GetRef(0) // this
     let mut field = 0i64;
     let mut raw_class: Option<Rc<RefCell<Class>>> = None;
-    if (*object).borrow().is_class_object() {
-        let meta_class = (*object).borrow().class();
+    if object.is_class_object() {
+        let meta_class = object.class();
         field = Class::get_static_long_by_slot_id(meta_class.clone(), offset);
         raw_class = Some(meta_class);
-    } else if (*object).borrow().is_array_object() {
-        field = (*object).borrow().get_long_by_index(offset);
+    } else if object.is_array_object() {
+        field = object.get_long_by_index(offset);
     } else {
-        field = (*object).borrow().get_long_var_by_slot_id(offset);
+        field = object.get_long_var_by_slot_id(offset);
     }
 
     if expect == field {
-        if (*object).borrow().is_class_object() {
+        if object.is_class_object() {
             Class::set_static_long_by_slot_id(raw_class.unwrap(), offset, new_value);
-        } else if (*object).borrow().is_array_object() {
-            (*object).borrow_mut().set_long_by_index(offset, new_value);
+        } else if object.is_array_object() {
+            object.set_long_by_index(offset, new_value);
         } else {
-            (*object)
-                .borrow_mut()
-                .set_long_var_by_slot_id(offset, new_value);
+            object.set_long_var_by_slot_id(offset, new_value);
         }
         frame.push_boolean(true);
     } else {
@@ -299,7 +296,7 @@ pub fn compare_and_swap_long(frame: &Frame) {
 pub fn ensure_class_initialized(frame: &Frame) {
     // vars.GetRef(0) // this
     let object = frame.get_ref(1).unwrap();
-    let raw_class = (*object).borrow().meta().unwrap();
+    let raw_class = object.meta();
     if !(*raw_class).borrow().initialized() {
         init_class(raw_class.clone());
     }
@@ -433,22 +430,22 @@ mod java_unsafe {
 
     #[test]
     fn test_byte_array_offset() {
-        let mut object = Object::new(boxed(Class::default()));
-        object.data = Bytes(vec![1, 2, 3]);
-        let ptr = boxed(object);
-        let ptr = (*ptr).borrow();
-        let bytes = ptr.bytes();
-        let first = bytes.get(0).unwrap();
-        let first_ref = first as *const i8;
-        let ptr = ptr.deref() as *const Object;
-        let hash = ptr as usize;
-        let first_ptr = first_ref as usize;
-        println!(
-            "object ptr:{}, first element ptr:{},差距:{}",
-            hash,
-            first_ptr,
-            first_ptr - hash
-        );
+//        let mut object = Object::new(boxed(Class::default()));
+//        object.data = Bytes(vec![1, 2, 3]);
+//        let ptr = boxed(object);
+//        let ptr = (*ptr).borrow();
+//        let bytes = ptr.bytes();
+//        let first = bytes.get(0).unwrap();
+//        let first_ref = first as *const i8;
+//        let ptr = ptr.deref() as *const Object;
+//        let hash = ptr as usize;
+//        let first_ptr = first_ref as usize;
+//        println!(
+//            "object ptr:{}, first element ptr:{},差距:{}",
+//            hash,
+//            first_ptr,
+//            first_ptr - hash
+//        );
     }
 
     #[test]

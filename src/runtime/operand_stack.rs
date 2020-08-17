@@ -88,14 +88,14 @@ impl OperandStack {
     }
 
     #[inline]
-    pub fn push_ref(&mut self, val: Option<Rc<RefCell<Object>>>) {
+    pub fn push_ref(&mut self, val: Option<Object>) {
         let slot = Slot::with_ref(val);
         self.slots.push(slot);
         self.size += 1;
     }
 
     #[inline]
-    pub fn pop_ref(&mut self) -> Option<Rc<RefCell<Object>>> {
+    pub fn pop_ref(&mut self) -> Option<Object> {
         let slot = self.slots.pop().unwrap();
         self.size -= 1;
         return slot.get_ref();
@@ -124,7 +124,7 @@ impl OperandStack {
     }
 
     #[inline]
-    pub fn get_ref_from_top(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref_from_top(&self, index: usize) -> Option<Object> {
         if self.size <= index {
             println!("IndexOutOf:{} size:{}", index, self.size);
         }

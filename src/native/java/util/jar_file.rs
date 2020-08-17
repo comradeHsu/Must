@@ -19,7 +19,7 @@ pub fn init() {
 /// ()[Ljava/lang/String;
 pub fn get_meta_inf_entry_names(frame: &Frame) {
     let this = frame.get_this().unwrap();
-    let address = (*this).borrow().get_long_var("jzfile", "J") as usize;
+    let address = this.get_long_var("jzfile", "J") as usize;
     let zip_file = crate::native::java::util::zip_file::zip_file_cache::get_mut(address)
         .expect("the file is not open");
     let mut data = Vec::new();
@@ -36,5 +36,5 @@ pub fn get_meta_inf_entry_names(frame: &Frame) {
         boot.find_or_create("java/lang/String").unwrap(),
         DataType::References(data),
     );
-    frame.push_ref(Some(boxed(object)));
+    frame.push_ref(Some(object));
 }

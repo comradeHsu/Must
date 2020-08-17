@@ -131,11 +131,10 @@ impl Field {
     }
 
     #[inline]
-    fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
+    fn get_class_loader(&self) -> Option<Object> {
         let class_object = (*self.class_member.class()).borrow().get_java_class();
         if class_object.is_some() {
-            return (*class_object.unwrap())
-                .borrow()
+            return class_object.unwrap()
                 .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
         }
         return None;

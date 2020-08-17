@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub struct JavaLangInstrument {
-    instrument: Rc<RefCell<Object>>,
+    instrument: Object,
     transform_method: Rc<Method>,
 }
 
@@ -16,7 +16,7 @@ impl JavaLangInstrument {
     fn new() -> JavaLangInstrument {
         let desc = "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[BZ)[B";
         let instrument = create_instrumentation();
-        let class = (*instrument).borrow().class();
+        let class = instrument.class();
         let method = Class::get_instance_method(class, "transform", desc);
         return JavaLangInstrument {
             instrument,
@@ -39,7 +39,7 @@ impl JavaLangInstrument {
     }
 
     #[inline]
-    pub fn get_instrument(&self) -> Rc<RefCell<Object>> {
+    pub fn get_instrument(&self) -> Object {
         return self.instrument.clone();
     }
 }

@@ -25,10 +25,10 @@ impl Instruction for AAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let references = borrow.references();
-            check_index(references.len(), index);
-            stack.push_ref(references[index].clone());
+            object.references(|references|{
+                check_index(references.len(), index);
+                stack.push_ref(references[index].clone());
+            });
         })
     }
 }
@@ -55,10 +55,10 @@ impl Instruction for BAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let bytes = borrow.bytes();
-            check_index(bytes.len(), index);
-            stack.push_int(bytes[index] as i32);
+            object.bytes(|bytes|{
+                check_index(bytes.len(), index);
+                stack.push_int(bytes[index] as i32);
+            });
         })
     }
 }
@@ -85,10 +85,10 @@ impl Instruction for CAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let chars = borrow.chars();
-            check_index(chars.len(), index);
-            stack.push_int(chars[index] as i32);
+            object.chars(|chars|{
+                check_index(chars.len(), index);
+                stack.push_int(chars[index] as i32);
+            });
         })
     }
 }
@@ -115,10 +115,10 @@ impl Instruction for DAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let doubles = borrow.doubles();
-            check_index(doubles.len(), index);
-            stack.push_double(doubles[index]);
+            object.doubles(|doubles|{
+                check_index(doubles.len(), index);
+                stack.push_double(doubles[index]);
+            });
         })
     }
 }
@@ -145,10 +145,10 @@ impl Instruction for FAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let floats = borrow.floats();
-            check_index(floats.len(), index);
-            stack.push_float(floats[index]);
+            object.floats(|floats|{
+                check_index(floats.len(), index);
+                stack.push_float(floats[index]);
+            });
         })
     }
 }
@@ -175,10 +175,10 @@ impl Instruction for IAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let ints = borrow.ints();
-            check_index(ints.len(), index);
-            stack.push_int(ints[index]);
+            object.ints(|ints|{
+                check_index(ints.len(), index);
+                stack.push_int(ints[index]);
+            });
         })
     }
 }
@@ -205,10 +205,10 @@ impl Instruction for LAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let longs = borrow.longs();
-            check_index(longs.len(), index);
-            stack.push_long(longs[index]);
+            object.longs(|longs|{
+                check_index(longs.len(), index);
+                stack.push_long(longs[index]);
+            });
         })
     }
 }
@@ -235,10 +235,10 @@ impl Instruction for SAload {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let borrow = (*object).borrow();
-            let shorts = borrow.shorts();
-            check_index(shorts.len(), index);
-            stack.push_int(shorts[index] as i32);
+            object.shorts(|shorts|{
+                check_index(shorts.len(), index);
+                stack.push_int(shorts[index] as i32);
+            });
         })
     }
 }

@@ -12,12 +12,12 @@ pub struct Perf();
 
 impl Perf {
     pub fn create_long(
-        perf: JObject,
-        name: JString,
+        perf: Option<Object>,
+        name: Option<Object>,
         variability: i32,
         units: i32,
         value: i64,
-    ) -> JObject {
+    ) -> Option<Object> {
         if units <= 0 || units > Units::Hertz as i32 {
             println!("unexpected units argument, units = {}", units);
         }
@@ -46,14 +46,14 @@ impl Perf {
         return Self::new_direct_byte_buffer(pointer, size_of::<i64>());
     }
 
-    fn new_direct_byte_buffer(pointer: usize, size_long: usize) -> JObject {
+    fn new_direct_byte_buffer(pointer: usize, size_long: usize) -> Option<Object> {
         assert_ne!(size_long, 0, "size value {}", size_long);
         let boot_loader = Jvm::boot_class_loader();
         let class = boot_loader
             .find_or_create("java/nio/DirectByteBuffer")
             .unwrap();
         let method = Class::get_instance_method(class.clone(), "<init>", "(JI)V");
-        let this = boxed(Class::new_object(&class));
+        let this = Class::new_object(&class);
         let param = vec![
             Parameter::Object(Some(this.clone())),
             Parameter::Long(pointer as i64),

@@ -66,8 +66,7 @@ pub fn canonicalize0(frame: &Frame) {
 /// (Ljava/io/File;)I
 pub fn get_boolean_attributes(frame: &Frame) {
     let java_file = frame.get_ref(1).unwrap();
-    let java_path = (*java_file)
-        .borrow()
+    let java_path = java_file
         .get_ref_var("path", "Ljava/lang/String;");
     let native_path = java_str_to_rust_str(java_path.unwrap());
     let path = Path::new(&native_path);
@@ -106,8 +105,7 @@ fn is_hidden(filename: &str) -> bool {
 /// (Ljava/io/File;)J
 pub fn get_last_modified_time(frame: &Frame) {
     let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
-    let java_path = (*java_file)
-        .borrow()
+    let java_path =java_file
         .get_ref_var("path", "Ljava/lang/String;");
     let rust_path = java_str_to_rust_str(java_path.unwrap());
     let path = Path::new(&rust_path);
@@ -124,8 +122,7 @@ pub fn get_last_modified_time(frame: &Frame) {
 /// (Ljava/io/File;)J
 pub fn get_length(frame: &Frame) {
     let java_file = frame.get_ref(1).expect("java.lang.NullPointerException");
-    let java_path = (*java_file)
-        .borrow()
+    let java_path = java_file
         .get_ref_var("path", "Ljava/lang/String;");
     let rust_path = java_str_to_rust_str(java_path.unwrap());
     let metadata = fs::metadata(rust_path);

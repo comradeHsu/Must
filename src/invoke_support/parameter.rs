@@ -45,5 +45,5 @@ pub enum Parameter {
     Float(f32),
     Double(f64),
     Char(char),
-    Object(Option<Rc<RefCell<Object>>>),
+    Object(Option<Object>),
 }

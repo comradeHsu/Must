@@ -42,7 +42,7 @@ impl Instruction for InvokeSpecial {
 
         let method_class = resolved_method.class();
         let borrow_method_class = (*method_class).borrow();
-        let object_class = (*object.unwrap()).borrow().class();
+        let object_class = object.unwrap().class();
         let borrow_class = (*class).borrow();
         if resolved_method.is_protected()
             && borrow_method_class.is_super_class_of((*class).borrow().deref())

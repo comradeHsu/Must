@@ -35,10 +35,10 @@ pub fn current_thread(frame: &Frame) {
 
     let thread_group_class = loader.find_or_create("java/lang/ThreadGroup").unwrap();
     let mut java_thread_group = Class::new_object(&thread_group_class);
-    java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", boxed(java_thread_group));
+    java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", java_thread_group);
     java_thread.set_int_var("priority", "I", 1);
 
-    frame.push_ref(Some(boxed(java_thread)));
+    frame.push_ref(Some(java_thread));
 }
 
 // private native void setPriority0(int newPriority);

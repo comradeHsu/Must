@@ -103,7 +103,7 @@ impl JavaCall {
             }
             let pc = current_frame.next_pc();
             self.thread.set_pc(pc);
-            let method = current_frame.method_ptr();
+            let method = current_frame.method();
             let bytecode = method.code();
             reader.reset(bytecode, pc);
             let opcode = reader.read_u8();
@@ -165,7 +165,7 @@ pub fn throw_exception(frame: &Frame, class_name: &str, msg: Option<&str>) {
         false => None
     };
     let constructor = Class::get_constructor(exception_class.clone(), constructor_desc);
-    let object_ptr = Some(boxed(object));
+    let object_ptr = Some(object);
     let parameters = vec![
         Parameter::Object(object_ptr.clone()),
         Parameter::Object(detail_message)

@@ -106,11 +106,6 @@ impl Frame {
         return (*self.core).borrow().method.clone();
     }
 
-    #[inline]
-    pub fn method_ptr(&self) -> Rc<Method> {
-        return  (*self.core).borrow().method.clone();
-    }
-
     pub fn new_shim_frame(ops: OperandStack) -> Frame {
         return Frame {
             core: Rc::new(RefCell::new(Core {
@@ -199,11 +194,11 @@ impl Frame {
         self.local_vars_set(|v| v.set_double(index,val))
     }
 
-    pub fn get_ref(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref(&self, index: usize) -> Option<Object> {
         self.local_vars_get(|v| v.get_ref(index))
     }
 
-    pub fn set_ref(&self, index: usize, val: Option<Rc<RefCell<Object>>>) {
+    pub fn set_ref(&self, index: usize, val: Option<Object>) {
         self.local_vars_set(|v| v.set_ref(index,val))
     }
 
@@ -212,7 +207,7 @@ impl Frame {
     }
 
     #[inline]
-    pub fn get_this(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_this(&self) -> Option<Object> {
         return self.get_ref(0);
     }
 
@@ -273,12 +268,12 @@ impl Frame {
     }
 
     #[inline]
-    pub fn push_ref(&self, val: Option<Rc<RefCell<Object>>>) {
+    pub fn push_ref(&self, val: Option<Object>) {
         self.operand_stack(|o| o.push_ref(val))
     }
 
     #[inline]
-    pub fn pop_ref(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn pop_ref(&self) -> Option<Object> {
         self.operand_stack(|o| o.pop_ref())
     }
 
@@ -298,7 +293,7 @@ impl Frame {
     }
 
     #[inline]
-    pub fn get_ref_from_top(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref_from_top(&self, index: usize) -> Option<Object> {
         let holder = (*self.core).borrow_mut();
         let vars = holder.operand_stack.as_ref().expect("vars is none");
         vars.get_ref_from_top(index)

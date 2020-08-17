@@ -30,7 +30,7 @@ impl Instruction for ANewArray {
                 panic!("java.lang.NegativeArraySizeException")
             }
             let array = Class::new_array(&array_class, count as usize);
-            stack.push_ref(Some(boxed(array)));
+            stack.push_ref(Some(array));
         })
     }
 }

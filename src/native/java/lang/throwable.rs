@@ -34,8 +34,8 @@ pub fn fill_in_stack_trace(frame: &Frame) {
     let this = frame.get_this();
     frame.push_ref(this.clone());
     let ptr = this.unwrap();
-    let stes = StackTraceElement::create_stack_trace_elements(ptr.clone());
-    (*ptr).borrow_mut().set_trace(stes);
+    let stes = StackTraceElement::create_stack_trace_elements(&ptr);
+    ptr.set_trace(stes);
 }
 
 ///  native int getStackTraceDepth();
@@ -43,7 +43,7 @@ pub fn fill_in_stack_trace(frame: &Frame) {
 pub fn get_stack_trace_depth(frame: &Frame) {
     let this = frame.get_this();
     let ptr = this.unwrap();
-    let depth = (*ptr).borrow().trace().unwrap().len();
+    let depth = ptr.trace(|elements| elements.len());
     frame.push_int(depth as i32);
 }
 
@@ -53,13 +53,13 @@ pub fn get_stack_trace_element(frame: &Frame) {
     let this = frame.get_this();
     let index = frame.get_int(1) as usize;
     let ptr = this.unwrap();
-    let this_ref = (*ptr).borrow();
-    let elements = this_ref.trace().unwrap();
-    let java_element = create_java_stack_trace_element(elements.get(index).unwrap());
+    let java_element = ptr.trace(|elements| {
+        create_java_stack_trace_element(elements.get(index).unwrap())
+    });
     frame.push_ref(java_element);
 }
 
-fn create_java_stack_trace_element(element:&StackTraceElement) -> Option<Rc<RefCell<Object>>> {
+fn create_java_stack_trace_element(element:&StackTraceElement) -> Option<Object> {
     let loader = Jvm::boot_class_loader();
     let class = loader.find_or_create("java/lang/StackTraceElement").unwrap();
     let mut object = Class::new_object(&class);
@@ -83,7 +83,7 @@ fn create_java_stack_trace_element(element:&StackTraceElement) -> Option<Rc<RefC
         "I",
         element.line_number
     );
-    Some(boxed(object))
+    Some(object)
 }
 
 #[derive(Clone, Debug)]
@@ -96,9 +96,9 @@ pub struct StackTraceElement {
 
 impl StackTraceElement {
     fn create_stack_trace_elements(
-        object: Rc<RefCell<Object>>
+        object: &Object
     ) -> Vec<StackTraceElement> {
-        let skip = StackTraceElement::distance_to_object((*object).borrow().class()) as usize + 2;
+        let skip = StackTraceElement::distance_to_object(object.class()) as usize + 2;
         let thread = JavaThread::current();
         thread.frames_with(|frames|{
             let mut stes = Vec::with_capacity(frames.len() - skip);

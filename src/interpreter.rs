@@ -25,7 +25,7 @@ pub fn circulate(mut thread: JavaThread) {
         let current_frame = thread.current_frame();
         let pc = current_frame.next_pc();
         thread.set_pc(pc);
-        let method = current_frame.method_ptr();
+        let method = current_frame.method();
         let bytecode = method.code();
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();

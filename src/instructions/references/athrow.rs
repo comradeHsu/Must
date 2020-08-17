@@ -16,13 +16,13 @@ impl AThrow {
         return AThrow(NoOperandsInstruction::new());
     }
 
-    fn find_and_goto_exception_handler(frame: &Frame, object: Rc<RefCell<Object>>) -> bool {
+    fn find_and_goto_exception_handler(frame: &Frame, object: Object) -> bool {
         ///
-        fn get_handler_pc(frame: &Frame, object: Rc<RefCell<Object>>) -> i32 {
+        fn get_handler_pc(frame: &Frame, object: Object) -> i32 {
             let pc = frame.next_pc() - 1;
             return frame
                 .method()
-                .find_exception_handler((*object).borrow().class(), pc);
+                .find_exception_handler(object.class(), pc);
         }
 
         let thread = JavaThread::current();
@@ -31,7 +31,7 @@ impl AThrow {
 
         let pc = frame
             .method()
-            .find_exception_handler((*object).borrow().class(), frame.next_pc() - 1);
+            .find_exception_handler(object.class(), frame.next_pc() - 1);
         if pc > 0 {
             frame.operand_stack(|stack| {
                 stack.clear();
@@ -67,25 +67,23 @@ impl AThrow {
         return false;
     }
 
-    fn handle_uncaught_exception(object: Rc<RefCell<Object>>) {
+    fn handle_uncaught_exception(object: Object) {
         let thread = JavaThread::current();
         thread.clear_stack();
-        let _java_msg = (*object)
-            .borrow()
+        let _java_msg = object
             .get_ref_var("detailMessage", "Ljava/lang/String;");
         //        let rust_msg = java_str_to_rust_str(java_msg.unwrap());
-        let bor_obj = (*object).borrow();
-        let stes = bor_obj.trace().expect("The exception object hasn't trace");
-        let ex_class = bor_obj.class();
-
-        let detail_message = bor_obj
+        let ex_class = object.class();
+        let detail_message = object
             .get_ref_var("detailMessage", "Ljava/lang/String;")
             .map_or("".to_string(), |v| java_str_to_rust_str(v));
-
         println!("\t{},{}", (*ex_class).borrow().java_name(), detail_message);
-        for ste in stes {
-            println!("\tat {}", ste.to_string());
-        }
+        object.trace(|elements|{
+            let len = elements.len() - 1;
+            for index in 0..=len {
+                println!("\tat {}", elements[len-index].to_string());
+            }
+        })
     }
 }
 
@@ -104,8 +102,8 @@ impl Instruction for AThrow {
         //        let meta = (*object).borrow().meta();
         //        println!("ex class : {}",(*meta.unwrap()).borrow().java_name());
         {
-            let method = frame.method_ptr();
-            let class = (*object).borrow().class();
+            let method = frame.method();
+            let class = object.class();
         }
         if !Self::find_and_goto_exception_handler(frame, object.clone()) {
             Self::handle_uncaught_exception(object);
@@ -114,12 +112,12 @@ impl Instruction for AThrow {
 }
 
 fn display_frame(frame: &Frame) {
-    let method = frame.method_ptr();
+    let method = frame.method();
     if method.name() == "loadClass"
         && method.descriptor() == "(Ljava/lang/String;Z)Ljava/lang/Class;"
     {
         let this = frame.get_this().unwrap();
-        let class = (*this).borrow().class();
+        let class = this.class();
         let name = (*class).borrow().java_name();
         println!("java class:{}", name);
     }

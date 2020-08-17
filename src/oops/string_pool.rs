@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 pub struct StringPool {
-    pool: HashMap<String, Rc<RefCell<Object>>>,
+    pool: HashMap<String, Object>,
 }
 
 static mut STRING_POOL: Option<StringPool> = None;
@@ -36,7 +36,7 @@ impl StringPool {
         }
     }
 
-    pub fn java_string(string: String) -> Rc<RefCell<Object>> {
+    pub fn java_string(string: String) -> Object {
         let pool_str = StringPool::instance().pool.get(&string);
         if pool_str.is_some() {
             return pool_str.unwrap().clone();
@@ -47,8 +47,8 @@ impl StringPool {
             Object::from_data(bootstrap_loader.find_or_create("[C").unwrap(), Chars(chars));
         let mut java_string =
             Class::new_object(&bootstrap_loader.find_or_create("java/lang/String").unwrap());
-        java_string.set_ref_var("value", "[C", boxed(java_chars));
-        let target = boxed(java_string);
+        java_string.set_ref_var("value", "[C", java_chars);
+        let target = java_string;
         StringPool::mut_instance()
             .pool
             .insert(string, target.clone());
@@ -57,7 +57,7 @@ impl StringPool {
 
     ///java sdk function
     /// string.intern
-    pub fn intern_string(string: Rc<RefCell<Object>>) -> Rc<RefCell<Object>> {
+    pub fn intern_string(string: Object) -> Object {
         let rust_str = java_str_to_rust_str(string.clone());
         let pool_string = StringPool::instance().pool.get(&rust_str);
         if pool_string.is_some() {

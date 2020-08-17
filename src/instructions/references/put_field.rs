@@ -23,7 +23,7 @@ impl Instruction for PutField {
     }
 
     fn execute(&mut self, frame: &Frame) {
-        let current_method = frame.method_ptr();
+        let current_method = frame.method();
         let current_class = current_method.class();
 
         let field_option = self.resolve_field_ref(current_class.clone());
@@ -49,10 +49,7 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                (*reference.unwrap())
-                    .borrow_mut()
-                    .fields()
-                    .set_int(slot_id, val);
+                reference.unwrap().mut_fields_with(|fields| fields.set_int(slot_id,val));
             }
             'F' => {
                 let val = frame.pop_float();
@@ -60,10 +57,7 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                (*reference.unwrap())
-                    .borrow_mut()
-                    .fields()
-                    .set_float(slot_id, val);
+                reference.unwrap().mut_fields_with(|fields| fields.set_float(slot_id,val));
             }
             'J' => {
                 let val = frame.pop_long();
@@ -71,10 +65,7 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                (*reference.unwrap())
-                    .borrow_mut()
-                    .fields()
-                    .set_long(slot_id, val);
+                reference.unwrap().mut_fields_with(|fields| fields.set_long(slot_id,val));
             }
             'D' => {
                 let val = frame.pop_double();
@@ -82,10 +73,7 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                (*reference.unwrap())
-                    .borrow_mut()
-                    .fields()
-                    .set_double(slot_id, val);
+                reference.unwrap().mut_fields_with(|fields| fields.set_double(slot_id,val));
             }
             'L' | '[' => {
                 let val = frame.pop_ref();
@@ -93,10 +81,7 @@ impl Instruction for PutField {
                 if reference.is_none() {
                     panic!("java.lang.NullPointerException");
                 }
-                (*reference.unwrap())
-                    .borrow_mut()
-                    .fields()
-                    .set_ref(slot_id, val);
+                reference.unwrap().mut_fields_with(|fields| fields.set_ref(slot_id,val));
             }
             _ => {}
         }

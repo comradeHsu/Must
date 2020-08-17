@@ -22,10 +22,7 @@ pub fn write_bytes(frame: &Frame) {
         let len = vars.get_int(3) as usize;
         (b,off,len)
     });
-
-    let borrow = (*b).borrow();
-    let java_bytes = borrow.bytes();
-    let bytes = byte_change(java_bytes);
+    let bytes = b.bytes(|java_bytes| byte_change(java_bytes));
     let slice = &bytes[off..(off + len)];
     let mut out = io::stdout();
     let rs = out.write(slice);

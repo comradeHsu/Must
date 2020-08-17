@@ -49,7 +49,7 @@ pub fn do_privileged(frame: &Frame) {
     if this.is_none() {
         panic!("java.lang.NullPointerException");
     }
-    let class = (*this.clone().unwrap()).borrow().class();
+    let class = this.as_ref().unwrap().class();
     let method = Class::get_instance_method(class, "run", "()Ljava/lang/Object;").unwrap();
     frame.push_ref(this);
     invoke_method(frame, method);
@@ -60,7 +60,7 @@ pub fn run(frame: &Frame) {
     if this.is_none() {
         panic!("java.lang.NullPointerException");
     }
-    let class = (*this.clone().unwrap()).borrow().class();
+    let class = this.as_ref().unwrap().class();
     let method = Class::get_instance_method(class, "run", "()I").unwrap();
     frame.push_ref(this);
     invoke_method(frame, method);
@@ -73,12 +73,12 @@ pub fn get_stack_access_control_context(frame: &Frame) {
     frame.push_ref(create());
 }
 
-fn create() -> Option<Rc<RefCell<Object>>> {
+fn create() -> Option<Object> {
     let class = ClassLoader::load_class(None, "[Ljava/security/ProtectionDomain");
-    let args = boxed(Class::new_array(&class, 0));
+    let args = Class::new_array(&class, 0);
     let class = ClassLoader::load_class(None, "java/security/AccessControlContext");
 
-    let object = boxed(Object::new(class.clone()));
+    let object = Object::new(class.clone());
 
     let method =
         Class::get_instance_method(class, "<init>", "([Ljava/security/ProtectionDomain;)V");

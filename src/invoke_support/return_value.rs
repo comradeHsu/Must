@@ -12,12 +12,12 @@ pub enum ReturnValue {
     Float(f32),
     Double(f64),
     Char(char),
-    Object(Option<Rc<RefCell<Object>>>),
+    Object(Option<Object>),
 }
 
 impl ReturnValue {
     #[inline]
-    pub fn object(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn object(&self) -> Option<Object> {
         match &self {
             ReturnValue::Object(object) => object.clone(),
             _ => panic!("This return value isn't object"),

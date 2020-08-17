@@ -24,8 +24,8 @@ use std::rc::Rc;
 pub struct Jvm {
     cmd: Cmd,
     boot_class_loader: BootstrapClassLoader,
-    ext_class_loader: Option<Rc<RefCell<Object>>>,
-    app_class_loader: Option<Rc<RefCell<Object>>>,
+    ext_class_loader: Option<Object>,
+    app_class_loader: Option<Object>,
     main_thread: JavaThread,
 }
 
@@ -125,21 +125,22 @@ impl Jvm {
         interpret(self.main_thread.clone());
     }
 
-    fn create_args_array(&self) -> Rc<RefCell<Object>> {
+    fn create_args_array(&self) -> Object {
         let string_class = self
             .boot_class_loader
             .find_or_create("java/lang/String")
             .unwrap();
         let args_arr_class = (*string_class).borrow().array_class();
         let mut args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
-        let java_args = args_arr.mut_references();
-        for i in 0..java_args.len() {
-            java_args[i] = Some(StringPool::java_string(self.cmd.args[i].clone()));
-        }
-        return boxed(args_arr);
+        args_arr.mut_references(|java_args|{
+            for i in 0..java_args.len() {
+                java_args[i] = Some(StringPool::java_string(self.cmd.args[i].clone()));
+            }
+        });
+        return args_arr;
     }
 
-    fn create_ext_loader(&self, ext_class: Rc<RefCell<Class>>) -> Option<Rc<RefCell<Object>>> {
+    fn create_ext_loader(&self, ext_class: Rc<RefCell<Class>>) -> Option<Object> {
         let method = Class::get_static_method(
             ext_class,
             "getExtClassLoader",
@@ -152,8 +153,8 @@ impl Jvm {
     fn create_app_loader(
         &self,
         app_class: Rc<RefCell<Class>>,
-        parent: Option<Rc<RefCell<Object>>>,
-    ) -> Option<Rc<RefCell<Object>>> {
+        parent: Option<Object>,
+    ) -> Option<Object> {
         let method = Class::get_static_method(
             app_class,
             "getAppClassLoader",
@@ -165,17 +166,15 @@ impl Jvm {
     }
 }
 
-fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
+fn display_loader_url(class_loader: Option<Object>) {
     let obj = class_loader.unwrap();
-    let ucp = (*obj)
-        .borrow()
+    let ucp = obj
         .get_ref_var("ucp", "Lsun/misc/URLClassPath;");
 
-    let parent = (*obj)
-        .borrow()
+    let parent = obj
         .get_ref_var("parent", "Ljava/lang/ClassLoader;");
     if parent.is_some() {
-        let parent = (*parent.unwrap()).borrow().class();
+        let parent = parent.unwrap().class();
         println!("parent:{}", (*parent).borrow().java_name());
     }
 
@@ -184,23 +183,21 @@ fn display_loader_url(class_loader: Option<Rc<RefCell<Object>>>) {
     let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();
     if ucp.is_some() {
         let ucp = ucp.unwrap();
-        let path = (*ucp)
-            .borrow()
+        let path = ucp
             .get_ref_var("path", "Ljava/util/ArrayList;")
             .unwrap();
-        let data = (*path)
-            .borrow()
+        let data = path
             .get_ref_var("elementData", "[Ljava/lang/Object;")
             .unwrap();
-        let bor = (*data).borrow();
-        let objs = bor.references();
-        for ob in objs {
-            if ob.is_some() {
-                let param = Parameters::with_parameters(vec![Parameter::Object(ob.clone())]);
-                let string = JavaCall::invoke(method.clone(), Some(param), ReturnType::Object).object();
-                let rust_str = java_str_to_rust_str(string.unwrap());
-                println!("URL:{}", rust_str);
+        data.references(|objs|{
+            for ob in objs {
+                if ob.is_some() {
+                    let param = Parameters::with_parameters(vec![Parameter::Object(ob.clone())]);
+                    let string = JavaCall::invoke(method.clone(), Some(param), ReturnType::Object).object();
+                    let rust_str = java_str_to_rust_str(string.unwrap());
+                    println!("URL:{}", rust_str);
+                }
             }
-        }
+        });
     }
 }

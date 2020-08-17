@@ -44,13 +44,14 @@ impl MultiANewArray {
         let count = counts[0] as usize;
         let mut arr = Class::new_array(&arr_class, count);
         if counts.len() > 1 {
-            let refs = arr.mut_references();
-            for i in 0..refs.len() {
-                refs[i] = Some(boxed(MultiANewArray::new_multi_dimensional_array(
-                    counts.split_off(1),
-                    (*arr_class).borrow().component_class(),
-                )));
-            }
+            arr.mut_references(|refs|{
+                for i in 0..refs.len() {
+                    refs[i] = Some(MultiANewArray::new_multi_dimensional_array(
+                        counts.split_off(1),
+                        (*arr_class).borrow().component_class(),
+                    ));
+                }
+            });
         }
         return arr;
     }
@@ -69,7 +70,7 @@ impl Instruction for MultiANewArray {
         let counts = MultiANewArray::pop_and_check_counts(frame, self.dimensions as usize);
         let arr = MultiANewArray::new_multi_dimensional_array(counts, array_class);
         frame
-            .push_ref(Some(boxed(arr)));
+            .push_ref(Some(arr));
     }
 }
 

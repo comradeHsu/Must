@@ -53,11 +53,11 @@ impl Slots {
         return i64_to_f64(self.get_long(index));
     }
 
-    pub fn set_ref(&mut self, index: usize, val: Option<Rc<RefCell<Object>>>) {
+    pub fn set_ref(&mut self, index: usize, val: Option<Object>) {
         self.slots[index].reference = val;
     }
 
-    pub fn get_ref(&self, index: usize) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_ref(&self, index: usize) -> Option<Object> {
         return self.slots[index].reference.clone();
     }
 }

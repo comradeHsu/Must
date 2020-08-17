@@ -26,10 +26,10 @@ impl Instruction for AAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let references = borrow.mut_references();
-            check_index(references.len(), index);
-            references[index] = val;
+            object.mut_references(|references|{
+                check_index(references.len(), index);
+                references[index] = val;
+            });
         })
     }
 }
@@ -57,10 +57,10 @@ impl Instruction for BAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let bytes = borrow.mut_bytes();
-            check_index(bytes.len(), index);
-            bytes[index] = val as i8;
+            object.mut_bytes(|bytes|{
+                check_index(bytes.len(), index);
+                bytes[index] = val as i8;
+            });
         })
     }
 }
@@ -88,10 +88,10 @@ impl Instruction for CAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let chars = borrow.mut_chars();
-            check_index(chars.len(), index);
-            chars[index] = val as u16;
+            object.mut_chars(|chars|{
+                check_index(chars.len(), index);
+                chars[index] = val as u16;
+            });
         })
     }
 }
@@ -119,10 +119,10 @@ impl Instruction for DAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let doubles = borrow.mut_doubles();
-            check_index(doubles.len(), index);
-            doubles[index] = val;
+            object.mut_doubles(|doubles|{
+                check_index(doubles.len(), index);
+                doubles[index] = val;
+            });
         })
     }
 }
@@ -150,10 +150,10 @@ impl Instruction for FAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let floats = borrow.mut_floats();
-            check_index(floats.len(), index);
-            floats[index] = val;
+            object.mut_floats(|floats|{
+                check_index(floats.len(), index);
+                floats[index] = val;
+            });
         })
     }
 }
@@ -181,10 +181,10 @@ impl Instruction for IAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let ints = borrow.mut_ints();
-            check_index(ints.len(), index);
-            ints[index] = val;
+            object.mut_ints(|ints|{
+                check_index(ints.len(), index);
+                ints[index] = val;
+            });
         })
     }
 }
@@ -212,10 +212,10 @@ impl Instruction for LAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let longs = borrow.mut_longs();
-            check_index(longs.len(), index);
-            longs[index] = val;
+            object.mut_longs(|longs|{
+                check_index(longs.len(), index);
+                longs[index] = val;
+            });
         })
     }
 }
@@ -243,10 +243,10 @@ impl Instruction for SAStore {
                 panic!("java.lang.NullPointerException");
             }
             let object = arr_ref.unwrap();
-            let mut borrow = (*object).borrow_mut();
-            let shorts = borrow.mut_shorts();
-            check_index(shorts.len(), index);
-            shorts[index] = val as i16;
+            object.mut_shorts(|shorts|{
+                check_index(shorts.len(), index);
+                shorts[index] = val as i16;
+            });
         })
     }
 }

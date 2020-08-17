@@ -40,7 +40,7 @@ pub fn new_instance0(frame: &Frame) {
         init_class(class);
         return;
     }
-    let obj = Some(boxed(Class::new_object(&class)));
+    let obj = Some(Class::new_object(&class));
     frame.push_ref(obj.clone());
 
 //    // call <init>
@@ -59,46 +59,46 @@ pub fn new_instance0(frame: &Frame) {
     ]);
     if arg_arr_obj.is_some() {
         let arg_array = arg_arr_obj.unwrap();
-        let array_ref = (*arg_array).borrow();
-        let args = array_ref.references();
-        args.iter().for_each(|arg| {params.append_parameter(Parameter::Object(arg.clone()))})
+        arg_array.references(|args|{
+            args.iter().for_each(|arg| {
+                params.append_parameter(Parameter::Object(arg.clone()))
+            })
+        })
     }
     JavaCall::invoke(constructor,Some(params),ReturnType::Void);
 }
 
-fn get_method(method_obj: Rc<RefCell<Object>>) -> Rc<Method> {
+fn get_method(method_obj: Object) -> Rc<Method> {
     return _get_method(method_obj, false);
 }
 
-fn get_constructor(constructor_obj: Rc<RefCell<Object>>) -> Rc<Method> {
+fn get_constructor(constructor_obj: Object) -> Rc<Method> {
     return _get_method(constructor_obj, true);
 }
 
-fn _get_method(method_obj: Rc<RefCell<Object>>, is_constructor: bool) -> Rc<Method> {
-    let extra = (*method_obj).borrow().meta_data.clone();
+fn _get_method(method_obj: Object, is_constructor: bool) -> Rc<Method> {
+    let extra = method_obj.meta_data();
     if extra.not_null() {
         return extra.method();
     }
 
     if is_constructor {
-        let root = (*method_obj)
-            .borrow()
+        let root = method_obj
             .get_ref_var("root", "Ljava/lang/reflect/Constructor;")
             .expect("the object hasn't root attribute");
-        return (*root).borrow().meta_data.method();
+        return root.meta_data().method();
     } else {
-        let root = (*method_obj)
-            .borrow()
+        let root = method_obj
             .get_ref_var("root", "Ljava/lang/reflect/Method;")
             .expect("the object hasn't root attribute");
-        return (*root).borrow().meta_data.method();
+        return root.meta_data().method();
     }
 }
 
 // Object[] -> []interface{}
 fn convert_args(
-    this: Rc<RefCell<Object>>,
-    _arg_arr: Rc<RefCell<Object>>,
+    this: Object,
+    _arg_arr: Object,
     method: Rc<Method>,
 ) -> Option<OperandStack> {
     if method.arg_slot_count() == 0 {

@@ -22,7 +22,7 @@ impl Instruction for ArrayLength {
             if object.is_none() {
                 panic!("java.lang.NullPointerException");
             }
-            let array_len = (*object.unwrap()).borrow().array_length();
+            let array_len = object.unwrap().array_length();
             stack.push_int(array_len as i32);
         })
     }

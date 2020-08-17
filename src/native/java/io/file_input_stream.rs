@@ -46,7 +46,7 @@ pub fn open0(frame: &Frame) {
         msg.push_str(error.to_string().as_str());
         throw_exception(frame,"java/io/FileNotFoundException",Some(msg.as_str()));
     } else {
-        (*this).borrow_mut().set_file(file.unwrap());
+        this.set_file(file.unwrap());
     }
 }
 
@@ -69,16 +69,16 @@ pub fn read_bytes(frame: &Frame) {
     let length = length as usize;
 
     let mut bytes = vec![0u8; length];
-    let file = (*this).borrow().file();
+    let file = this.file();
     let rs = file.borrow_mut().read(bytes.as_mut_slice());
     let mut size = -1;
     let read_size = rs.expect("the file seek has error");
     if read_size != 0 {
-        let mut mut_byte_array = (*byte_array).borrow_mut();
-        let mut_array = mut_byte_array.mut_bytes();
-        for i in 0..read_size {
-            mut_array[offset + i] = bytes[i] as i8;
-        }
+        byte_array.mut_bytes(|mut_array|{
+            for i in 0..read_size {
+                mut_array[offset + i] = bytes[i] as i8;
+            }
+        });
         size = read_size as i32;
     }
     frame.push_int(size);

@@ -46,7 +46,7 @@ impl Instruction for InvokeVirtual {
             return;
             //panic!("java.lang.NullPointerException");
         }
-        let obj_class = (*object.unwrap()).borrow().class();
+        let obj_class = object.unwrap().class();
         let resolved_method_class = resolved_method.class();
         if resolved_method.is_protected()
             && (*resolved_method_class)

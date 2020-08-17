@@ -38,7 +38,7 @@ impl Instruction for InvokeInterface {
         if object.is_none() {
             panic!("java.lang.NullPointerException") // todo
         }
-        let object_class = (*object.unwrap()).borrow().class();
+        let object_class = object.unwrap().class();
 
         if !(*object_class)
             .borrow()

@@ -26,6 +26,10 @@ use crate::oops::constant_pool::Constant::{FieldReference, ClassReference, Metho
 
 pub type Interfaces = Vec<Rc<RefCell<Class>>>;
 
+struct Raw {
+
+}
+
 #[derive(Debug)]
 pub struct Class {
     access_flags: u16,
@@ -42,7 +46,7 @@ pub struct Class {
     static_slot_count: u32,
     static_vars: Option<Slots>,
     initialized: bool,
-    java_class: Option<Rc<RefCell<Object>>>,
+    java_class: Option<Object>,
     source_file: Option<String>,
     annotations: Option<Vec<AnnotationAttribute>>,
 }
@@ -477,17 +481,17 @@ impl Class {
     }
 
     #[inline]
-    pub fn java_class(&self) -> Option<&Rc<RefCell<Object>>> {
+    pub fn java_class(&self) -> Option<&Object> {
         return self.java_class.as_ref();
     }
 
     #[inline]
-    pub fn get_java_class(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_java_class(&self) -> Option<Object> {
         return self.java_class.clone();
     }
 
     #[inline]
-    pub fn set_java_class(&mut self, object: Option<Rc<RefCell<Object>>>) {
+    pub fn set_java_class(&mut self, object: Option<Object>) {
         return self.java_class = object;
     }
 
@@ -599,7 +603,7 @@ impl Class {
         class: Rc<RefCell<Self>>,
         name: &str,
         descriptor: &str,
-        reference: Option<Rc<RefCell<Object>>>,
+        reference: Option<Object>,
     ) {
         let field = Class::get_field(Some(class.clone()), name, descriptor, true);
         let mut borrow = (*class).borrow_mut();
@@ -611,7 +615,7 @@ impl Class {
         class: Rc<RefCell<Self>>,
         name: &str,
         descriptor: &str,
-    ) -> Option<Rc<RefCell<Object>>> {
+    ) -> Option<Object> {
         let field = Class::get_field(Some(class.clone()), name, descriptor, true);
         let borrow = (*class).borrow();
         let slots = borrow.static_vars.as_ref().unwrap();
@@ -622,7 +626,7 @@ impl Class {
     pub fn get_static_ref_by_slot_id(
         class: Rc<RefCell<Self>>,
         slot_id: usize,
-    ) -> Option<Rc<RefCell<Object>>> {
+    ) -> Option<Object> {
         let borrow = (*class).borrow();
         return borrow
             .static_vars
@@ -764,13 +768,12 @@ impl Class {
         return ClassLoader::load_class(class_loader, component_class_name.as_str());
     }
 
-    pub fn get_class_loader(&self) -> Option<Rc<RefCell<Object>>> {
+    pub fn get_class_loader(&self) -> Option<Object> {
         let java_class = self.get_java_class();
         if java_class.is_none() {
             return None;
         }
-        return (*java_class.unwrap())
-            .borrow()
+        return java_class.unwrap()
             .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
     }
 

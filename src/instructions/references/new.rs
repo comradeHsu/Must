@@ -42,7 +42,7 @@ impl Instruction for New {
             false => Class::new_object(&class),
         };
         frame
-            .push_ref(Some(boxed(object)));
+            .push_ref(Some(object));
     }
 }
 

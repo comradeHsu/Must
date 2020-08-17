@@ -60,7 +60,7 @@ pub fn find_loaded_class0(frame: &Frame) {
         (this,name)
     });
 
-    let loader = (*this).borrow().get_class_loader();
+    let loader = this.get_class_loader();
 
     let class_name = java_str_to_rust_str(name.unwrap());
     let class = (*loader)

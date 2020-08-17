@@ -11,13 +11,13 @@ use crate::utils::boxed;
 
 const CONSTRUCTOR_DESC: &str = "(JZZ)V";
 
-pub fn create_instrumentation() -> Rc<RefCell<Object>> {
+pub fn create_instrumentation() -> Object {
     let boot_loader = Jvm::boot_class_loader();
     let class = boot_loader
         .find_or_create("sun/instrument/InstrumentationImpl")
         .expect("can't find sun.instrument.InstrumentationImpl");
     let constructor = Class::get_constructor(class.clone(), CONSTRUCTOR_DESC);
-    let object = Some(boxed(Class::new_object(&class)));
+    let object = Some(Class::new_object(&class));
     let parameters = vec![
         Parameter::Object(object.clone()),
         Parameter::Long(0),
