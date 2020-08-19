@@ -6,6 +6,7 @@ use crate::oops::string_pool::StringPool;
 use crate::runtime::frame::Frame;
 
 use std::{thread, time};
+use crate::runtime::thread::JavaThread;
 
 pub fn init() {
     Registry::register(
@@ -23,22 +24,8 @@ pub fn init() {
 }
 
 pub fn current_thread(frame: &Frame) {
-    let _class = frame.method().class();
-    let loader = Jvm::boot_class_loader();
-    let thread_class = loader.find_or_create("java/lang/Thread").unwrap();
-    let mut java_thread = Class::new_object(&thread_class);
-    java_thread.set_ref_var(
-        "name",
-        "Ljava/lang/String;",
-        StringPool::java_string("Main".to_string()),
-    );
-
-    let thread_group_class = loader.find_or_create("java/lang/ThreadGroup").unwrap();
-    let java_thread_group = Class::new_object(&thread_group_class);
-    java_thread.set_ref_var("group", "Ljava/lang/ThreadGroup;", java_thread_group);
-    java_thread.set_int_var("priority", "I", 1);
-
-    frame.push_ref(Some(java_thread));
+    let thread = JavaThread::current();
+    frame.push_ref(thread.java_thread());
 }
 
 // private native void setPriority0(int newPriority);

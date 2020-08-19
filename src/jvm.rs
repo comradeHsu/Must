@@ -3,9 +3,6 @@ use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
 use crate::class_path::class_path::ClassPath;
 use crate::cmd::Cmd;
 use crate::instructions::base::class_init_logic::init_class;
-
-
-
 use crate::interpreter::interpret;
 use crate::invoke_support::parameter::{Parameter, Parameters};
 use crate::invoke_support::{JavaCall, ReturnType};
@@ -14,12 +11,16 @@ use crate::oops::object::Object;
 use crate::oops::string_pool::StringPool;
 
 use crate::runtime::frame::Frame;
-use crate::runtime::thread::JavaThread;
+use crate::runtime::thread::{JavaThread, thread_priority};
 use crate::utils::{java_str_to_rust_str};
 use chrono::Local;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::invoke_support::ReturnType::Void;
+use crate::oops::object::MetaData::Thread;
+use crate::native;
+use crate::universe::Universe;
 
 pub struct Jvm {
     cmd: Cmd,
@@ -53,6 +54,26 @@ impl Jvm {
         }
     }
 
+    fn main_thread_init(&self) {
+        let thread_group = self.create_initial_thread_group();
+        /// create main thread object
+        let thread_class = self.boot_class_loader
+            .find_or_create("java/lang/Thread")
+            .unwrap();
+        let thread_obj = Class::new_object(&thread_class);
+        thread_obj.set_int_var("priority", "I", thread_priority::NORM_PRIORITY);
+        let thread_constructor =
+            Class::get_constructor(thread_class.clone(), "(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
+        let parameters = Parameters::with_parameters(vec![
+            Parameter::Object(Some(thread_obj.clone())),
+            Parameter::Object(Some(thread_group)),
+            Parameter::Object(Some(StringPool::java_string("main".to_string())))
+        ]);
+        thread_obj.set_meta_data(Thread(self.main_thread.clone()));
+        self.main_thread.set_java_thread(Some(thread_obj));
+        JavaCall::invoke(thread_constructor.unwrap(),Some(parameters),Void);
+    }
+
     #[inline]
     pub fn main_thread(&self) -> JavaThread {
         return self.main_thread.clone();
@@ -73,7 +94,9 @@ impl Jvm {
     pub fn start(&mut self) {
         //        let builder = (*self.main_thread).borrow_mut().std_thread();
         //        let join_handler = builder.spawn(move || {
+        native::init();
         self.boot_class_loader.post_constructor();
+        self.main_thread_init();
         self.init_vm();
         println!("init vm! {:?}", Local::now());
         self.exec_main();
@@ -163,6 +186,31 @@ impl Jvm {
         let params = Parameters::with_parameters(vec![Parameter::Object(parent)]);
         let value = JavaCall::invoke(method.unwrap(), Some(params), ReturnType::Object).object();
         return value;
+    }
+
+    fn create_initial_thread_group(&self) -> Object {
+        let thread_group_class = self.boot_class_loader
+            .find_or_create("java/lang/ThreadGroup")
+            .unwrap();
+        let system_instance = Class::new_object(&thread_group_class);
+        let constructor =
+            Class::get_constructor(thread_group_class.clone(), "()V");
+        let parameters = Parameters::with_parameters(vec![
+            Parameter::Object(Some(system_instance.clone())),
+        ]);
+        JavaCall::invoke(constructor.unwrap(),Some(parameters),Void);
+        Universe::set_system_thread_group(Some(system_instance.clone()));
+
+        let main_instance = Class::new_object(&thread_group_class);
+        let constructor_with_param =
+            Class::get_constructor(thread_group_class.clone(), "(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
+        let parameters = Parameters::with_parameters(vec![
+            Parameter::Object(Some(main_instance.clone())),
+            Parameter::Object(Some(system_instance.clone())),
+            Parameter::Object(Some(StringPool::java_string("main".to_string()))),
+        ]);
+        JavaCall::invoke(constructor_with_param.unwrap(),Some(parameters),Void);
+        return main_instance
     }
 }
 

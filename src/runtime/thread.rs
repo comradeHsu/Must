@@ -1,16 +1,25 @@
-
 use crate::runtime::frame::Frame;
 use crate::runtime::stack::Stack;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
-
+use crate::oops::object::Object;
+use crate::jvm::Jvm;
+use crate::oops::class::Class;
+use crate::oops::object::MetaData::Thread;
+use crate::invoke_support::parameter::{Parameters, Parameter};
+use crate::oops::string_pool::StringPool;
+use crate::invoke_support::JavaCall;
+use crate::invoke_support::ReturnType::Void;
+use std::fmt::{Debug, Formatter, Error};
+use crate::class_loader::bootstrap_class_loader::BootstrapClassLoader;
 
 
 struct Inner {
     pub pc: i32,
     pub stack: Stack,
+    object: Option<Object>
     //    thread:Option<Builder>
 }
 
@@ -22,22 +31,26 @@ pub struct JavaThread {
 thread_local! {static CURRENT_THREAD:RefCell<Option<JavaThread>> = RefCell::new(None) }
 
 impl JavaThread {
-    pub fn new_thread() -> JavaThread {
+
+    pub fn new_thread(java_thread: Option<Object>) -> JavaThread {
         return JavaThread {
             inner: Rc::new(RefCell::new(Inner {
                 pc: 0,
                 stack: Stack::new(1024),
+                object: java_thread
             })),
         };
     }
 
     pub fn new_main_thread() -> JavaThread {
-        return JavaThread {
+        let thread = JavaThread {
             inner: Rc::new(RefCell::new(Inner {
                 pc: 0,
                 stack: Stack::new(1024),
+                object: None
             })),
         };
+        thread
     }
 
     pub fn get_pc(&self) -> i32 {
@@ -60,10 +73,6 @@ impl JavaThread {
         return (*self.inner).borrow().stack.top();
     }
 
-    //    pub fn current_frame_mut(&mut self) -> &mut Frame {
-    //        return self.stack.top_mut();
-    //    }
-
     #[inline]
     pub fn is_stack_empty(&self) -> bool {
         return (*self.inner).borrow().stack.is_empty();
@@ -77,6 +86,15 @@ impl JavaThread {
     #[inline]
     pub fn clear_stack(&self) {
         (*self.inner).borrow_mut().stack.clear();
+    }
+
+    pub fn java_thread(&self) -> Option<Object> {
+        return (*self.inner).borrow().object.clone();
+    }
+
+    /// just for create main thread call
+    pub fn set_java_thread(&self, obj: Option<Object>) {
+        (*self.inner).borrow_mut().object = obj;
     }
 
     pub fn frames_with<R, F>(&self, func: F) -> R
@@ -104,6 +122,22 @@ impl JavaThread {
             .try_with(move |c| *c.borrow_mut() = Some(self.clone()))
             .ok();
     }
+}
+
+impl Debug for JavaThread {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        unimplemented!()
+    }
+}
+
+pub mod thread_priority {        // JLS 20.20.1-3
+    pub const NO_PRIORITY:i32       = -1;     // Initial non-priority value
+    pub const MIN_PRIORITY:i32      =  1;     // Minimum priority
+    pub const NORM_PRIORITY:i32    =  5;     // Normal (non-daemon) priority
+    pub const NEAR_MAX_PRIORITY:i32  =  9;     // High priority, used for VMThread
+    pub const MAX_PRIORITY:i32      = 10;     // Highest priority, used for WatcherThread
+                                            // ensures that VMThread doesn't starve profiler
+    pub const CRITICAL_PRIORITY:i32 = 11;     // Critical thread priority
 }
 
 #[cfg(test)]

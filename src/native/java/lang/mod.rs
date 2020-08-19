@@ -9,6 +9,7 @@ mod string;
 pub mod system;
 mod thread;
 pub mod throwable;
+mod reflect;
 
 pub fn init() {
     object::init();
@@ -22,4 +23,5 @@ pub fn init() {
     class_loader::init();
     runtime::init();
     package::init();
+    reflect::init();
 }

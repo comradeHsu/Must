@@ -16,6 +16,7 @@ mod oops;
 mod prims;
 mod runtime;
 mod utils;
+mod universe;
 
 fn main() {
     let cmd = Cmd::parse_cmd();
@@ -47,7 +48,7 @@ mod tests {
             verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testing.ClassLoaderTest".to_string(),
+            class: "testing.ThreadTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

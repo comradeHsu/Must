@@ -1,10 +1,6 @@
 use crate::instructions::base::bytecode_reader::BytecodeReader;
 use crate::instructions::new_instruction;
-use crate::native::init;
-
-
 use crate::runtime::thread::JavaThread;
-
 use chrono::Local;
 
 
@@ -18,7 +14,6 @@ pub fn interpret(thread: JavaThread) {
 #[inline]
 pub fn circulate(thread: JavaThread) {
     let mut reader = BytecodeReader::new();
-    init();
     println!("start {:?}", Local::now());
     loop {
         //        let mut borrow_thread = (*thread).borrow_mut();

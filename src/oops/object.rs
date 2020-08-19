@@ -12,6 +12,7 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::runtime::thread::JavaThread;
 
 #[derive(Debug, Clone)]
 pub struct Data {
@@ -170,7 +171,7 @@ impl Object {
         }
     }
 
-    pub fn set_ref_var(&mut self, name: &str, descriptor: &str, reference: Object) {
+    pub fn set_ref_var(&self, name: &str, descriptor: &str, reference: Object) {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
         self.mut_fields_with(|slots| {
             slots.set_ref((*field.unwrap()).borrow().slot_id(), Some(reference));
@@ -185,7 +186,7 @@ impl Object {
         })
     }
 
-    pub fn set_int_var(&mut self, name: &str, descriptor: &str, val: i32) {
+    pub fn set_int_var(&self, name: &str, descriptor: &str, val: i32) {
         let field = Class::get_field(Some(self.class()), name, descriptor, false);
         self.mut_fields_with(|slots| {
             slots.set_int((*field.unwrap()).borrow().slot_id(), val);
@@ -271,6 +272,7 @@ pub enum MetaData {
     File(Rc<RefCell<File>>),
     MetaClass(Rc<RefCell<Class>>),
     StackTrace(Vec<StackTraceElement>),
+    Thread(JavaThread)
 }
 
 impl MetaData {
