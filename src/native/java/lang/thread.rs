@@ -43,10 +43,13 @@ pub fn is_alive(frame: &Frame) {
     frame.push_boolean(false);
 }
 
-// private native void start0();
-// ()V
-pub fn start0(_frame: &Frame) {
-    // todo
+/// private native void start0();
+/// ()V
+pub fn start0(frame: &Frame) {
+    let this = frame.get_this();
+    if this.is_none() { }
+    let thread = JavaThread::new_thread(this.unwrap());
+    JavaThread::start(thread);
 }
 
 // public static native void sleep(long millis) throws InterruptedException;

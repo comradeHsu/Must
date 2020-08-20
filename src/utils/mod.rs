@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 pub mod numbers;
 pub mod vecs;
+pub mod java_classes;
 
 #[inline(always)]
 pub fn boxed<T>(data: T) -> Rc<RefCell<T>> {
