@@ -1,6 +1,6 @@
 use crate::class_loader::app_class_loader::ClassLoader;
 use crate::oops::access_flags::NATIVE;
-use crate::oops::class::Class;
+use crate::oops::class::{Class, WeakClass};
 use crate::oops::class_member::ClassMember;
 use crate::oops::class_name_helper::PrimitiveTypes;
 use crate::oops::constant_pool::Constant;
@@ -8,7 +8,6 @@ use crate::oops::constant_pool::Constant::ClassReference;
 use crate::oops::exception_table::ExceptionTable;
 use crate::oops::method_descriptor::{MethodDescriptor, MethodDescriptorParser};
 use lark_classfile::attribute_info::Attribute::{Code, Exceptions, RuntimeVisibleAnnotations};
-
 use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
 use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
@@ -48,7 +47,7 @@ impl Method {
         };
     }
 
-    pub fn new_methods(class: Rc<RefCell<Class>>, infos: &Vec<MemberInfo>) -> Vec<Rc<Method>> {
+    pub fn new_methods(class: WeakClass, infos: &Vec<MemberInfo>) -> Vec<Rc<Method>> {
         let mut methods = Vec::with_capacity(infos.len());
         for info in infos {
             methods.push(Method::new_method(class.clone(), info));
@@ -56,9 +55,9 @@ impl Method {
         return methods;
     }
 
-    fn new_method(class: Rc<RefCell<Class>>, info: &MemberInfo) -> Rc<Method> {
+    fn new_method(class: WeakClass, info: &MemberInfo) -> Rc<Method> {
         let mut method = Method::new();
-        method.class_member.set_class(class.clone());
+        method.class_member.set_class(class);
         method.class_member.copy_member_info(info);
         method.copy_attributes(info);
         let md = MethodDescriptorParser::parse_method_descriptor(method.descriptor());
@@ -323,22 +322,6 @@ impl Method {
             .borrow()
             .find_class(return_class_name.as_str());
         return return_type.expect("The return class not loaded");
-    }
-
-    pub fn shim_return_method() -> Method {
-        let class = Class::default();
-        return Method {
-            class_member: ClassMember::shim(class),
-            max_stack: 0,
-            max_locals: 0,
-            code: vec![0xb1],
-            arg_slot_count: 0,
-            exception_table: ExceptionTable::default(),
-            line_number_table: None,
-            annotations: None,
-            exceptions: vec![],
-            method_desc: MethodDescriptor::new(),
-        };
     }
 }
 

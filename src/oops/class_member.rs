@@ -1,5 +1,5 @@
 use crate::oops::access_flags::{ABSTRACT, FINAL, PRIVATE, PROTECTED, PUBLIC, STATIC, SYNTHETIC};
-use crate::oops::class::Class;
+use crate::oops::class::{Class, WeakClass};
 use lark_classfile::member_info::MemberInfo;
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -11,7 +11,7 @@ pub struct ClassMember {
     name: String,
     descriptor: String,
     signature: String,
-    class: Rc<RefCell<Class>>,
+    class: WeakClass,
 }
 
 impl ClassMember {
@@ -22,18 +22,7 @@ impl ClassMember {
             name: "".to_string(),
             descriptor: "".to_string(),
             signature: "".to_string(),
-            class: Rc::new(RefCell::new(Class::default())),
-        };
-    }
-
-    #[inline]
-    pub fn shim(class: Class) -> ClassMember {
-        return ClassMember {
-            access_flags: PUBLIC,
-            name: "<return>".to_string(),
-            descriptor: "".to_string(),
-            signature: "".to_string(),
-            class: Rc::new(RefCell::new(class)),
+            class: WeakClass::default(),
         };
     }
 
@@ -44,7 +33,7 @@ impl ClassMember {
     }
 
     #[inline]
-    pub fn set_class(&mut self, class: Rc<RefCell<Class>>) {
+    pub fn set_class(&mut self, class: WeakClass) {
         self.class = class;
     }
 

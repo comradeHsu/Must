@@ -48,7 +48,7 @@ mod tests {
             verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testing.ThreadTest".to_string(),
+            class: "testing.ExceptionTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

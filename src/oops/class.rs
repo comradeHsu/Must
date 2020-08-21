@@ -23,22 +23,20 @@ use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::sync::{Arc, Weak, RwLock};
 
-pub type Interfaces = Vec<Rc<RefCell<Class>>>;
+pub type Interfaces = Vec<Class>;
 
-struct Raw {}
-
-#[derive(Debug)]
-pub struct Class {
+struct Raw {
     access_flags: u16,
     name: String,
     super_class_name: Option<String>,
     interfaces_name: Vec<String>,
     constant_pool: ConstantPool,
-    fields: Vec<Rc<RefCell<Field>>>,
+    fields: Vec<Field>,
     methods: Vec<Rc<Method>>,
     loader: Option<Rc<RefCell<ClassLoader>>>,
-    super_class: Option<Rc<RefCell<Class>>>,
+    super_class: Option<Class>,
     interfaces: Option<Interfaces>,
     instance_slot_count: u32,
     static_slot_count: u32,
@@ -49,11 +47,40 @@ pub struct Class {
     annotations: Option<Vec<AnnotationAttribute>>,
 }
 
+impl Default for Raw {
+    fn default() -> Self {
+        return Raw {
+            access_flags: 0,
+            name: "".to_string(),
+            super_class_name: None,
+            interfaces_name: vec![],
+            constant_pool: ConstantPool::default(),
+            fields: vec![],
+            methods: vec![],
+            loader: None,
+            super_class: None,
+            interfaces: None,
+            instance_slot_count: 0,
+            static_slot_count: 0,
+            static_vars: None,
+            initialized: false,
+            java_class: None,
+            source_file: None,
+            annotations: None,
+        };
+    }
+}
+
+#[derive(Debug,Clone)]
+pub struct Class {
+    raw: Arc<RwLock<Raw>>
+}
+
 impl Class {
     #[inline]
-    pub fn new(class_file: ClassFile) -> Rc<RefCell<Class>> {
+    pub fn new(class_file: ClassFile) -> Class {
         let super_name = class_file.super_class_name();
-        let class = Class {
+        let class = Raw {
             access_flags: class_file.access_flags(),
             name: class_file.class_name().to_string(),
             super_class_name: super_name,
@@ -72,19 +99,16 @@ impl Class {
             source_file: Self::get_source_file(&class_file),
             annotations: Class::copy_annotations(&class_file),
         };
-        //        println!("class:{:?}",class.name.as_str());
-        let point = Rc::new(RefCell::new(class));
+        let point = Arc::new(RwLock::new(class));
+        let weak_class = WeakClass {
+            raw: Arc::downgrade(&point)
+        };
 
-        (*point).borrow_mut().constant_pool.set_class(point.clone());
-
-        //        (*point)
-        //            .borrow_mut()
-        //            .constant_pool
-        //            .lazy_init_for_constants(&point);
-
-        (*point).borrow_mut().methods = Method::new_methods(point.clone(), class_file.methods());
-        (*point).borrow_mut().fields = Field::new_fields(point.clone(), class_file.fields());
-        return point;
+        let mut raw = point.write().unwrap();
+        raw.constant_pool.set_class(weak_class.clone());
+        raw.methods = Method::new_methods(weak_class.clone(), class_file.methods());
+        raw.fields = Field::new_fields(weak_class, class_file.fields());
+        return Class { raw: point }
     }
 
     fn get_source_file(class_file: &ClassFile) -> Option<String> {
@@ -124,7 +148,7 @@ impl Class {
                 .find_or_create("java/io/Serializable")
                 .unwrap(),
         );
-        let class = Class {
+        let raw = Raw {
             access_flags: PUBLIC,
             name: class_name.to_string(),
             super_class_name: Some("java/lang/Object".to_string()),
@@ -143,13 +167,15 @@ impl Class {
             source_file: None,
             annotations: None,
         };
-        return class;
+        return Class {
+            raw: Arc::new(RwLock::new(raw))
+        };
     }
 
     #[inline]
     pub fn primitive_class(class_name: &str) -> Class {
         let boot_loader = Jvm::boot_class_loader().basic_loader();
-        return Class {
+        let raw = Raw {
             access_flags: PUBLIC,
             name: class_name.to_string(),
             super_class_name: None,
@@ -168,46 +194,57 @@ impl Class {
             source_file: None,
             annotations: None,
         };
+        return Class {
+            raw: Arc::new(RwLock::new(raw))
+        };
     }
 
     #[inline]
     pub fn is_public(&self) -> bool {
-        return 0 != self.access_flags & PUBLIC;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & PUBLIC;
     }
 
     #[inline]
     pub fn is_final(&self) -> bool {
-        return 0 != self.access_flags & FINAL;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & FINAL;
     }
 
     #[inline]
     pub fn is_super(&self) -> bool {
-        return 0 != self.access_flags & SUPER;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & SUPER;
     }
 
     #[inline]
     pub fn is_interface(&self) -> bool {
-        return 0 != self.access_flags & INTERFACE;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & INTERFACE;
     }
 
     #[inline]
     pub fn is_abstract(&self) -> bool {
-        return 0 != self.access_flags & ABSTRACT;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & ABSTRACT;
     }
 
     #[inline]
     pub fn is_synthetic(&self) -> bool {
-        return 0 != self.access_flags & SYNTHETIC;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & SYNTHETIC;
     }
 
     #[inline]
     pub fn is_annotation(&self) -> bool {
-        return 0 != self.access_flags & ANNOTATION;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & ANNOTATION;
     }
 
     #[inline]
     pub fn is_enum(&self) -> bool {
-        return 0 != self.access_flags & ENUM;
+        let raw = self.raw.read().unwrap();
+        return 0 != raw.access_flags & ENUM;
     }
 
     pub fn is_accessible_to(&self, other: &Self) -> bool {
@@ -215,10 +252,11 @@ impl Class {
     }
 
     pub fn package_name(&self) -> &str {
-        let index = self.name.rfind('/');
+        let raw = self.raw.read().unwrap();
+        let index = raw.name.rfind('/');
         let name = match index {
             Some(seq) => {
-                let (package, _) = self.name.split_at(seq);
+                let (package, _) = raw.name.split_at(seq);
                 package
             }
             None => "",
@@ -228,14 +266,14 @@ impl Class {
 
     // self extends c
     pub fn is_sub_class_of(&self, other: &Self) -> bool {
-        let mut super_class = self.super_class.clone();
+        let raw = self.raw.read().unwrap();
+        let mut super_class = raw.super_class.clone();
         while super_class.is_some() {
             let rc = super_class.unwrap();
-            let rc_super_class = (*rc).borrow();
-            if other == rc_super_class.deref() {
+            if other == &rc {
                 return true;
             }
-            super_class = rc_super_class.super_class.clone();
+            super_class = rc.super_class();
         }
         return false;
     }
@@ -268,7 +306,7 @@ impl Class {
             } else {
                 let sc = other.component_class();
                 let tc = self.component_class();
-                return sc == tc || (*tc).borrow().is_assignable_from((*sc).borrow().deref());
+                return sc == tc || tc.is_assignable_from(&sc);
             }
         }
         return false;
@@ -276,33 +314,32 @@ impl Class {
 
     // self implements interface
     pub fn is_implements(&self, interface: &Self) -> bool {
-        let cur_interfaces = self.interfaces.as_ref();
+        let raw = self.raw.read().unwrap();
+        let cur_interfaces = raw.interfaces.as_ref();
         if cur_interfaces.is_some() {
-            for i in cur_interfaces.unwrap() {
-                let interface_class = (*i).borrow();
-                if interface_class.deref() == interface
-                    || interface_class.is_sub_interface_of(interface)
+            for si in cur_interfaces.unwrap() {
+                if si == interface
+                    || si.is_sub_interface_of(interface)
                 {
                     return true;
                 }
             }
         }
-        let mut super_class = self.super_class.clone();
+        let mut super_class = raw.super_class.clone();
         while super_class.is_some() {
             let rc = super_class.unwrap();
-            let ref_class = (*rc).borrow();
-            let interfaces = ref_class.interfaces.as_ref();
+            let rc_raw = rc.raw.read().unwrap();
+            let interfaces = rc_raw.interfaces.as_ref();
             if interfaces.is_some() {
                 for i in interfaces.unwrap() {
-                    let interface_class = (*i).borrow();
-                    if interface_class.deref() == interface
-                        || interface_class.is_sub_interface_of(interface)
+                    if i == interface
+                        || i.is_sub_interface_of(interface)
                     {
                         return true;
                     }
                 }
             }
-            super_class = ref_class.super_class.clone();
+            super_class = rc_raw.super_class.clone();
         }
         return false;
     }
@@ -322,12 +359,12 @@ impl Class {
 
     ///
     pub fn is_sub_interface_of(&self, other: &Self) -> bool {
-        let interfaces = self.interfaces.as_ref();
+        let raw = self.raw.read().unwrap();
+        let interfaces = raw.interfaces.as_ref();
         if interfaces.is_some() {
             for interface in interfaces.unwrap() {
-                let interface = interface.clone();
-                if (*interface).borrow().deref() == other
-                    || (*interface).borrow().is_sub_interface_of(other)
+                if interface == other
+                    || interface.is_sub_interface_of(other)
                 {
                     return true;
                 }
@@ -353,17 +390,20 @@ impl Class {
 
     #[inline]
     pub fn is_java_lang_object(&self) -> bool {
-        return self.name.as_str() == "java/lang/Object";
+        let raw = self.raw.read().unwrap();
+        return raw.name.as_str() == "java/lang/Object";
     }
 
     #[inline]
     pub fn is_java_lang_cloneable(&self) -> bool {
-        return self.name.as_str() == "java/lang/Cloneable";
+        let raw = self.raw.read().unwrap();
+        return raw.name.as_str() == "java/lang/Cloneable";
     }
 
     #[inline]
     pub fn is_java_io_serializable(&self) -> bool {
-        return self.name.as_str() == "java/io/Serializable";
+        let raw = self.raw.read().unwrap();
+        return raw.name.as_str() == "java/io/Serializable";
     }
 
     pub fn get_field(
@@ -410,7 +450,7 @@ impl Class {
     }
 
     #[inline]
-    pub fn new_object(class: &Rc<RefCell<Class>>) -> Object {
+    pub fn new_object(class: &Class) -> Object {
         return Object::new(class.clone());
     }
 
@@ -429,13 +469,15 @@ impl Class {
     }
 
     #[inline]
-    pub fn set_super_class(&mut self, super_class: Rc<RefCell<Class>>) {
-        self.super_class = Some(super_class);
+    pub fn set_super_class(&self, super_class: Class) {
+        let mut raw = self.raw.write().unwrap();
+        raw.super_class = Some(super_class);
     }
 
     #[inline]
-    pub fn set_interfaces(&mut self, interfaces: Interfaces) {
-        self.interfaces = Some(interfaces);
+    pub fn set_interfaces(&self, interfaces: Interfaces) {
+        let mut raw = self.raw.write().unwrap();
+        raw.interfaces = Some(interfaces);
     }
 
     #[inline]
@@ -490,9 +532,10 @@ impl Class {
     }
 
     #[inline]
-    pub fn super_class(&self) -> Option<Rc<RefCell<Class>>> {
-        if self.super_class.is_some() {
-            return self.super_class.clone();
+    pub fn super_class(&self) -> Option<Class> {
+        let raw = self.raw.lock().unwrap();
+        if raw.super_class.is_some() {
+            return raw.super_class.clone();
         }
         return None;
     }
@@ -751,7 +794,7 @@ impl Class {
         return ClassLoader::load_class(class_loader, array_class_name.as_str());
     }
 
-    pub fn component_class(&self) -> Rc<RefCell<Class>> {
+    pub fn component_class(&self) -> Class {
         let component_class_name = PrimitiveTypes::instance()
             .unwrap()
             .get_component_class_name(self.name.as_str());
@@ -827,26 +870,15 @@ impl PartialEq for Class {
     }
 }
 
-impl Default for Class {
+#[derive(Clone)]
+pub struct WeakClass {
+    raw: Weak<RwLock<Raw>>
+}
+
+impl Default for WeakClass {
     fn default() -> Self {
-        return Class {
-            access_flags: 0,
-            name: "".to_string(),
-            super_class_name: None,
-            interfaces_name: vec![],
-            constant_pool: ConstantPool::default(),
-            fields: vec![],
-            methods: vec![],
-            loader: None,
-            super_class: None,
-            interfaces: None,
-            instance_slot_count: 0,
-            static_slot_count: 0,
-            static_vars: None,
-            initialized: false,
-            java_class: None,
-            source_file: None,
-            annotations: None,
-        };
+        return WeakClass {
+            raw: Weak::new()
+        }
     }
 }

@@ -7,7 +7,7 @@ use std::rc::Rc;
 pub struct ClassLinker();
 
 impl ClassLinker {
-    pub fn link(class: &Rc<RefCell<Class>>) {
+    pub fn link(class: &Class) {
         ClassVerifier::verify(class);
         ClassPreparation::prepare(class);
     }

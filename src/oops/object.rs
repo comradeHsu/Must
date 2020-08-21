@@ -16,14 +16,14 @@ use crate::runtime::thread::JavaThread;
 
 #[derive(Debug, Clone)]
 pub struct Data {
-    pub class: Rc<RefCell<Class>>,
+    pub class: Class,
     pub data: DataType,
     pub meta_data: MetaData,
 }
 
 impl Data {
-    pub fn new(class: Rc<RefCell<Class>>) -> Data {
-        let count = (*class).borrow().instance_slot_count();
+    pub fn new(class: &Class) -> Data {
+        let count = class.instance_slot_count();
         return Data {
             class: class.clone(),
             data: StandardObject(Some(Slots::with_capacity(count as usize))),
@@ -38,19 +38,19 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(class: Rc<RefCell<Class>>) -> Object {
+    pub fn new(class: &Class) -> Object {
         return Object {
             data: boxed(Data::new(class)),
         };
     }
 
     #[inline]
-    pub fn class(&self) -> Rc<RefCell<Class>> {
+    pub fn class(&self) -> Class {
         return (*self.data).borrow().class.clone();
     }
 
     #[inline]
-    pub fn meta(&self) -> Rc<RefCell<Class>> {
+    pub fn meta(&self) -> Class {
         match &(*self.data).borrow().meta_data {
             MetaData::MetaClass(class) => class.clone(),
             _ => panic!(),
@@ -58,7 +58,7 @@ impl Object {
     }
 
     #[inline]
-    pub fn set_meta(&self, meta: Rc<RefCell<Class>>) {
+    pub fn set_meta(&self, meta: Class) {
         (*self.data).borrow_mut().meta_data = MetaData::MetaClass(meta);
     }
 
@@ -270,7 +270,7 @@ pub enum MetaData {
     Method(Rc<Method>),
     ClassLoader(Rc<RefCell<ClassLoader>>),
     File(Rc<RefCell<File>>),
-    MetaClass(Rc<RefCell<Class>>),
+    MetaClass(Class),
     StackTrace(Vec<StackTraceElement>),
     Thread(JavaThread)
 }

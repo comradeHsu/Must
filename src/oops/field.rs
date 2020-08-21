@@ -1,5 +1,5 @@
 use crate::class_loader::app_class_loader::ClassLoader;
-use crate::oops::class::Class;
+use crate::oops::class::{Class, WeakClass};
 use crate::oops::class_member::ClassMember;
 use crate::oops::class_name_helper::PrimitiveTypes;
 use crate::oops::object::Object;
@@ -8,40 +8,26 @@ use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::ops::Deref;
 
 #[derive(Debug)]
-pub struct Field {
+struct MetaField {
     class_member: ClassMember,
     const_value_index: usize,
     slot_id: usize,
     annotations: Option<Vec<AnnotationAttribute>>,
 }
 
-impl Field {
+impl MetaField {
     #[inline]
-    pub fn new() -> Field {
-        return Field {
+    pub fn new() -> MetaField {
+        return MetaField {
             class_member: ClassMember::new(),
             const_value_index: 0,
             slot_id: 0,
             annotations: None,
         };
-    }
-
-    pub fn new_fields(
-        class: Rc<RefCell<Class>>,
-        infos: &Vec<MemberInfo>,
-    ) -> Vec<Rc<RefCell<Field>>> {
-        let mut fields = Vec::with_capacity(infos.len());
-        for info in infos {
-            let mut field = Field::new();
-            field.class_member.set_class(class.clone());
-            field.class_member.copy_member_info(info);
-            field.copy_const_attribute(info);
-            field.copy_annotations(info);
-            fields.push(Rc::new(RefCell::new(field)));
-        }
-        return fields;
     }
 
     fn copy_const_attribute(&mut self, info: &MemberInfo) {
@@ -130,7 +116,6 @@ impl Field {
         return self.class_member.signature();
     }
 
-    #[inline]
     fn get_class_loader(&self) -> Option<Object> {
         let class_object = (*self.class_member.class()).borrow().get_java_class();
         if class_object.is_some() {
@@ -139,5 +124,37 @@ impl Field {
                 .get_ref_var("classLoader", "Ljava/lang/ClassLoader;");
         }
         return None;
+    }
+}
+
+pub struct Field {
+    meta_field: Arc<MetaField>
+}
+
+impl Field {
+
+    pub fn new_fields(
+        class: WeakClass,
+        infos: &Vec<MemberInfo>,
+    ) -> Vec<Field> {
+        let mut fields = Vec::with_capacity(infos.len());
+        for info in infos {
+            let mut field = MetaField::new();
+            field.class_member.set_class(class.clone());
+            field.class_member.copy_member_info(info);
+            field.copy_const_attribute(info);
+            field.copy_annotations(info);
+            fields.push(Field{ meta_field: Arc::new(field) });
+        }
+        return fields;
+    }
+
+}
+
+impl Deref for Field {
+    type Target = MetaField;
+
+    fn deref(&self) -> &Self::Target {
+        self.meta_field.deref()
     }
 }

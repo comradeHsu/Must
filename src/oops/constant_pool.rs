@@ -1,4 +1,4 @@
-use crate::oops::class::Class;
+use crate::oops::class::{Class, WeakClass};
 use crate::oops::class_ref::ClassRef;
 use crate::oops::constant_pool::Constant::*;
 
@@ -13,7 +13,7 @@ use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct ConstantPool {
-    class: Option<Rc<RefCell<Class>>>,
+    class: Option<WeakClass>,
     constants: Vec<Constant>,
 }
 
@@ -110,7 +110,7 @@ impl ConstantPool {
     }
 
     #[inline]
-    pub fn set_class(&mut self, class: Rc<RefCell<Class>>) {
+    pub fn set_class(&mut self, class: WeakClass) {
         return self.class = Some(class);
     }
 

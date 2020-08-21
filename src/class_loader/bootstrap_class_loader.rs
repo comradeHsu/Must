@@ -59,8 +59,7 @@ impl BootstrapClassLoader {
         let class = Class::primitive_class(class_name);
         let class_class = self.find_or_create("java/lang/Class").unwrap();
         let class_object = Class::new_object(&class_class);
-        let boxed_class = boxed(class);
-        class_object.set_meta(boxed_class.clone());
+        class_object.set_meta(class.clone());
         (*boxed_class)
             .borrow_mut()
             .set_java_class(Some(class_object));
@@ -70,13 +69,13 @@ impl BootstrapClassLoader {
             .insert(class_name.to_string(), boxed_class);
     }
 
-    pub fn find_or_create(&self, class_name: &str) -> Option<Rc<RefCell<Class>>> {
-        let class_op: Option<Rc<RefCell<Class>>> =
+    pub fn find_or_create(&self, class_name: &str) -> Option<Class> {
+        let class_op: Option<Class> =
             (*self.class_loader).borrow().find_class(class_name);
         if class_op.is_some() {
             return class_op;
         }
-        let mut class: Option<Rc<RefCell<Class>>> = None;
+        let mut class: Option<Class> = None;
         if class_name.starts_with('[') {
             class = Some(ClassLoader::load_array_class(
                 self.class_loader.clone(),
@@ -92,7 +91,7 @@ impl BootstrapClassLoader {
         return class;
     }
 
-    fn load_non_array_class(&self, class_name: &str) -> Option<Rc<RefCell<Class>>> {
+    fn load_non_array_class(&self, class_name: &str) -> Option<Class> {
         let result = self.read_class(class_name);
         if result.is_err() {
             return None;
@@ -126,22 +125,21 @@ impl BootstrapClassLoader {
         return result;
     }
 
-    fn define_class(&self, data: Vec<u8>) -> Rc<RefCell<Class>> {
+    fn define_class(&self, data: Vec<u8>) -> Class {
         let class = ClassLoader::parse_class(data);
         (*class)
             .borrow_mut()
             .set_class_loader(self.class_loader.clone());
-        self.resolve_super_class(class.clone());
-        self.resolve_interfaces(class.clone());
+        self.resolve_super_class(&class);
+        self.resolve_interfaces(&class);
         (*self.class_loader)
             .borrow_mut()
             .class_map
-            .insert((*class).borrow().name().to_string(), class.clone());
+            .insert(class.name().to_string(), class.clone());
         return class;
     }
 
-    fn resolve_super_class(&self, class: Rc<RefCell<Class>>) {
-        let mut class = (*class).borrow_mut();
+    fn resolve_super_class(&self, class: &Class) {
         let super_class_name = class.super_class_name();
         //        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
         if class.name() != "java/lang/Object" && super_class_name.is_some() {
@@ -152,8 +150,7 @@ impl BootstrapClassLoader {
         }
     }
 
-    fn resolve_interfaces(&self, class: Rc<RefCell<Class>>) {
-        let mut class = (*class).borrow_mut();
+    fn resolve_interfaces(&self, class: &Class) {
         let interfaces_name = class.interfaces_name();
         let len = interfaces_name.len();
         if len > 0 {
@@ -172,7 +169,7 @@ impl BootstrapClassLoader {
     }
 
     #[inline]
-    pub fn find_class(&self, class_name: &str) -> Option<Rc<RefCell<Class>>> {
+    pub fn find_class(&self, class_name: &str) -> Option<Class> {
         return (*self.class_loader).borrow().find_class(class_name);
     }
 }
