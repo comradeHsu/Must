@@ -15,7 +15,7 @@ pub fn new_array(frame: &Frame) {
         (component_type,length)
     });
     let component_class = component_type.unwrap().meta();
-    let array_class = (*component_class).borrow().array_class();
+    let array_class = component_class.array_class();
     let array_object = Class::new_array(&array_class,length as usize);
     frame.push_ref(Some(array_object))
 }

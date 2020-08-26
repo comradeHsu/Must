@@ -1,17 +1,14 @@
 use crate::oops::class::{Class, WeakClass};
 use crate::oops::class_ref::ClassRef;
 use crate::oops::constant_pool::Constant::*;
-
 use crate::oops::field_ref::FieldRef;
 use crate::oops::interface_method_ref::InterfaceMethodRef;
-
 use crate::oops::method_ref::MethodRef;
 use core::mem;
 use lark_classfile::constant_pool::{ConstantInfoEnum, ConstantPool as Pool};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Debug)]
 pub struct ConstantPool {
     class: Option<WeakClass>,
     constants: Vec<Constant>,
@@ -19,7 +16,7 @@ pub struct ConstantPool {
 
 impl ConstantPool {
     pub fn new_constant_pool(
-        class: Option<Rc<RefCell<Class>>>,
+        class: Option<WeakClass>,
         pool: Rc<RefCell<Pool>>,
     ) -> ConstantPool {
         let borrow_pool = (*pool).borrow();
@@ -104,9 +101,9 @@ impl ConstantPool {
         return constant.unwrap();
     }
 
-    pub fn class(&self) -> Rc<RefCell<Class>> {
+    pub fn class(&self) -> Class {
         let class = self.class.as_ref().unwrap();
-        return class.clone();
+        return class.upgrade();
     }
 
     #[inline]
@@ -119,6 +116,24 @@ impl ConstantPool {
     pub fn size(&self) -> usize {
         return self.constants.len();
     }
+
+    /// just call for class.init_static_final_variable
+    pub fn copy_constant(&self, index: usize) -> Constant {
+        let constant = self.constants.get(index - 1);
+        if constant.is_none() {
+            panic!("No constants at index {}", index);
+        }
+        match constant.unwrap() {
+            Integer(v) => Integer(*v),
+            Float(v) => Float(*v),
+            Long(v) => Long(*v),
+            Double(v) => Double(*v),
+            Str(v) => Str(v.clone()),
+            _ => {
+                panic!("the constant is ref")
+            }
+        }
+    }
 }
 
 impl Default for ConstantPool {
@@ -130,7 +145,6 @@ impl Default for ConstantPool {
     }
 }
 
-#[derive(Debug)]
 pub enum Constant {
     None,
     Integer(i32),

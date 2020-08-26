@@ -1,11 +1,7 @@
 use crate::oops::access_flags::{ABSTRACT, FINAL, PRIVATE, PROTECTED, PUBLIC, STATIC, SYNTHETIC};
 use crate::oops::class::{Class, WeakClass};
 use lark_classfile::member_info::MemberInfo;
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::rc::Rc;
 
-#[derive(Debug)]
 pub struct ClassMember {
     access_flags: u16,
     name: String,
@@ -53,8 +49,8 @@ impl ClassMember {
     }
 
     #[inline]
-    pub fn class(&self) -> Rc<RefCell<Class>> {
-        return self.class.clone();
+    pub fn class(&self) -> Class {
+        return self.class.upgrade();
     }
 
     #[inline]
@@ -96,17 +92,16 @@ impl ClassMember {
         if self.is_public() {
             return true;
         }
-        let o = self.class.clone();
-        let other = (*o).borrow();
+        let other = self.class.upgrade();
         if self.is_protected() {
-            return class == other.deref()
-                || class.is_sub_class_of(other.deref())
+            return class == &other
+                || class.is_sub_class_of(&other)
                 || other.package_name() == class.package_name();
         }
         if !self.is_private() {
             return other.package_name() == class.package_name();
         }
-        return class == other.deref();
+        return class == &other;
     }
 
     pub fn signature(&self) -> &str {

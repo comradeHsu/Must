@@ -28,8 +28,8 @@ impl Instruction for InstanceOf {
         }
         let class = frame.method().class();
 
-        let class = self.resolve_class_ref(class);
-        if reference.unwrap().is_instance_of(class) {
+        let class = self.resolve_class_ref(&class);
+        if reference.unwrap().is_instance_of(&class) {
             frame.push_int(1);
         } else {
             frame.push_int(0);

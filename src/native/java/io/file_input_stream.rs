@@ -70,7 +70,11 @@ pub fn read_bytes(frame: &Frame) {
 
     let mut bytes = vec![0u8; length];
     let file = this.file();
-    let rs = file.borrow_mut().read(bytes.as_mut_slice());
+    let rs = {
+        let mut data = file.lock().unwrap();
+        let rs = data.read(bytes.as_mut_slice());
+        rs
+    };
     let mut size = -1;
     let read_size = rs.expect("the file seek has error");
     if read_size != 0 {

@@ -20,7 +20,7 @@ impl Instruction for InvokeNative {
     fn execute(&mut self, frame: &Frame) {
         let method = frame.method();
         let class = method.class();
-        let class_name = (*class).borrow().name().to_string();
+        let class_name = class.name().to_string();
         let method_name = method.name();
         let method_desc = method.descriptor();
         let native_method =

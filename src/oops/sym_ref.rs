@@ -1,17 +1,11 @@
 use crate::class_loader::app_class_loader::ClassLoader;
-
 use crate::oops::class::Class;
-
 use lark_classfile::constant_pool::ConstantClassInfo;
-use std::borrow::Borrow;
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::rc::Rc;
+use std::sync::RwLock;
 
-#[derive(Debug, Clone)]
 pub struct SymbolRef {
     class_name: String,
-    class: Option<Rc<RefCell<Class>>>,
+    class: RwLock<Option<Class>>,
 }
 
 impl SymbolRef {
@@ -19,14 +13,14 @@ impl SymbolRef {
     pub fn new() -> SymbolRef {
         return SymbolRef {
             class_name: "".to_string(),
-            class: None,
+            class: RwLock::new(None),
         };
     }
 
     pub fn with_info(info: &ConstantClassInfo) -> SymbolRef {
         return SymbolRef {
             class_name: info.name().to_string(),
-            class: None,
+            class: RwLock::new(None),
         };
     }
 
@@ -35,27 +29,31 @@ impl SymbolRef {
         self.class_name = name;
     }
 
-    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        if self.class.is_none() {
-            self.resolved_class_ref(holder);
+    pub fn resolved_class(&self, holder: &Class) -> Class {
+        let class_op = {
+            let class = self.class.read().unwrap();
+            class.clone()
+        };
+        match class_op {
+            Some(class) => class,
+            None => self.resolved_class_ref(holder)
         }
-        let class = self.class.as_ref().unwrap();
-        return class.clone();
     }
 
-    pub fn resolved_class_ref(&mut self, holder: Rc<RefCell<Class>>) {
-        let ref_class = self.resolve_load(holder.clone());
-        if !(*ref_class)
-            .borrow()
-            .is_accessible_to((*holder).borrow().deref())
+    pub fn resolved_class_ref(&self, holder: &Class ) -> Class {
+        let ref_class = self.resolve_load(holder);
+        if !ref_class
+            .is_accessible_to(holder)
         {
             panic!("java.lang.IllegalAccessError");
         }
-        self.class = Some(ref_class);
+        let mut class = self.class.write().unwrap();
+        *class = Some(ref_class.clone());
+        ref_class
     }
 
-    fn resolve_load(&self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        let class_loader = (*holder).borrow().get_class_loader();
+    fn resolve_load(&self, holder: &Class) -> Class {
+        let class_loader = holder.get_class_loader();
         return ClassLoader::load_class(class_loader, self.class_name.as_str());
     }
 }

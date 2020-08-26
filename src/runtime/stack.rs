@@ -1,8 +1,5 @@
 use crate::runtime::frame::Frame;
-
-
 use std::collections::VecDeque;
-
 
 pub struct Stack {
     max_size: usize,

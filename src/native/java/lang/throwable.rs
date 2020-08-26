@@ -93,7 +93,7 @@ pub struct StackTraceElement {
 
 impl StackTraceElement {
     fn create_stack_trace_elements(object: &Object) -> Vec<StackTraceElement> {
-        let skip = StackTraceElement::distance_to_object(object.class()) as usize + 2;
+        let skip = StackTraceElement::distance_to_object(&object.class()) as usize + 2;
         let thread = JavaThread::current();
         thread.frames_with(|frames| {
             let count = frames.len() - skip;
@@ -108,12 +108,12 @@ impl StackTraceElement {
         })
     }
 
-    fn distance_to_object(class: Rc<RefCell<Class>>) -> i32 {
+    fn distance_to_object(class: &Class) -> i32 {
         let mut distance = 0;
-        let mut c = (*class).borrow().super_class();
+        let mut c = class.super_class();
         while c.is_some() {
             distance += 1;
-            c = (*c.unwrap()).borrow().super_class();
+            c = c.unwrap().super_class();
         }
         return distance;
     }
@@ -122,8 +122,8 @@ impl StackTraceElement {
         let method = frame.method();
         let class = method.class();
         return StackTraceElement {
-            file_name: (*class).borrow().source_file(),
-            class_name: (*class).borrow().java_name(),
+            file_name: class.source_file(),
+            class_name: class.java_name(),
             method_name: method.name().to_string(),
             line_number: method.get_line_number(frame.next_pc() - 1),
         };

@@ -16,7 +16,7 @@ pub fn create_instrumentation() -> Object {
     let class = boot_loader
         .find_or_create("sun/instrument/InstrumentationImpl")
         .expect("can't find sun.instrument.InstrumentationImpl");
-    let constructor = Class::get_constructor(class.clone(), CONSTRUCTOR_DESC);
+    let constructor = class.get_constructor(CONSTRUCTOR_DESC);
     let object = Some(Class::new_object(&class));
     let parameters = vec![
         Parameter::Object(object.clone()),

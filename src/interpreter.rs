@@ -24,7 +24,7 @@ pub fn circulate(thread: JavaThread) {
         let bytecode = method.code();
         reader.reset(bytecode, pc);
         let opcode = reader.read_u8();
-        //println!("method:{}, {}, {},inst:{}",method.name(),method.descriptor(),(*method.class()).borrow().name(),opcode);
+        //println!("method:{}, {}, {},inst:{}",method.name(),method.descriptor(),method.class().name(),opcode);
         let mut inst = new_instruction(opcode);
         inst.fetch_operands(&mut reader);
         current_frame.set_next_pc(reader.pc());

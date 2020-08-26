@@ -1,11 +1,7 @@
 use crate::oops::class::Class;
-
 use crate::oops::sym_ref::SymbolRef;
 use lark_classfile::constant_pool::ConstantMemberRefInfo;
-use std::cell::RefCell;
-use std::rc::Rc;
 
-#[derive(Debug)]
 pub struct MemberRef {
     symbol_ref: SymbolRef,
     name: String,
@@ -41,7 +37,7 @@ impl MemberRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&self, holder: &Class) -> Class {
         return self.symbol_ref.resolved_class(holder);
     }
 }

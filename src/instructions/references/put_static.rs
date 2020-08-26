@@ -28,10 +28,9 @@ impl Instruction for PutStatic {
         let current_method = frame.method();
         let current_class = current_method.class();
 
-        let field_option = self.resolve_field_ref(current_class.clone());
-        let field = (*field_option).borrow();
+        let field = self.resolve_field_ref(&current_class);
         let class = field.parent().class();
-        if !(*class).borrow().initialized() {
+        if !class.initialized() {
             frame.revert_next_pc();
             init_class(class.clone());
             return;
@@ -46,15 +45,13 @@ impl Instruction for PutStatic {
         }
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
-        let mut borrow_class = (*class).borrow_mut();
-        let slots = borrow_class.mut_static_vars().expect("slots is none");
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z' | 'B' | 'C' | 'S' | 'I' => slots.set_int(slot_id, frame.pop_int()),
-            'F' => slots.set_float(slot_id, frame.pop_float()),
-            'J' => slots.set_long(slot_id, frame.pop_long()),
-            'D' => slots.set_double(slot_id, frame.pop_double()),
-            'L' | '[' => slots.set_ref(slot_id, frame.pop_ref()),
+            'Z' | 'B' | 'C' | 'S' | 'I' => class.set_static_int(slot_id, frame.pop_int()),
+            'F' => class.set_static_float(slot_id, frame.pop_float()),
+            'J' => class.set_static_long(slot_id, frame.pop_long()),
+            'D' => class.set_static_double(slot_id, frame.pop_double()),
+            'L' | '[' => class.set_static_ref(slot_id, frame.pop_ref()),
             _ => {}
         }
     }

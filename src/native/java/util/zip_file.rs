@@ -166,7 +166,7 @@ pub fn get_entry_bytes(frame: &Frame) {
         };
         let bytes: Vec<i8> = name.bytes().map(|x| x as i8).collect();
         let boot = Jvm::boot_class_loader();
-        let object = ArrayObject::from_data(boot.find_or_create("[B").unwrap(), Bytes(bytes));
+        let object = ArrayObject::from_data(&boot.find_or_create("[B").unwrap(), Bytes(bytes));
         frame.push_ref(Some(object));
     }
 }

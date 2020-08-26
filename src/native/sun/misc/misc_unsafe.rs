@@ -239,7 +239,7 @@ pub fn get_object_volatile(frame: &Frame) {
     // vars.GetRef(0) // this
     if object.is_class_object() {
         let meta_class = object.class();
-        let field = Class::get_static_ref_by_slot_id(meta_class, offset);
+        let field = meta_class.get_static_ref(offset);
         frame.push_ref(field);
     } else if object.is_array_object() {
         let element = object.get_references_by_index(offset);
@@ -264,10 +264,10 @@ pub fn compare_and_swap_long(frame: &Frame) {
     });
     // vars.GetRef(0) // this
     let mut field = 0i64;
-    let mut raw_class: Option<Rc<RefCell<Class>>> = None;
+    let mut raw_class: Option<Class> = None;
     if object.is_class_object() {
         let meta_class = object.class();
-        field = Class::get_static_long_by_slot_id(meta_class.clone(), offset);
+        field = meta_class.get_static_long(offset);
         raw_class = Some(meta_class);
     } else if object.is_array_object() {
         field = object.get_long_by_index(offset);
@@ -277,7 +277,7 @@ pub fn compare_and_swap_long(frame: &Frame) {
 
     if expect == field {
         if object.is_class_object() {
-            Class::set_static_long_by_slot_id(raw_class.unwrap(), offset, new_value);
+            raw_class.unwrap().set_static_long(offset, new_value);
         } else if object.is_array_object() {
             object.set_long_by_index(offset, new_value);
         } else {
@@ -295,7 +295,7 @@ pub fn ensure_class_initialized(frame: &Frame) {
     // vars.GetRef(0) // this
     let object = frame.get_ref(1).unwrap();
     let raw_class = object.meta();
-    if !(*raw_class).borrow().initialized() {
+    if !raw_class.initialized() {
         init_class(raw_class.clone());
     }
 }

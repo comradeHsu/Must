@@ -79,17 +79,14 @@ impl JavaThread {
     }
 
     pub fn current_frame(&self) -> Frame {
-        return (*self.inner).borrow().stack.top();
+        let mut inner = self.inner.lock().unwrap();
+        return inner.stack.top();
     }
 
     #[inline]
     pub fn is_stack_empty(&self) -> bool {
-        return (*self.inner).borrow().stack.is_empty();
-    }
-
-    #[inline]
-    pub fn stack_size(&self) -> usize {
-        return (*self.inner).borrow().stack.size();
+        let mut inner = self.inner.lock().unwrap();
+        return inner.stack.is_empty();
     }
 
     #[inline]
@@ -138,7 +135,7 @@ impl JavaThread {
     fn run(&self) {
         let thread_obj = self.java_thread();
         let class = thread_obj.as_ref().unwrap().class();
-        let run_method = Class::get_instance_method(class,"run","()V");
+        let run_method = class.get_instance_method("run","()V");
         let parameters = vec![
             Parameter::Object(thread_obj),
         ];

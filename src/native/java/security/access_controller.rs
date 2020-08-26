@@ -50,7 +50,7 @@ pub fn do_privileged(frame: &Frame) {
         panic!("java.lang.NullPointerException");
     }
     let class = this.as_ref().unwrap().class();
-    let method = Class::get_instance_method(class, "run", "()Ljava/lang/Object;").unwrap();
+    let method = class.get_instance_method("run", "()Ljava/lang/Object;").unwrap();
     frame.push_ref(this);
     invoke_method(frame, method);
 }
@@ -61,7 +61,7 @@ pub fn run(frame: &Frame) {
         panic!("java.lang.NullPointerException");
     }
     let class = this.as_ref().unwrap().class();
-    let method = Class::get_instance_method(class, "run", "()I").unwrap();
+    let method = class.get_instance_method("run", "()I").unwrap();
     frame.push_ref(this);
     invoke_method(frame, method);
 }
@@ -78,10 +78,10 @@ fn create() -> Option<Object> {
     let args = Class::new_array(&class, 0);
     let class = ClassLoader::load_class(None, "java/security/AccessControlContext");
 
-    let object = Object::new(class.clone());
+    let object = Object::new(&class);
 
     let method =
-        Class::get_instance_method(class, "<init>", "([Ljava/security/ProtectionDomain;)V");
+        class.get_instance_method("<init>", "([Ljava/security/ProtectionDomain;)V");
     let params = Parameters::with_parameters(vec![
         Parameter::Object(Some(object.clone())),
         Parameter::Object(Some(args)),

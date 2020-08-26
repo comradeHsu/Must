@@ -30,7 +30,7 @@ impl Instruction for InvokeVirtual {
     fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
 
-        let resolved_method = self.resolved_method_ref(current_class.clone());
+        let resolved_method = self.resolved_method_ref(&current_class);
         if resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
@@ -48,24 +48,22 @@ impl Instruction for InvokeVirtual {
         let obj_class = object.unwrap().class();
         let resolved_method_class = resolved_method.class();
         if resolved_method.is_protected()
-            && (*resolved_method_class)
-                .borrow()
-                .is_super_class_of((*current_class).borrow().deref())
-            && (*resolved_method_class).borrow().package_name()
-                != (*current_class).borrow().package_name()
+            && resolved_method_class
+                .is_super_class_of(&current_class)
+            && resolved_method_class.package_name()
+                != current_class.package_name()
             && obj_class != current_class
-            && !(*obj_class)
-                .borrow()
-                .is_sub_class_of((*current_class).borrow().deref())
+            && !obj_class
+                .is_sub_class_of(&current_class)
         {
-            if !((*obj_class).borrow().is_array() && resolved_method.name() == "clone") {
+            if !(obj_class.is_array() && resolved_method.name() == "clone") {
                 panic!("java.lang.IllegalAccessError")
             }
             //            panic!("java.lang.IllegalAccessError")
         }
 
         let method_to_be_invoked = MethodRef::look_up_method_in_class(
-            obj_class,
+            &obj_class,
             resolved_method.name(),
             resolved_method.descriptor(),
         );

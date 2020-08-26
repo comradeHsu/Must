@@ -33,7 +33,7 @@ pub fn get_meta_inf_entry_names(frame: &Frame) {
     }
     let boot = Jvm::boot_class_loader();
     let object = ArrayObject::from_data(
-        boot.find_or_create("java/lang/String").unwrap(),
+        &boot.find_or_create("java/lang/String").unwrap(),
         DataType::References(data),
     );
     frame.push_ref(Some(object));

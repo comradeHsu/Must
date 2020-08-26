@@ -10,7 +10,7 @@ use std::rc::Rc;
 struct Core {
     local_vars: Option<LocalVars>,
     operand_stack: Option<OperandStack>,
-    method: Rc<Method>,
+    method: Method,
     next_pc: i32,
     frame_type: FrameType,
 }
@@ -20,9 +20,11 @@ pub struct Frame {
     core: Rc<RefCell<Core>>,
 }
 
+unsafe impl Send for Frame {}
+
 impl Frame {
     #[inline]
-    pub fn new(method: Rc<Method>) -> Frame {
+    pub fn new(method: Method) -> Frame {
         return Frame {
             core: Rc::new(RefCell::new(Core {
                 local_vars: LocalVars::with_capacity(method.max_locals()),
@@ -34,18 +36,18 @@ impl Frame {
         };
     }
 
-    pub fn new_intrinsic_frame(method: Rc<Method>) -> Frame {
+    pub fn new_intrinsic_frame(method: Method) -> Frame {
         Self::with_type(method, FrameType::IntrinsicFrame)
     }
 
     pub fn new_barrier_frame() -> Frame {
-        let frame = Self::with_type(Rc::new(Method::default()), FrameType::BarrierFrame);
+        let frame = Self::with_type(Method::default(), FrameType::BarrierFrame);
         (*frame.core).borrow_mut().operand_stack = OperandStack::new(1);
         frame
     }
 
     #[inline]
-    fn with_type(method: Rc<Method>, frame_type: FrameType) -> Frame {
+    fn with_type(method: Method, frame_type: FrameType) -> Frame {
         return Frame {
             core: Rc::new(RefCell::new(Core {
                 local_vars: LocalVars::with_capacity(method.max_locals()),
@@ -86,7 +88,7 @@ impl Frame {
     }
 
     #[inline]
-    pub fn method(&self) -> Rc<Method> {
+    pub fn method(&self) -> Method {
         return (*self.core).borrow().method.clone();
     }
 
@@ -317,7 +319,7 @@ mod test {
         println!("long:{}", vars.get_long(4));
         println!("float:{}", vars.get_float(6));
         println!("double:{}", vars.get_double(7));
-        println!("ref:{:?}", vars.get_ref(9));
+//        println!("ref:{:?}", vars.get_ref(9));
     }
 
     fn test_operand_stack(ops: &mut OperandStack) {
@@ -328,7 +330,7 @@ mod test {
         ops.push_float(3.1415926f32);
         ops.push_double(2.71828182845f64);
         ops.push_ref(None);
-        println!("ref:{:?}", ops.pop_ref());
+//        println!("ref:{:?}", ops.pop_ref());
         println!("double:{}", ops.pop_double());
         println!("float:{}", ops.pop_float());
         println!("long:{}", ops.pop_long());

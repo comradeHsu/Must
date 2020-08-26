@@ -27,7 +27,7 @@ impl Instruction for InvokeInterface {
 
     fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
-        let (interface, resolved_method) = self.resolved_interface_method_ref_tuple(current_class);
+        let (interface, resolved_method) = self.resolved_interface_method_ref_tuple(&current_class);
         if resolved_method.is_static() || resolved_method.is_private() {
             panic!("java.lang.IncompatibleClassChangeError")
         }
@@ -39,14 +39,13 @@ impl Instruction for InvokeInterface {
         }
         let object_class = object.unwrap().class();
 
-        if !(*object_class)
-            .borrow()
-            .is_implements((*interface).borrow().deref())
+        if !object_class
+            .is_implements(&interface)
         {
             panic!("java.lang.IncompatibleClassChangeError")
         }
         let method_to_be_invoked = MethodRef::look_up_method_in_class(
-            object_class,
+            &object_class,
             resolved_method.name(),
             resolved_method.descriptor(),
         );

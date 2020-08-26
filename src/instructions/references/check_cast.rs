@@ -29,8 +29,8 @@ impl Instruction for CheckCast {
         }
         let c = frame.method().class();
 
-        let class = self.resolve_class_ref(c);
-        if !reference.unwrap().is_instance_of(class) {
+        let class = self.resolve_class_ref(&c);
+        if !reference.unwrap().is_instance_of(&class) {
             panic!("java.lang.ClassCastException");
         }
     }

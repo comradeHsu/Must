@@ -39,16 +39,16 @@ impl MultiANewArray {
 
     fn new_multi_dimensional_array(
         mut counts: Vec<i32>,
-        arr_class: Rc<RefCell<Class>>,
+        arr_class: &Class,
     ) -> ArrayObject {
         let count = counts[0] as usize;
-        let arr = Class::new_array(&arr_class, count);
+        let arr = Class::new_array(arr_class, count);
         if counts.len() > 1 {
             arr.mut_references(|refs| {
                 for i in 0..refs.len() {
                     refs[i] = Some(MultiANewArray::new_multi_dimensional_array(
                         counts.split_off(1),
-                        (*arr_class).borrow().component_class(),
+                        &arr_class.component_class(),
                     ));
                 }
             });
@@ -66,9 +66,9 @@ impl Instruction for MultiANewArray {
     fn execute(&mut self, frame: &Frame) {
         let current_class = frame.method().class();
 
-        let array_class = self.resolve_class_ref(current_class);
+        let array_class = self.resolve_class_ref(&current_class);
         let counts = MultiANewArray::pop_and_check_counts(frame, self.dimensions as usize);
-        let arr = MultiANewArray::new_multi_dimensional_array(counts, array_class);
+        let arr = MultiANewArray::new_multi_dimensional_array(counts, &array_class);
         frame.push_ref(Some(arr));
     }
 }

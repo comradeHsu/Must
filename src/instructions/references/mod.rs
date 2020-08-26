@@ -29,132 +29,90 @@ pub mod put_field;
 pub mod put_static;
 
 trait ResolveFieldRef {
-    fn resolve_field_ref(&self, class: Rc<RefCell<Class>>) -> Rc<RefCell<Field>> {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut field_ref = match constant {
-            FieldReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let field = field_ref.resolved_field(class.clone()).unwrap();
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(self.get_index(), Constant::FieldReference(field_ref));
-        return field;
+    fn resolve_field_ref(&self, class: &Class) -> Field {
+        class.constant_with(self.get_index(),|constant|{
+            let field_ref = match constant {
+                FieldReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let field = field_ref.resolved_field(class);
+            field
+        })
     }
 
     fn get_index(&self) -> usize;
 }
 
 trait ResolveClassRef {
-    fn resolve_class_ref(&self, class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut class_ref = match constant {
-            ClassReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let resolved_class = class_ref.resolved_class(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(self.get_index(), Constant::ClassReference(class_ref));
-        return resolved_class;
+    fn resolve_class_ref(&self, class: &Class) -> Class {
+        class.constant_with(self.get_index(),|constant|{
+            let class_ref = match constant {
+                ClassReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let resolved_class = class_ref.resolved_class(class);
+            resolved_class
+        })
     }
 
     fn get_index(&self) -> usize;
 }
 
 trait ResolveMethodRef {
-    fn resolved_method_ref(&self, class: Rc<RefCell<Class>>) -> Rc<Method> {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut method_ref = match constant {
-            MethodReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let method = method_ref.resolved_method(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(self.get_index(), Constant::MethodReference(method_ref));
-        return method.unwrap();
+    fn resolved_method_ref(&self, class: &Class) -> Method {
+        class.constant_with(self.get_index(),|constant|{
+            let method_ref = match constant {
+                MethodReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let method = method_ref.resolved_method(class);
+            method
+        })
     }
 
     fn resolved_method_ref_tuple(
         &self,
-        class: Rc<RefCell<Class>>,
-    ) -> (Rc<RefCell<Class>>, Rc<Method>) {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut method_ref = match constant {
-            MethodReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let method = method_ref.resolved_method(class.clone());
-        let resolved_class = method_ref.resolved_class(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(self.get_index(), Constant::MethodReference(method_ref));
-        return (resolved_class, method.unwrap());
+        class: &Class,
+    ) -> (Class, Method) {
+        class.constant_with(self.get_index(),|constant|{
+            let method_ref = match constant {
+                MethodReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let method = method_ref.resolved_method(class);
+            let resolved_class = method_ref.resolved_class(class);
+            (resolved_class, method)
+        })
     }
 
     fn get_index(&self) -> usize;
 }
 
 trait ResolveInterfaceMethodRef {
-    fn resolved_interface_method_ref(&self, class: Rc<RefCell<Class>>) -> Rc<Method> {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut method_ref = match constant {
-            InterfaceMethodReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let method = method_ref.resolved_interface_method(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(
-                self.get_index(),
-                Constant::InterfaceMethodReference(method_ref),
-            );
-        return method.unwrap();
+    fn resolved_interface_method_ref(&self, class: &Class) -> Method {
+        class.constant_with(self.get_index(),|constant|{
+            let method_ref = match constant {
+                InterfaceMethodReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let method = method_ref.resolved_interface_method(class);
+            method
+        })
     }
 
     fn resolved_interface_method_ref_tuple(
         &self,
-        class: Rc<RefCell<Class>>,
-    ) -> (Rc<RefCell<Class>>, Rc<Method>) {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(self.get_index());
-        let mut method_ref = match constant {
-            InterfaceMethodReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let method = method_ref.resolved_interface_method(class.clone());
-        let resolved_class = method_ref.resolved_class(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(
-                self.get_index(),
-                Constant::InterfaceMethodReference(method_ref),
-            );
-        return (resolved_class, method.unwrap());
+        class: &Class,
+    ) -> (Class, Method) {
+        class.constant_with(self.get_index(),|constant|{
+            let method_ref = match constant {
+                InterfaceMethodReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let method = method_ref.resolved_interface_method(class);
+            let resolved_class = method_ref.resolved_class(class);
+            (resolved_class, method)
+        })
     }
 
     fn get_index(&self) -> usize;

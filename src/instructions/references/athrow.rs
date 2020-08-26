@@ -20,7 +20,7 @@ impl AThrow {
         ///
         fn get_handler_pc(frame: &Frame, object: Object) -> i32 {
             let pc = frame.next_pc() - 1;
-            return frame.method().find_exception_handler(object.class(), pc);
+            return frame.method().find_exception_handler(&object.class(), pc);
         }
 
         let thread = JavaThread::current();
@@ -52,7 +52,7 @@ impl AThrow {
         let detail_message = object
             .get_ref_var("detailMessage", "Ljava/lang/String;")
             .map_or("".to_string(), |v| java_str_to_rust_str(v));
-        println!("\t{},{}", (*ex_class).borrow().java_name(), detail_message);
+        println!("\t{},{}", ex_class.java_name(), detail_message);
         object.trace(|elements| {
             for element in elements {
                 println!("\tat {}", element.to_string());
@@ -92,7 +92,7 @@ fn display_frame(frame: &Frame) {
     {
         let this = frame.get_this().unwrap();
         let class = this.class();
-        let name = (*class).borrow().java_name();
+        let name = class.java_name();
         println!("java class:{}", name);
     }
 }

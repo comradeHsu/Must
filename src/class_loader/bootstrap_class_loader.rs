@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 pub struct BootstrapClassLoader {
     lib_path: Rc<ClassPath>,
-    class_loader: Rc<RefCell<ClassLoader>>,
+    class_loader: ClassLoader,
 }
 
 impl BootstrapClassLoader {
@@ -19,7 +19,7 @@ impl BootstrapClassLoader {
         let loader = ClassLoader::new();
         let boot = BootstrapClassLoader {
             lib_path: path,
-            class_loader: boxed(loader),
+            class_loader: loader,
         };
         //        boot.load_basic_classes();
         //        boot.load_primitive_classes();
@@ -34,17 +34,16 @@ impl BootstrapClassLoader {
 
     fn load_basic_classes(&self) {
         let java_lang_class = self.find_or_create("java/lang/Class").unwrap();
-        let borrow = (*self.class_loader).borrow();
-        let maps = borrow.class_map_immutable();
-        for (_k, v) in maps {
-            let mut borrow_class = (**v).borrow_mut();
-            let j_l_class = borrow_class.java_class();
-            if j_l_class.is_none() {
-                let class_object = Class::new_object(&java_lang_class);
-                class_object.set_meta(v.clone());
-                borrow_class.set_java_class(Some(class_object));
+        self.class_loader.classes_with(|maps|{
+            for (_k, v) in maps {
+                let j_l_class = v.java_class();
+                if j_l_class.is_none() {
+                    let class_object = Class::new_object(&java_lang_class);
+                    class_object.set_meta(v.clone());
+                    v.set_java_class(Some(class_object));
+                }
             }
-        }
+        });
     }
 
     fn load_primitive_classes(&self) {
@@ -60,32 +59,26 @@ impl BootstrapClassLoader {
         let class_class = self.find_or_create("java/lang/Class").unwrap();
         let class_object = Class::new_object(&class_class);
         class_object.set_meta(class.clone());
-        (*boxed_class)
-            .borrow_mut()
-            .set_java_class(Some(class_object));
-        (*self.class_loader)
-            .borrow_mut()
-            .class_map
-            .insert(class_name.to_string(), boxed_class);
+        class.set_java_class(Some(class_object));
+        self.class_loader.insert_class(class_name.to_owned(), class);
     }
 
     pub fn find_or_create(&self, class_name: &str) -> Option<Class> {
         let class_op: Option<Class> =
-            (*self.class_loader).borrow().find_class(class_name);
+            self.class_loader.find_class(class_name);
         if class_op.is_some() {
             return class_op;
         }
         let mut class: Option<Class> = None;
         if class_name.starts_with('[') {
-            class = Some(ClassLoader::load_array_class(
-                self.class_loader.clone(),
+            class = Some(self.class_loader.load_array_class(
                 class_name,
             ));
         } else {
             class = self.load_non_array_class(class_name);
         }
         if class.is_some() {
-            let value = class.clone().unwrap();
+            let value = class.as_ref().unwrap();
             ClassLoader::setting_class_object(None, value);
         }
         return class;
@@ -99,7 +92,7 @@ impl BootstrapClassLoader {
         let (bytes, entry) = result.unwrap();
         let class = self.define_class(bytes);
         ClassLinker::link(&class);
-        if (*self.class_loader).borrow().verbose_class {
+        if self.class_loader.verbose() {
             println!("Loaded {}.class from {}", class_name, entry.to_string());
         }
         return Some(class);
@@ -127,22 +120,17 @@ impl BootstrapClassLoader {
 
     fn define_class(&self, data: Vec<u8>) -> Class {
         let class = ClassLoader::parse_class(data);
-        (*class)
-            .borrow_mut()
-            .set_class_loader(self.class_loader.clone());
+        class.set_class_loader(self.class_loader.clone());
         self.resolve_super_class(&class);
         self.resolve_interfaces(&class);
-        (*self.class_loader)
-            .borrow_mut()
-            .class_map
-            .insert(class.name().to_string(), class.clone());
+        self.class_loader.insert_class(class.name(), class.clone());
         return class;
     }
 
     fn resolve_super_class(&self, class: &Class) {
         let super_class_name = class.super_class_name();
         //        println!("resolve_super_class:{:?},super:{:?}",class.name(),super_class_name);
-        if class.name() != "java/lang/Object" && super_class_name.is_some() {
+        if class.name().as_str() != "java/lang/Object" && super_class_name.is_some() {
             let super_class = self
                 .find_or_create(super_class_name.unwrap().as_str())
                 .unwrap();
@@ -151,25 +139,26 @@ impl BootstrapClassLoader {
     }
 
     fn resolve_interfaces(&self, class: &Class) {
-        let interfaces_name = class.interfaces_name();
-        let len = interfaces_name.len();
-        if len > 0 {
-            let mut interfaces = Vec::with_capacity(len);
-            for name in interfaces_name {
-                let interface = self.find_or_create(name).unwrap();
-                interfaces.push(interface);
+        class.interfaces_name_with(|interfaces_name|{
+            let len = interfaces_name.len();
+            if len > 0 {
+                let mut interfaces = Vec::with_capacity(len);
+                for name in interfaces_name {
+                    let interface = self.find_or_create(name).unwrap();
+                    interfaces.push(interface);
+                }
+                class.set_interfaces(interfaces);
             }
-            class.set_interfaces(interfaces);
-        }
+        })
     }
 
     #[inline]
-    pub fn basic_loader(&self) -> Rc<RefCell<ClassLoader>> {
+    pub fn basic_loader(&self) -> ClassLoader {
         return self.class_loader.clone();
     }
 
     #[inline]
     pub fn find_class(&self, class_name: &str) -> Option<Class> {
-        return (*self.class_loader).borrow().find_class(class_name);
+        return self.class_loader.find_class(class_name);
     }
 }

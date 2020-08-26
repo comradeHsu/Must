@@ -4,7 +4,7 @@ use crate::runtime::thread::JavaThread;
 
 use std::rc::Rc;
 
-pub fn invoke_method(frame: &Frame, method: Rc<Method>) {
+pub fn invoke_method(frame: &Frame, method: Method) {
     let thread = JavaThread::current();
     let new_frame = Frame::new(method.clone());
     let arg_slot_count = method.arg_slot_count();

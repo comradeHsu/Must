@@ -99,14 +99,14 @@ pub fn get_primitive_class(frame: &Frame) {
     let class = Jvm::boot_class_loader()
         .find_or_create(target.as_str())
         .unwrap();
-    let java_class = (*class).borrow().get_java_class();
+    let java_class = class.get_java_class();
     frame.push_ref(java_class);
 }
 
 pub fn get_name0(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    let name = (*class).borrow().java_name();
+    let name = class.java_name();
     let name_obj = StringPool::java_string(name);
     frame.push_ref(Some(name_obj));
 }
@@ -126,8 +126,8 @@ pub fn for_name0(frame: &Frame) {
     let rust_name = java_str_to_rust_str(name.unwrap()).replace('.', "/");
 
     let class = ClassLoader::load_class(java_loader, rust_name.as_str());
-    let java_class = (*class).borrow().get_java_class();
-    if initialize && !(*class).borrow().initialized() {
+    let java_class = class.get_java_class();
+    if initialize && !class.initialized() {
         frame.set_next_pc(JavaThread::current().get_pc());
         init_class(class);
     } else {
@@ -138,28 +138,28 @@ pub fn for_name0(frame: &Frame) {
 pub fn is_interface(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame.push_boolean((*class).borrow().is_interface());
+    frame.push_boolean(class.is_interface());
 }
 
 pub fn is_primitive(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame.push_boolean((*class).borrow().is_primitive());
+    frame.push_boolean(class.is_primitive());
 }
 
 pub fn get_modifiers(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame.push_int((*class).borrow().access_flags() as i32);
+    frame.push_int(class.access_flags() as i32);
 }
 
 pub fn get_superclass(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    let super_class = (*class).borrow().super_class();
+    let super_class = class.super_class();
     let mut java_class: Option<Object> = None;
     if super_class.is_some() {
-        java_class = (*super_class.unwrap()).borrow().get_java_class();
+        java_class = super_class.unwrap().get_java_class();
     }
     frame.push_ref(java_class);
 }
@@ -167,26 +167,25 @@ pub fn get_superclass(frame: &Frame) {
 pub fn get_interfaces0(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    let borrow = (*class).borrow();
-    let interfaces = borrow.interfaces();
     let none = Vec::new();
-    let class_arr = to_class_arr(interfaces.unwrap_or_else(|| &none));
+    let class_arr = class.interfaces_with(|interfaces|{
+        to_class_arr(interfaces.unwrap_or_else(|| &none))
+    });
     frame.push_ref(Some(class_arr));
 }
 
 // []*Class => Class[]
-fn to_class_arr(classes: &Vec<Rc<RefCell<Class>>>) -> ArrayObject {
+fn to_class_arr(classes: &Vec<Class>) -> ArrayObject {
     let arr_len = classes.len();
     let bootstrap_loader = Jvm::boot_class_loader();
-    let class_arr_class = (*bootstrap_loader.find_or_create("java/lang/Class").unwrap())
-        .borrow()
+    let class_arr_class = bootstrap_loader.find_or_create("java/lang/Class").unwrap()
         .array_class();
     let class_arr = Class::new_array(&class_arr_class, arr_len);
 
     if arr_len > 0 {
         class_arr.mut_references(|class_objs| {
             for i in 0..arr_len {
-                class_objs[i] = (*classes[i].clone()).borrow().get_java_class();
+                class_objs[i] = classes[i].get_java_class();
             }
         });
     }
@@ -200,7 +199,7 @@ fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
         let j_bytes: Vec<i8> = rbytes.unwrap().iter().map(|x| *x as i8).collect();
         let boot_loader = Jvm::boot_class_loader();
         return Some(ArrayObject::from_data(
-            boot_loader.find_or_create("[B").unwrap(),
+            &boot_loader.find_or_create("[B").unwrap(),
             Bytes(j_bytes),
         ));
     }
@@ -210,7 +209,7 @@ fn to_byte_arr(rbytes: Option<Vec<u8>>) -> Option<ArrayObject> {
 pub fn is_array(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    frame.push_boolean((*class).borrow().is_array());
+    frame.push_boolean(class.is_array());
 }
 
 // public native Class<?> getComponentType();
@@ -218,8 +217,8 @@ pub fn is_array(frame: &Frame) {
 pub fn get_component_type(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.meta();
-    let component_class = (*class).borrow().component_class();
-    frame.push_ref((*component_class).borrow().get_java_class());
+    let component_class = class.component_class();
+    frame.push_ref(component_class.get_java_class());
 }
 
 // public native boolean isAssignableFrom(Class<?> cls);
@@ -233,9 +232,8 @@ pub fn is_assignable_from(frame: &Frame) {
 
     let this_class = this.unwrap().meta();
     let cls_class = cls.unwrap().meta();
-    let ok = (*this_class)
-        .borrow()
-        .is_assignable_from((*cls_class).borrow().deref());
+    let ok = this_class
+        .is_assignable_from(&cls_class);
 
     frame.push_boolean(ok);
 }
@@ -253,14 +251,14 @@ pub fn get_declared_constructors0(frame: &Frame) {
     });
 
     let class = class_obj.meta();
-    let constructors = (*class).borrow().get_constructors(public_only);
+    let constructors = class.get_constructors(public_only);
     let constructor_count = constructors.len();
 
     let constructor_class = Jvm::boot_class_loader()
         .find_or_create("java/lang/reflect/Constructor")
         .unwrap();
 
-    let class_arr_class = (*constructor_class).borrow().array_class();
+    let class_arr_class = constructor_class.array_class();
     let constructor_arr = Class::new_array(&class_arr_class, constructor_count);
 
     let boxed_arr = Some(constructor_arr);
@@ -270,8 +268,7 @@ pub fn get_declared_constructors0(frame: &Frame) {
         let _thread = JavaThread::current();
         let arr = boxed_arr.unwrap();
 
-        let constructor_init_method = Class::get_constructor(
-            constructor_class.clone(),
+        let constructor_init_method = constructor_class.get_constructor(
             _CONSTRUCTOR_CONSTRUCTOR_DESCRIPTOR,
         );
         arr.mut_references(|constructor_objs| {
@@ -321,13 +318,13 @@ pub fn get_declared_fields0(frame: &Frame) {
     });
 
     let class = class_obj.meta();
-    let fields = (*class).borrow().get_fields(public_only);
+    let fields = class.get_fields(public_only);
     let field_count = fields.len();
 
     let field_class = Jvm::boot_class_loader()
         .find_or_create("java/lang/reflect/Field")
         .unwrap();
-    let field_arr_class = (*field_class).borrow().array_class();
+    let field_arr_class = field_class.array_class();
     let field_arr = Class::new_array(&field_arr_class, field_count);
 
     let boxed_arr = Some(field_arr);
@@ -336,7 +333,7 @@ pub fn get_declared_fields0(frame: &Frame) {
     if field_count > 0 {
         let arr = boxed_arr.unwrap();
         let field_init_method =
-            Class::get_constructor(field_class.clone(), _FIELD_CONSTRUCTOR_DESCRIPTOR);
+            field_class.get_constructor(_FIELD_CONSTRUCTOR_DESCRIPTOR);
         arr.mut_references(|field_objs| {
             for i in 0..fields.len() {
                 let field = fields[i].clone();
@@ -352,12 +349,12 @@ pub fn get_declared_fields0(frame: &Frame) {
                     ///this
                     Parameter::Object(Some(class_obj.clone())), // declaringClass
                     Parameter::Object(Some(StringPool::java_string(
-                        (*field).borrow().name().to_string(),
+                        field.name().to_string(),
                     ))), // name
-                    Parameter::Object((*(*field).borrow().r#type()).borrow().get_java_class()), // type
-                    Parameter::Int((*field).borrow().access_flags() as i32), // modifiers
-                    Parameter::Int((*field).borrow().slot_id() as i32),      // slot
-                    Parameter::Object(get_signature_str((*field).borrow().signature())), // signature
+                    Parameter::Object(field.r#type().get_java_class()), // type
+                    Parameter::Int(field.access_flags() as i32), // modifiers
+                    Parameter::Int(field.slot_id() as i32),      // slot
+                    Parameter::Object(get_signature_str(field.signature())), // signature
                     Parameter::Object(Some(to_byte_arr(Some(data)).unwrap())), // annotations
                 ]);
                 JavaCall::invoke(
@@ -390,13 +387,13 @@ pub fn get_declared_methods0(frame: &Frame) {
     });
 
     let class = class_obj.meta();
-    let methods = (*class).borrow().get_methods(public_only);
+    let methods = class.get_methods(public_only);
     let method_count = methods.len();
 
     let method_class = Jvm::boot_class_loader()
         .find_or_create("java/lang/reflect/Method")
         .unwrap();
-    let method_arr_class = (*method_class).borrow().array_class();
+    let method_arr_class = method_class.array_class();
     let method_arr = Class::new_array(&method_arr_class, method_count);
 
     let boxed_arr = Some(method_arr);
@@ -406,7 +403,7 @@ pub fn get_declared_methods0(frame: &Frame) {
     if method_count > 0 {
         let arr = boxed_arr.unwrap();
         let _method_constructor =
-            Class::get_constructor(method_class.clone(), _METHOD_CONSTRUCTOR_DESCRIPTOR);
+            method_class.get_constructor(_METHOD_CONSTRUCTOR_DESCRIPTOR);
         arr.mut_references(|method_objs| {
             for i in 0..method_count {
                 let method = methods[i].clone();
@@ -425,7 +422,7 @@ pub fn get_declared_methods0(frame: &Frame) {
                     Parameter::Object(Some(class_obj.clone())), // declaringClass
                     Parameter::Object(Some(StringPool::java_string(method.name().to_string()))), // name
                     Parameter::Object(Some(to_class_arr(&parameter_types))), // parameterTypes
-                    Parameter::Object((*method.return_type()).borrow().get_java_class()), // returnType
+                    Parameter::Object(method.return_type().get_java_class()), // returnType
                     Parameter::Object(Some(to_class_arr(&exception_types))), // checkedExceptions
                     Parameter::Int(method.access_flags() as i32),            // modifiers
                     Parameter::Int(0),                                       // todo slot

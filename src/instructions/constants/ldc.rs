@@ -62,41 +62,33 @@ impl Instruction for LDC2w {
     fn execute(&mut self, frame: &Frame) {
         //        let stack = frame.operand_stack().expect("stack is none");
         let class = frame.method().class();
-        let borrow_class = (*class).borrow();
-        let cp = borrow_class.constant_pool();
-        let constant = cp.get_constant_immutable(self.0.index());
-        match constant {
-            Long(v) => frame.push_long(*v),
-            Double(v) => frame.push_double(*v),
-            _ => panic!("java.lang.ClassFormatError"),
-        }
+        class.constant_with(self.0.index(),|constant|{
+            match constant {
+                Long(v) => frame.push_long(*v),
+                Double(v) => frame.push_double(*v),
+                _ => panic!("java.lang.ClassFormatError"),
+            }
+        });
     }
 }
 
 fn ldc(frame: &Frame, index: usize) {
     //    let stack = frame.operand_stack().expect("stack is none");
     let class = frame.method().class();
-    let mut constant = (*class)
-        .borrow_mut()
-        .mut_constant_pool()
-        .take_constant(index);
-    match &mut constant {
-        Integer(v) => frame.push_int(*v),
-        Float(v) => frame.push_float(*v),
-        Str(v) => {
-            let string = StringPool::java_string(v.to_string());
-            frame.push_ref(Some(string))
+    class.constant_with(index,|constant|{
+        match constant {
+            Integer(v) => frame.push_int(*v),
+            Float(v) => frame.push_float(*v),
+            Str(v) => {
+                let string = StringPool::java_string(v.to_string());
+                frame.push_ref(Some(string))
+            }
+            ClassReference(v) => {
+                let class = v.resolved_class(&class);
+                let obj = class.java_class();
+                frame.push_ref(obj);
+            }
+            _ => panic!("todo: ldc!"),
         }
-        ClassReference(v) => {
-            let class = v.resolved_class(class.clone());
-            let borrow = (*class).borrow();
-            let obj = borrow.java_class();
-            frame.push_ref(Some(obj.unwrap().clone()));
-        }
-        _ => panic!("todo: ldc!"),
-    }
-    (*class)
-        .borrow_mut()
-        .mut_constant_pool()
-        .restoration_constant(index, constant);
+    })
 }

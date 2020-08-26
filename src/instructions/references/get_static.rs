@@ -22,10 +22,9 @@ impl Instruction for GetStatic {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let field_option = self.resolve_field_ref(class);
-        let field = (*field_option).borrow();
+        let field = self.resolve_field_ref(&class);
         let class = field.parent().class();
-        if !(*class).borrow().initialized() {
+        if !class.initialized() {
             frame.revert_next_pc();
             init_class(class.clone());
             return;
@@ -35,16 +34,14 @@ impl Instruction for GetStatic {
         }
         let desc = field.parent().descriptor();
         let slot_id = field.slot_id();
-        let mut borrow_class = (*class).borrow_mut();
-        let slots = borrow_class.mut_static_vars().expect("slots is none");
 
         let first_char = desc.chars().next().unwrap();
         match first_char {
-            'Z' | 'B' | 'C' | 'S' | 'I' => frame.push_int(slots.get_int(slot_id)),
-            'F' => frame.push_float(slots.get_float(slot_id)),
-            'J' => frame.push_long(slots.get_long(slot_id)),
-            'D' => frame.push_double(slots.get_double(slot_id)),
-            'L' | '[' => frame.push_ref(slots.get_ref(slot_id)),
+            'Z' | 'B' | 'C' | 'S' | 'I' => frame.push_int(class.get_static_int(slot_id)),
+            'F' => frame.push_float(class.get_static_float(slot_id)),
+            'J' => frame.push_long(class.get_static_long(slot_id)),
+            'D' => frame.push_double(class.get_static_double(slot_id)),
+            'L' | '[' => frame.push_ref(class.get_static_ref(slot_id)),
             _ => {}
         }
     }

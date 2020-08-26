@@ -5,15 +5,16 @@ use crate::oops::object::DataType::{
 use crate::oops::object::{Data, DataType, MetaData, Object};
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 pub type ArrayObject = Object;
 
 impl Object {
     #[inline]
-    pub fn from_data(class: Rc<RefCell<Class>>, data: DataType) -> ArrayObject {
+    pub fn from_data(class: &Class, data: DataType) -> ArrayObject {
         return Object {
-            data: Rc::new(RefCell::new(Data {
-                class,
+            data: Arc::new(RwLock::new(Data {
+                class: class.clone(),
                 data,
                 meta_data: MetaData::Null,
             })),
@@ -24,7 +25,8 @@ impl Object {
     where
         F: FnOnce(&Vec<i8>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match & data.data {
             Bytes(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -34,7 +36,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<i8>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Bytes(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -44,7 +47,8 @@ impl Object {
     where
         F: FnOnce(&Vec<i16>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Shorts(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -54,7 +58,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<i16>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Shorts(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -64,7 +69,8 @@ impl Object {
     where
         F: FnOnce(&Vec<i32>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Ints(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -74,7 +80,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<i32>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Ints(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -84,7 +91,8 @@ impl Object {
     where
         F: FnOnce(&Vec<i64>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Longs(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -94,7 +102,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<i64>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Longs(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -112,7 +121,8 @@ impl Object {
     where
         F: FnOnce(&Vec<u16>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Chars(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -122,7 +132,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<u16>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Chars(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -132,7 +143,8 @@ impl Object {
     where
         F: FnOnce(&Vec<f32>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Floats(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -142,7 +154,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<f32>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Floats(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -152,7 +165,8 @@ impl Object {
     where
         F: FnOnce(&Vec<f64>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Doubles(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -162,7 +176,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<f64>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             Doubles(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -172,7 +187,8 @@ impl Object {
     where
         F: FnOnce(&Vec<Option<Object>>) -> R,
     {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             References(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -182,7 +198,8 @@ impl Object {
     where
         F: FnOnce(&mut Vec<Option<Object>>) -> R,
     {
-        match &mut (*self.data).borrow_mut().data {
+        let mut data = self.data.write().unwrap();
+        match &mut data.data {
             References(array) => func(array),
             _ => panic!("The object type is error"),
         }
@@ -193,7 +210,8 @@ impl Object {
     }
 
     pub fn array_length(&self) -> usize {
-        match &(*self.data).borrow().data {
+        let data = self.data.read().unwrap();
+        match &data.data {
             Bytes(array) => array.len(),
             Shorts(array) => array.len(),
             Ints(array) => array.len(),

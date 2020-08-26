@@ -94,12 +94,12 @@ pub fn array_copy(frame: &Frame) {
 fn check_array_copy(src: &Object, dest: &Object) -> bool {
     let src_class = src.class();
     let dest_class = dest.class();
-    if !(*src_class).borrow().is_array() || !(*dest_class).borrow().is_array() {
+    if !src_class.is_array() || !dest_class.is_array() {
         return false;
     }
-    let src_component = (*src_class).borrow().component_class();
-    let dest_component = (*dest_class).borrow().component_class();
-    if (*src_component).borrow().is_primitive() || (*dest_component).borrow().is_primitive() {
+    let src_component = src_class.component_class();
+    let dest_component = dest_class.component_class();
+    if src_component.is_primitive() || dest_component.is_primitive() {
         return src_class == dest_class;
     }
     return true;
@@ -108,7 +108,7 @@ fn check_array_copy(src: &Object, dest: &Object) -> bool {
 pub fn set_out0(frame: &Frame) {
     let out = frame.get_this();
     let system_class = frame.method().class();
-    Class::set_static_ref_var(system_class, "out", "Ljava/io/PrintStream;", out);
+    Class::set_static_ref_var(&system_class, "out", "Ljava/io/PrintStream;", out);
 }
 
 pub fn init_properties(frame: &Frame) {
@@ -118,8 +118,7 @@ pub fn init_properties(frame: &Frame) {
 
     // public synchronized Object setProperty(String key, String value)
     let class = props.clone().unwrap().class();
-    let set_prop_method = Class::get_instance_method(
-        class,
+    let set_prop_method = class.get_instance_method(
         "setProperty",
         "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
     );
@@ -205,7 +204,7 @@ pub fn set_in0(frame: &Frame) {
     let in_object = frame.get_ref(0);
 
     let sys_class = frame.method().class();
-    Class::set_static_ref_var(sys_class, "in", "Ljava/io/InputStream;", in_object);
+    Class::set_static_ref_var(&sys_class, "in", "Ljava/io/InputStream;", in_object);
 }
 
 // private static native void setErr0(PrintStream err);
@@ -214,7 +213,7 @@ pub fn set_err0(frame: &Frame) {
     let err = frame.get_ref(0);
 
     let sys_class = frame.method().class();
-    Class::set_static_ref_var(sys_class, "err", "Ljava/io/PrintStream;", err);
+    Class::set_static_ref_var(&sys_class, "err", "Ljava/io/PrintStream;", err);
 }
 
 /// public static native long currentTimeMillis();

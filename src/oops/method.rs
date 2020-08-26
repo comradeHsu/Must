@@ -11,13 +11,11 @@ use lark_classfile::attribute_info::Attribute::{Code, Exceptions, RuntimeVisible
 use lark_classfile::line_number_table_attribute::LineNumberTableAttribute;
 use lark_classfile::member_info::MemberInfo;
 use lark_classfile::runtime_visible_annotations_attribute::AnnotationAttribute;
-use std::cell::RefCell;
-
 use std::ptr;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::ops::Deref;
 
-#[derive(Debug)]
-pub struct Method {
+pub struct MetaMethod {
     class_member: ClassMember,
     max_stack: usize,
     max_locals: usize,
@@ -30,10 +28,10 @@ pub struct Method {
     method_desc: MethodDescriptor,
 }
 
-impl Method {
+impl MetaMethod {
     #[inline]
-    pub fn new() -> Method {
-        return Method {
+    pub fn new() -> MetaMethod {
+        return MetaMethod {
             class_member: ClassMember::new(),
             max_stack: 0,
             max_locals: 0,
@@ -47,16 +45,8 @@ impl Method {
         };
     }
 
-    pub fn new_methods(class: WeakClass, infos: &Vec<MemberInfo>) -> Vec<Rc<Method>> {
-        let mut methods = Vec::with_capacity(infos.len());
-        for info in infos {
-            methods.push(Method::new_method(class.clone(), info));
-        }
-        return methods;
-    }
-
-    fn new_method(class: WeakClass, info: &MemberInfo) -> Rc<Method> {
-        let mut method = Method::new();
+    fn new_method(class: WeakClass, info: &MemberInfo) -> MetaMethod {
+        let mut method = MetaMethod::new();
         method.class_member.set_class(class);
         method.class_member.copy_member_info(info);
         method.copy_attributes(info);
@@ -66,12 +56,13 @@ impl Method {
             method.inject_code_attribute(md.return_type());
         }
         method.method_desc = md;
-        return Rc::new(method);
+        return method;
     }
 
     /// clone cast,waiting improve
     pub fn copy_attributes(&mut self, info: &MemberInfo) {
         let attributes = info.attributes();
+        let class = self.class();
         for attribute in attributes {
             match attribute {
                 Code(attr) => {
@@ -81,7 +72,7 @@ impl Method {
                     self.line_number_table = attr.line_number_table_attribute();
                     self.exception_table = ExceptionTable::new(
                         attr.exception_table(),
-                        (*self.class()).borrow().constant_pool(),
+                        &class,
                     );
                 }
                 RuntimeVisibleAnnotations(attr) => {
@@ -124,7 +115,7 @@ impl Method {
         }
     }
 
-    pub fn find_exception_handler(&self, class: Rc<RefCell<Class>>, pc: i32) -> i32 {
+    pub fn find_exception_handler(&self, class: &Class, pc: i32) -> i32 {
         let handler = self.exception_table.find_exception_handler(class, pc);
         if handler.is_some() {
             return handler.unwrap().handler_pc();
@@ -133,7 +124,7 @@ impl Method {
     }
 
     #[inline]
-    pub fn class(&self) -> Rc<RefCell<Class>> {
+    pub fn class(&self) -> Class {
         return self.class_member.class();
     }
 
@@ -256,11 +247,11 @@ impl Method {
     }
 
     // reflection
-    pub fn parameter_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
+    pub fn parameter_types(&self) -> Option<Vec<Class>> {
         if self.arg_slot_count == 0 {
             return None;
         }
-        let class_loader = (*self.class()).borrow().get_class_loader();
+        let class_loader = self.class().get_class_loader();
         let param_types = self.method_desc.parameter_types();
         let mut param_classes = Vec::with_capacity(param_types.len());
         for param_type in param_types {
@@ -276,7 +267,7 @@ impl Method {
         return Some(param_classes);
     }
 
-    pub fn exception_types(&self) -> Option<Vec<Rc<RefCell<Class>>>> {
+    pub fn exception_types(&self) -> Option<Vec<Class>> {
         if self.exceptions.len() == 0 {
             return None;
         }
@@ -288,46 +279,39 @@ impl Method {
 
         for i in 0..self.exceptions.len() {
             let ex_index = self.exceptions[i];
-            ex_classes.push(Self::resolve_class_ref(ex_index as usize, class.clone()));
+            ex_classes.push(Self::resolve_class_ref(ex_index as usize, &class));
         }
 
         return Some(ex_classes);
     }
 
-    fn resolve_class_ref(index: usize, class: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
-        let constant = (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .take_constant(index);
-        let mut class_ref = match constant {
-            ClassReference(refe) => refe,
-            _ => panic!("Unknown constant type"),
-        };
-        let resolved_class = class_ref.resolved_class(class.clone());
-        (*class)
-            .borrow_mut()
-            .mut_constant_pool()
-            .restoration_constant(index, Constant::ClassReference(class_ref));
-        return resolved_class;
+    fn resolve_class_ref(index: usize, class: &Class) -> Class {
+        class.constant_with(index,|constant|{
+            let mut class_ref = match constant {
+                ClassReference(refe) => refe,
+                _ => panic!("Unknown constant type"),
+            };
+            let resolved_class = class_ref.resolved_class(class);
+            resolved_class
+        })
     }
 
     /// todo this impl is hack, and has bug
-    pub fn return_type(&self) -> Rc<RefCell<Class>> {
+    pub fn return_type(&self) -> Class {
         let return_type = self.method_desc.return_type();
         let return_class_name = PrimitiveTypes::instance()
             .unwrap()
             .to_class_name(return_type);
-        let class_loader = (*self.class()).borrow().loader();
-        let return_type = (*class_loader)
-            .borrow()
+        let class_loader = self.class().loader();
+        let return_type = class_loader
             .find_class(return_class_name.as_str());
         return return_type.expect("The return class not loaded");
     }
 }
 
-impl Default for Method {
+impl Default for MetaMethod {
     fn default() -> Self {
-        return Method {
+        return MetaMethod {
             class_member: ClassMember::new(),
             max_stack: 0,
             max_locals: 0,
@@ -339,5 +323,44 @@ impl Default for Method {
             exceptions: vec![],
             method_desc: MethodDescriptor::new(),
         };
+    }
+}
+
+#[derive(Clone)]
+pub struct Method {
+    method: Arc<MetaMethod>
+}
+
+impl Method {
+
+    fn new(method: MetaMethod) -> Method {
+        return Method{
+            method: Arc::new(method)
+        }
+    }
+
+    pub fn new_methods(class: WeakClass, infos: &Vec<MemberInfo>) -> Vec<Method> {
+        let mut methods = Vec::with_capacity(infos.len());
+        for info in infos {
+            methods.push(Method::new(MetaMethod::new_method(class.clone(), info)));
+        }
+        return methods;
+    }
+
+}
+
+impl Default for Method {
+    fn default() -> Self {
+        Method{
+            method: Arc::new(MetaMethod::default())
+        }
+    }
+}
+
+impl Deref for Method {
+    type Target = MetaMethod;
+
+    fn deref(&self) -> &Self::Target {
+        self.method.deref()
     }
 }

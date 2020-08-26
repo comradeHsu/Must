@@ -22,7 +22,7 @@ pub fn get_lookup_cache_urls(frame: &Frame) {
     let url_class = Jvm::boot_class_loader()
         .find_or_create("java/net/URL")
         .unwrap();
-    let array_class = (*url_class).borrow().array_class();
+    let array_class = url_class.array_class();
     let array = Class::new_array(&array_class, 0);
     frame.push_ref(Some(array));
 }

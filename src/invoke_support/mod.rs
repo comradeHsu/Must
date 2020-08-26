@@ -24,13 +24,13 @@ pub mod return_value;
 pub struct JavaCall {
     current_pc: i32,
     thread: JavaThread,
-    method: Rc<Method>,
+    method: Method,
     params: Option<Parameters>,
     return_type: ReturnType,
 }
 
 impl JavaCall {
-    fn new(method: Rc<Method>, params: Option<Parameters>, return_type: ReturnType) -> JavaCall {
+    fn new(method: Method, params: Option<Parameters>, return_type: ReturnType) -> JavaCall {
         let thread = JavaThread::current();
         return JavaCall {
             current_pc: thread.get_pc(),
@@ -42,7 +42,7 @@ impl JavaCall {
     }
 
     pub fn invoke(
-        method: Rc<Method>,
+        method: Method,
         params: Option<Parameters>,
         return_type: ReturnType,
     ) -> ReturnValue {
@@ -151,7 +151,7 @@ pub enum ReturnType {
 
 pub fn throw_exception(frame: &Frame, class_name: &str, msg: Option<&str>) {
     let class = frame.method().class();
-    let class_loader = (*class).borrow().get_class_loader();
+    let class_loader = class.get_class_loader();
     let exception_class = ClassLoader::load_class(class_loader, class_name);
     let object = Class::new_object(&exception_class);
     let constructor_desc = "(Ljava/lang/String;)V";
@@ -159,7 +159,7 @@ pub fn throw_exception(frame: &Frame, class_name: &str, msg: Option<&str>) {
         true => Some(StringPool::java_string(msg.unwrap().to_string())),
         false => None,
     };
-    let constructor = Class::get_constructor(exception_class.clone(), constructor_desc);
+    let constructor = exception_class.get_constructor(constructor_desc);
     let object_ptr = Some(object);
     let parameters = vec![
         Parameter::Object(object_ptr.clone()),

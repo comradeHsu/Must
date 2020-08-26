@@ -20,16 +20,13 @@ pub fn init() {
 pub fn get_class(frame: &Frame) {
     let this = frame.get_this().unwrap();
     let class = this.class();
-    let java_class = (*class).borrow().get_java_class();
+    let java_class = class.get_java_class();
     frame.push_ref(java_class);
 }
 
 pub fn hash_code(frame: &Frame) {
     let this = frame.get_this().unwrap();
-    let ptr = (this.data).borrow();
-    let ptr = ptr.deref() as *const Data;
-    let hash = ptr as usize;
-    frame.push_int(hash as i32);
+    frame.push_int(this.hash_code());
 }
 
 pub fn clone(frame: &Frame) {
@@ -39,8 +36,7 @@ pub fn clone(frame: &Frame) {
         .find_or_create("java/lang/Cloneable")
         .unwrap();
 
-    let borrow = cloneable.borrow();
-    if !(*this_class).borrow().is_implements(borrow.deref()) {
+    if !this_class.is_implements(&cloneable) {
         panic!("java.lang.CloneNotSupportedException");
     }
     frame.push_ref(Some(this.deep_clone()));

@@ -69,7 +69,7 @@ mod test {
     fn test_register() {
         Registry::register("java/lang/Object", "clone", "V", |_f| println!("clone"));
         Registry::register("java/lang/Object", "init", "V", |_f| println!("init"));
-        let mut frame = Frame::new(Rc::new(Method::new()));
+        let mut frame = Frame::new(Method::default());
         let clone = Registry::find_native_method("java/lang/Object", "clone", "V").unwrap();
         clone(&mut frame);
         let clone_1 = Registry::find_native_method("java/lang/Object", "clone", "V").unwrap();

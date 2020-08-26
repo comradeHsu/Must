@@ -21,8 +21,7 @@ impl Instruction for GetField {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let field_option = self.resolve_field_ref(class);
-        let field = (*field_option).borrow();
+        let field = self.resolve_field_ref(&class);
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }

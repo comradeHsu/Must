@@ -63,7 +63,7 @@ impl Jvm {
         let thread_obj = Class::new_object(&thread_class);
         thread_obj.set_int_var("priority", "I", thread_priority::NORM_PRIORITY);
         let thread_constructor =
-            Class::get_constructor(thread_class.clone(), "(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
+            thread_class.get_constructor("(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
         let parameters = Parameters::with_parameters(vec![
             Parameter::Object(Some(thread_obj.clone())),
             Parameter::Object(Some(thread_group)),
@@ -125,8 +125,8 @@ impl Jvm {
         init_class(app_class.clone());
 
         interpret(self.main_thread.clone());
-        self.ext_class_loader = self.create_ext_loader(ext_class);
-        self.app_class_loader = self.create_app_loader(app_class, self.ext_class_loader.clone());
+        self.ext_class_loader = self.create_ext_loader(&ext_class);
+        self.app_class_loader = self.create_app_loader(&app_class, self.ext_class_loader.clone());
         display_loader_url(self.app_class_loader.clone());
     }
 
@@ -136,7 +136,7 @@ impl Jvm {
 
         let main_class =
             ClassLoader::load_class(self.app_class_loader.clone(), class_name.as_str());
-        let main_method = (*main_class).borrow().get_main_method();
+        let main_method = main_class.get_main_method();
         if main_method.is_none() {
             println!("Main method not found in class {}", self.cmd.class.as_str());
             return;
@@ -153,7 +153,7 @@ impl Jvm {
             .boot_class_loader
             .find_or_create("java/lang/String")
             .unwrap();
-        let args_arr_class = (*string_class).borrow().array_class();
+        let args_arr_class =string_class.array_class();
         let args_arr = Class::new_array(&args_arr_class, self.cmd.args.len());
         args_arr.mut_references(|java_args| {
             for i in 0..java_args.len() {
@@ -163,9 +163,8 @@ impl Jvm {
         return args_arr;
     }
 
-    fn create_ext_loader(&self, ext_class: Rc<RefCell<Class>>) -> Option<Object> {
-        let method = Class::get_static_method(
-            ext_class,
+    fn create_ext_loader(&self, ext_class: &Class) -> Option<Object> {
+        let method = ext_class.get_static_method(
             "getExtClassLoader",
             "()Lsun/misc/Launcher$ExtClassLoader;",
         );
@@ -175,11 +174,10 @@ impl Jvm {
 
     fn create_app_loader(
         &self,
-        app_class: Rc<RefCell<Class>>,
+        app_class: &Class,
         parent: Option<Object>,
     ) -> Option<Object> {
-        let method = Class::get_static_method(
-            app_class,
+        let method = app_class.get_static_method(
             "getAppClassLoader",
             "(Ljava/lang/ClassLoader;)Ljava/lang/ClassLoader;",
         );
@@ -194,7 +192,7 @@ impl Jvm {
             .unwrap();
         let system_instance = Class::new_object(&thread_group_class);
         let constructor =
-            Class::get_constructor(thread_group_class.clone(), "()V");
+            thread_group_class.get_constructor("()V");
         let parameters = Parameters::with_parameters(vec![
             Parameter::Object(Some(system_instance.clone())),
         ]);
@@ -203,7 +201,7 @@ impl Jvm {
 
         let main_instance = Class::new_object(&thread_group_class);
         let constructor_with_param =
-            Class::get_constructor(thread_group_class.clone(), "(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
+            thread_group_class.get_constructor("(Ljava/lang/ThreadGroup;Ljava/lang/String;)V");
         let parameters = Parameters::with_parameters(vec![
             Parameter::Object(Some(main_instance.clone())),
             Parameter::Object(Some(system_instance.clone())),
@@ -221,12 +219,12 @@ fn display_loader_url(class_loader: Option<Object>) {
     let parent = obj.get_ref_var("parent", "Ljava/lang/ClassLoader;");
     if parent.is_some() {
         let parent = parent.unwrap().class();
-        println!("parent:{}", (*parent).borrow().java_name());
+        println!("parent:{}", parent.java_name());
     }
 
     let boot_loader = Jvm::boot_class_loader();
     let class = boot_loader.find_or_create("java/net/URL").unwrap();
-    let method = Class::get_instance_method(class, "toString", "()Ljava/lang/String;").unwrap();
+    let method =class.get_instance_method( "toString", "()Ljava/lang/String;").unwrap();
     if ucp.is_some() {
         let ucp = ucp.unwrap();
         let path = ucp.get_ref_var("path", "Ljava/util/ArrayList;").unwrap();

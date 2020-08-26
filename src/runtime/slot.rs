@@ -2,7 +2,7 @@ use crate::oops::object::Object;
 
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Slot {
     pub num: i32,
     pub reference: Option<Object>,

@@ -23,12 +23,12 @@ impl Instruction for InvokeStatic {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let resolved_method = self.resolved_method_ref(class);
+        let resolved_method = self.resolved_method_ref(&class);
         if !resolved_method.is_static() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
         let class = resolved_method.class();
-        if !(*class).borrow().initialized() {
+        if !class.initialized() {
             frame.revert_next_pc();
             init_class(class.clone());
             return;

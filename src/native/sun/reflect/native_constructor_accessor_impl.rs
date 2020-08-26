@@ -34,7 +34,7 @@ pub fn new_instance0(frame: &Frame) {
     let constructor = get_constructor(constructor_obj);
     let class = constructor.class();
 
-    if !(*class).borrow().initialized() {
+    if !class.initialized() {
         frame.revert_next_pc();
         init_class(class);
         return;
@@ -64,15 +64,15 @@ pub fn new_instance0(frame: &Frame) {
     JavaCall::invoke(constructor, Some(params), ReturnType::Void);
 }
 
-fn get_method(method_obj: Object) -> Rc<Method> {
+fn get_method(method_obj: Object) -> Method {
     return _get_method(method_obj, false);
 }
 
-fn get_constructor(constructor_obj: Object) -> Rc<Method> {
+fn get_constructor(constructor_obj: Object) -> Method {
     return _get_method(constructor_obj, true);
 }
 
-fn _get_method(method_obj: Object, is_constructor: bool) -> Rc<Method> {
+fn _get_method(method_obj: Object, is_constructor: bool) -> Method {
     let extra = method_obj.meta_data();
     if extra.not_null() {
         return extra.method();

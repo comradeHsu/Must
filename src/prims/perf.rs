@@ -52,7 +52,7 @@ impl Perf {
         let class = boot_loader
             .find_or_create("java/nio/DirectByteBuffer")
             .unwrap();
-        let method = Class::get_instance_method(class.clone(), "<init>", "(JI)V");
+        let method = class.get_instance_method("<init>", "(JI)V");
         let this = Class::new_object(&class);
         let param = vec![
             Parameter::Object(Some(this.clone())),

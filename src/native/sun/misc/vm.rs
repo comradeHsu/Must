@@ -14,6 +14,6 @@ pub fn initialize(frame: &Frame) {
     let system_class = Jvm::boot_class_loader()
         .find_or_create("java/lang/System")
         .unwrap();
-    let init_method = Class::get_static_method(system_class, "initializeSystemClass", "()V");
+    let init_method = system_class.get_static_method("initializeSystemClass", "()V");
     invoke_method(frame, init_method.unwrap());
 }

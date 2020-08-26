@@ -11,8 +11,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::ops::Deref;
 
-#[derive(Debug)]
-struct MetaField {
+pub struct MetaField {
     class_member: ClassMember,
     const_value_index: usize,
     slot_id: usize,
@@ -77,7 +76,7 @@ impl MetaField {
     }
 
     #[inline]
-    pub fn set_slot(&mut self, slot_id: usize) {
+    fn set_slot_id(&mut self, slot_id: usize) {
         self.slot_id = slot_id;
     }
 
@@ -98,7 +97,7 @@ impl MetaField {
     }
 
     // reflection
-    pub fn r#type(&self) -> Rc<RefCell<Class>> {
+    pub fn r#type(&self) -> Class {
         let class_name = PrimitiveTypes::instance()
             .unwrap()
             .to_class_name(self.descriptor());
@@ -117,7 +116,7 @@ impl MetaField {
     }
 
     fn get_class_loader(&self) -> Option<Object> {
-        let class_object = (*self.class_member.class()).borrow().get_java_class();
+        let class_object = self.class_member.class().get_java_class();
         if class_object.is_some() {
             return class_object
                 .unwrap()
@@ -127,6 +126,7 @@ impl MetaField {
     }
 }
 
+#[derive(Clone)]
 pub struct Field {
     meta_field: Arc<MetaField>
 }
@@ -147,6 +147,12 @@ impl Field {
             fields.push(Field{ meta_field: Arc::new(field) });
         }
         return fields;
+    }
+
+    pub fn set_slot_id(&mut self, slot_id: usize) {
+        let try_get = Arc::get_mut(&mut self.meta_field);
+        assert!(try_get.is_some(),"this function just call once");
+        try_get.unwrap().set_slot_id(slot_id)
     }
 
 }

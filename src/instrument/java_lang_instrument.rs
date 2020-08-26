@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 pub struct JavaLangInstrument {
     instrument: Object,
-    transform_method: Rc<Method>,
+    transform_method: Method,
 }
 
 static mut INSTRUMENT: Option<JavaLangInstrument> = None;
@@ -17,7 +17,7 @@ impl JavaLangInstrument {
         let desc = "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[BZ)[B";
         let instrument = create_instrumentation();
         let class = instrument.class();
-        let method = Class::get_instance_method(class, "transform", desc);
+        let method = class.get_instance_method("transform", desc);
         return JavaLangInstrument {
             instrument,
             transform_method: method.unwrap(),
@@ -34,7 +34,7 @@ impl JavaLangInstrument {
     }
 
     #[inline]
-    pub fn get_transform_method(&self) -> Rc<Method> {
+    pub fn get_transform_method(&self) -> Method {
         return self.transform_method.clone();
     }
 

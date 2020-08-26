@@ -1,24 +1,22 @@
 use crate::oops::class::Class;
-
 use crate::oops::sym_ref::SymbolRef;
 use lark_classfile::constant_pool::ConstantClassInfo;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ClassRef {
-    symbol_ref: SymbolRef,
+    symbol_ref: Arc<SymbolRef>,
 }
 
 impl ClassRef {
     pub fn new_class_ref(info: &ConstantClassInfo) -> ClassRef {
         return ClassRef {
-            symbol_ref: SymbolRef::with_info(info),
+            symbol_ref: Arc::new(SymbolRef::with_info(info)),
         };
     }
 
     #[inline]
-    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&self, holder: &Class) -> Class {
         return self.symbol_ref.resolved_class(holder);
     }
 }

@@ -25,7 +25,7 @@ impl Instruction for InvokeSpecial {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let (resolved_class, resolved_method) = self.resolved_method_ref_tuple(class.clone());
+        let (resolved_class, resolved_method) = self.resolved_method_ref_tuple(&class);
 
         if resolved_method.name() == "<init>" && resolved_method.class() != resolved_class {
             panic!("java.lang.NoSuchMethodError")
@@ -39,28 +39,24 @@ impl Instruction for InvokeSpecial {
         }
 
         let method_class = resolved_method.class();
-        let borrow_method_class = (*method_class).borrow();
         let object_class = object.unwrap().class();
-        let borrow_class = (*class).borrow();
         if resolved_method.is_protected()
-            && borrow_method_class.is_super_class_of((*class).borrow().deref())
-            && borrow_method_class.package_name() != borrow_class.package_name()
+            && method_class.is_super_class_of(&class)
+            && method_class.package_name() != class.package_name()
             && object_class != class
-            && !(*object_class)
-                .borrow()
-                .is_sub_class_of(borrow_class.deref())
+            && !object_class
+                .is_sub_class_of(&class)
         {
             panic!("java.lang.IllegalAccessError");
         };
         let mut method_to_be_invoked = Some(resolved_method.clone());
-        if borrow_class.is_super()
-            && (*resolved_class)
-                .borrow()
-                .is_super_class_of(borrow_class.deref())
+        if class.is_super()
+            && resolved_class
+                .is_super_class_of(&class)
             && resolved_method.name() != "<init>"
         {
             method_to_be_invoked = MethodRef::look_up_method_in_class(
-                borrow_class.super_class().unwrap(),
+                &class.super_class().unwrap(),
                 resolved_method.name(),
                 resolved_method.descriptor(),
             );

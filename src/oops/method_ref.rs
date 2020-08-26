@@ -1,17 +1,12 @@
-use crate::oops::class::{Class, Interfaces};
-
+use crate::oops::class::{Class, Interfaces, MethodType};
 use crate::oops::member_ref::MemberRef;
 use crate::oops::method::Method;
 use lark_classfile::constant_pool::ConstantMethodRefInfo;
-use std::borrow::Borrow;
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::rc::Rc;
+use std::sync::RwLock;
 
-#[derive(Debug)]
 pub struct MethodRef {
     member_ref: MemberRef,
-    method: Option<Rc<Method>>,
+    method: RwLock<Option<Method>>,
 }
 
 impl MethodRef {
@@ -19,7 +14,7 @@ impl MethodRef {
     pub fn new_method_ref(info: &ConstantMethodRefInfo) -> MethodRef {
         let mut field_ref = MethodRef {
             member_ref: MemberRef::new(),
-            method: None,
+            method: RwLock::new(None),
         };
         field_ref.member_ref.copy_member_info(info.get_member_ref());
         return field_ref;
@@ -36,60 +31,64 @@ impl MethodRef {
     }
 
     #[inline]
-    pub fn resolved_class(&mut self, holder: Rc<RefCell<Class>>) -> Rc<RefCell<Class>> {
+    pub fn resolved_class(&self, holder: &Class) -> Class {
         return self.member_ref.resolved_class(holder);
     }
 
-    pub fn resolved_method(&mut self, holder: Rc<RefCell<Class>>) -> Option<Rc<Method>> {
-        if self.method.is_none() {
-            self.resolved_method_ref(holder);
+    pub fn resolved_method(&self, holder: &Class) -> Method {
+        let method_op = {
+            let method = self.method.read().unwrap();
+            method.clone()
+        };
+        match method_op {
+            Some(method) => method,
+            None => self.resolved_method_ref(holder)
         }
-        return self.method.clone();
     }
 
-    fn resolved_method_ref(&mut self, holder: Rc<RefCell<Class>>) {
+    fn resolved_method_ref(&self, holder: &Class) -> Method {
         let class = self.member_ref.resolved_class(holder);
-        if (*class).borrow().is_interface() {
+        if class.is_interface() {
             panic!("java.lang.IncompatibleClassChangeError");
         }
-        let method = MethodRef::look_up_method(class.clone(), self.name(), self.descriptor());
+        let method = MethodRef::look_up_method(&class, self.name(), self.descriptor());
         if method.is_none() {
             panic!("java.lang.NoSuchMethodError");
         }
-        if !(*method.clone().unwrap()).is_accessible_to((*class).borrow().deref()) {
+        if !(method.as_ref().unwrap()).is_accessible_to(&class) {
             panic!("java.lang.IllegalAccessError");
         }
-        self.method = method;
+        let mut raw = self.method.write().unwrap();
+        *raw = method.clone();
+        method.unwrap()
     }
 
-    pub fn look_up_method(class: Rc<RefCell<Class>>, name: &str, desc: &str) -> Option<Rc<Method>> {
-        let mut method = MethodRef::look_up_method_in_class(class.clone(), name, desc);
+    pub fn look_up_method(class: &Class, name: &str, desc: &str) -> Option<Method> {
+        let mut method = MethodRef::look_up_method_in_class(class, name, desc);
         if method.is_none() {
-            method = MethodRef::look_up_method_in_interfaces(
-                (*class).borrow().interfaces().unwrap(),
-                name,
-                desc,
-            );
+            method = class.interfaces_with(|is|{
+                MethodRef::look_up_method_in_interfaces(
+                    is.unwrap(),
+                    name,
+                    desc,
+                )
+            });
         }
         return method;
     }
 
     pub fn look_up_method_in_class(
-        class: Rc<RefCell<Class>>,
+        class: &Class,
         name: &str,
         desc: &str,
-    ) -> Option<Rc<Method>> {
-        let mut super_class = Some(class);
+    ) -> Option<Method> {
+        let mut super_class = Some(class.clone());
         while super_class.is_some() {
-            let value = super_class.unwrap().clone();
-            let borrow_value = (*value).borrow();
-            let methods = borrow_value.methods();
-            for method in methods {
-                if method.name() == name && method.descriptor() == desc {
-                    return Some(method.clone());
-                }
+            let value = super_class.unwrap();
+            if let Some(m) = value.find_method(name,desc,MethodType::Unlimited){
+                return Some(m)
             }
-            super_class = borrow_value.super_class();
+            super_class = value.super_class();
         }
         return None;
     }
@@ -98,20 +97,18 @@ impl MethodRef {
         interfaces: &Interfaces,
         name: &str,
         desc: &str,
-    ) -> Option<Rc<Method>> {
+    ) -> Option<Method> {
         for interface in interfaces {
-            let borrow = (**interface).borrow();
-            let methods = borrow.methods();
-            for method in methods {
-                if method.name() == name && method.descriptor() == desc {
-                    return Some(method.clone());
-                }
+            if let Some(m) = interface.find_method(name,desc,MethodType::Unlimited){
+                return Some(m)
             }
-            let method = MethodRef::look_up_method_in_interfaces(
-                (**interface).borrow().interfaces().unwrap(),
-                name,
-                desc,
-            );
+            let method = interface.interfaces_with(|is|{
+                MethodRef::look_up_method_in_interfaces(
+                    is.unwrap(),
+                    name,
+                    desc,
+                )
+            });
             if method.is_some() {
                 return method;
             }

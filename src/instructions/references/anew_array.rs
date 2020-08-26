@@ -22,8 +22,8 @@ impl Instruction for ANewArray {
 
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
-        let component_class = self.resolve_class_ref(class);
-        let array_class = Class::create_array_class(component_class);
+        let component_class = self.resolve_class_ref(&class);
+        let array_class = component_class.array_class();
         frame.operand_stack(|stack| {
             let count = stack.pop_int();
             if count < 0 {

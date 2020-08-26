@@ -46,7 +46,7 @@ impl Instruction for NewArray {
     }
 }
 
-fn get_primitive_array_class(atype: u8) -> Rc<RefCell<Class>> {
+fn get_primitive_array_class(atype: u8) -> Class {
     let boot_loader = Jvm::boot_class_loader();
     let optional_class = match atype {
         AT_BOOLEAN => boot_loader.find_or_create("[Z"),

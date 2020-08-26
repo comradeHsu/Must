@@ -21,7 +21,7 @@ pub fn get_caller_class(frame: &Frame) {
     let method = frame.method();
     if !method.has_annotation("Lsun/reflect/CallerSensitive;") {
         let class = method.class();
-        let java_class = (*class).borrow().get_java_class();
+        let java_class = class.get_java_class();
         //        println!("\tmethod name:{},first method",method.name());
         frame.push_ref(java_class);
     } else {
@@ -34,7 +34,7 @@ pub fn get_caller_class(frame: &Frame) {
                 //            println!("method name:{}",method.name());
                 if !method.has_annotation("Lsun/reflect/CallerSensitive;") {
                     let class = method.class();
-                    let java_class = (*class).borrow().get_java_class();
+                    let java_class = class.get_java_class();
                     return java_class;
                 }
                 if index == 0 {
@@ -53,6 +53,6 @@ pub fn get_class_access_flags(frame: &Frame) {
     let type_ = frame.get_ref(0).unwrap();
 
     let class = type_.meta();
-    let flags = (*class).borrow().access_flags();
+    let flags = class.access_flags();
     frame.push_int(flags as i32);
 }

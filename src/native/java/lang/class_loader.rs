@@ -63,13 +63,12 @@ pub fn find_loaded_class0(frame: &Frame) {
     let loader = this.get_class_loader();
 
     let class_name = java_str_to_rust_str(name.unwrap());
-    let class = (*loader)
-        .borrow()
+    let class = loader
         .find_class(class_name.replace('.', "/").as_str());
     if class.is_none() {
         frame.push_ref(None);
     } else {
-        let java_class = (*class.unwrap()).borrow().get_java_class();
+        let java_class = class.unwrap().get_java_class();
         frame.push_ref(java_class);
     }
 }
@@ -85,7 +84,7 @@ pub fn find_bootstrap_class(frame: &Frame) {
     if class.is_none() {
         frame.push_ref(None);
     } else {
-        let java_class = (*class.unwrap()).borrow().get_java_class();
+        let java_class = class.unwrap().get_java_class();
         frame.push_ref(java_class);
     }
 }
@@ -122,7 +121,7 @@ pub fn define_class1(frame: &Frame) {
         this,
         protection_domain,
     );
-    let java_class = (*class).borrow().get_java_class();
+    let java_class = class.get_java_class();
 
     frame.push_ref(java_class);
 }

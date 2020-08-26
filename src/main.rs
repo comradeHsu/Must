@@ -1,7 +1,7 @@
 use crate::cmd::Cmd;
 use crate::jvm::Jvm;
 
-mod class_loader;
+pub mod class_loader;
 mod class_path;
 mod cmd;
 mod global_config;
@@ -48,7 +48,7 @@ mod tests {
             verbose_class: true,
             cp_option: vec!["D:/workspace/rust-jvm".to_string()],
             x_jre_option: "".to_string(),
-            class: "testing.ExceptionTest".to_string(),
+            class: "testing.ThreadTest".to_string(),
             args: vec![],
             exec_jar_path: None,
         };

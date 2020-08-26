@@ -26,9 +26,8 @@ impl Instruction for PutField {
         let current_method = frame.method();
         let current_class = current_method.class();
 
-        let field_option = self.resolve_field_ref(current_class.clone());
+        let field = self.resolve_field_ref(&current_class);
 
-        let field = (*field_option).borrow();
         let class = field.parent().class();
         if field.parent().is_static() {
             panic!("java.lang.IncompatibleClassChangeError");

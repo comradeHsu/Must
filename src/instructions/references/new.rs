@@ -27,17 +27,16 @@ impl Instruction for New {
     fn execute(&mut self, frame: &Frame) {
         let class = frame.method().class();
 
-        let class = self.resolve_class_ref(class);
-        if !(*class).borrow().initialized() {
+        let class = self.resolve_class_ref(&class);
+        if !class.initialized() {
             frame.revert_next_pc();
             init_class(class.clone());
             return;
         }
-        let ref_class = (*class).borrow();
-        if ref_class.is_interface() || ref_class.is_abstract() {
+        if class.is_interface() || class.is_abstract() {
             panic!("java.lang.InstantiationError")
         }
-        let object = match ref_class.is_class_loader() {
+        let object = match class.is_class_loader() {
             true => Class::new_class_loader_object(&class),
             false => Class::new_object(&class),
         };

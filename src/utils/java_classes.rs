@@ -11,6 +11,6 @@ impl JavaLangThread {
     }
 
     pub fn stack_size(java_thread: &Object) -> i64 {
-        return java_thread.get_long_var("stackSize","L");
+        return java_thread.get_long_var("stackSize","J");
     }
 }
