@@ -8,7 +8,8 @@ public class ThreadTest {
         System.out.println(thread.getId());
         Thread child = new Thread(new Task(), "child");
         child.start();
-        Thread.sleep(5000);
+        child.join();
+//        Thread.sleep(5000);
     }
 
     private static class Task implements Runnable {

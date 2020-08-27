@@ -247,6 +247,11 @@ impl Object {
         data.meta_data.clone()
     }
 
+    #[inline]
+    pub fn set_thread(&self, thread: JavaThread) {
+        self.set_meta_data(MetaData::Thread(thread));
+    }
+
     pub fn deep_clone(&self) -> Self {
         let data = self.data.read().unwrap();
         return Object {
@@ -330,6 +335,14 @@ impl MetaData {
         match self {
             MetaData::ClassLoader(loader) => loader.clone(),
             _ => panic!("The MetaData not ClassLoader"),
+        }
+    }
+
+    #[inline]
+    pub fn thread(&self) -> Option<JavaThread> {
+        match self {
+            MetaData::Thread(thread) => Some(thread.clone()),
+            _ => None
         }
     }
 }

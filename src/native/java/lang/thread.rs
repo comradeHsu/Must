@@ -7,6 +7,7 @@ use crate::runtime::frame::Frame;
 
 use std::{thread, time};
 use crate::runtime::thread::JavaThread;
+use crate::utils::java_classes::JavaLangThread;
 
 pub fn init() {
     Registry::register(
@@ -40,7 +41,12 @@ pub fn set_priority0(_frame: &Frame) {
 // public final native boolean isAlive();
 // ()Z
 pub fn is_alive(frame: &Frame) {
-    frame.push_boolean(false);
+    let this = frame.get_this();
+    if this.is_none() {
+
+    }
+    let thread = JavaLangThread::thread(this.as_ref().unwrap());
+    frame.push_boolean(thread.is_some());
 }
 
 /// private native void start0();

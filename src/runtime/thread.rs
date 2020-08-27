@@ -15,13 +15,14 @@ use std::fmt::{Debug, Formatter, Error};
 use crate::utils::java_classes::JavaLangThread;
 use std::thread;
 use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
 
 
 struct Inner {
     pub pc: i32,
     pub stack: Stack,
-    object: Option<Object>
-    //    thread:Option<Builder>
+    object: Option<Object>,
+    handler:Option<JoinHandle<()>>
 }
 
 #[derive(Clone)]
@@ -38,13 +39,16 @@ impl JavaThread {
         if  size == 0 {
             size = 1024;
         }
-        return JavaThread {
+        let thread =  JavaThread {
             inner: Arc::new(Mutex::new(Inner {
                 pc: 0,
                 stack: Stack::new(size),
-                object: Some(java_thread)
+                object: Some(java_thread.clone()),
+                handler: None
             })),
         };
+        JavaLangThread::set_thread(&java_thread, thread.clone());
+        thread
     }
 
     pub fn new_main_thread() -> JavaThread {
@@ -52,7 +56,8 @@ impl JavaThread {
             inner: Arc::new(Mutex::new(Inner {
                 pc: 0,
                 stack: Stack::new(1024),
-                object: None
+                object: None,
+                handler: None
             })),
         };
         thread
@@ -147,10 +152,16 @@ impl JavaThread {
     }
 
     pub fn start(thread: Self) {
-        thread::Builder::new().spawn(move || {
+//        let copy = thread.clone();
+        let join_handle = thread::Builder::new().spawn(move || {
             thread.set();
             thread.run();
         });
+        if join_handle.is_err() {
+            panic!("create thread failed");
+        }
+//        let mut raw = copy.inner.lock().unwrap();
+//        raw.handler = Some(join_handle.unwrap())
     }
 }
 
